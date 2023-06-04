@@ -61,10 +61,5 @@ protected:
     _OpenAssetForWrite(
         const PXR_NS::ArResolvedPath& resolvedPath,
         WriteMode writeMode) const final;
-
-private:
-    PXR_NS::ArResolvedPath _ResolveHelper(
-        const std::string& assetPath,
-        bool forNewAsset) const;
     
 };
