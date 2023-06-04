@@ -50,10 +50,6 @@ protected:
         const std::string& assetPath,
         const PXR_NS::ArResolvedPath& resolvedPath) const final;
 
-    PXR_NS::ArAssetInfo _GetAssetInfo(
-        const std::string& assetPath,
-        const PXR_NS::ArResolvedPath& resolvedPath) const final;
-
     std::shared_ptr<PXR_NS::ArAsset> _OpenAsset(
         const PXR_NS::ArResolvedPath& resolvedPath) const final;
 

@@ -19,6 +19,8 @@
 #include "pxr/base/tf/stl.h"
 #include "pxr/base/tf/stringUtils.h"
 #include "pxr/base/vt/dictionary.h"
+#include "pxr/base/arch/fileSystem.h"
+#include "pxr/base/arch/systemInfo.h"
 
 #include <fstream>
 #include <iostream>
@@ -44,6 +46,46 @@ TF_DEFINE_ENV_SETTING(
 PXR_NAMESPACE_CLOSE_SCOPE
 
 
+static bool
+_IsFileRelative(const std::string& path) {
+    return path.find("./") == 0 || path.find("../") == 0;
+}
+
+static bool
+_IsRelativePath(const std::string& path)
+{
+    return (!path.empty() && TfIsRelativePath(path));
+}
+
+static bool
+_IsSearchPath(const std::string& path)
+{
+    return _IsRelativePath(path) && !_IsFileRelative(path);
+}
+
+static std::string
+_AnchorRelativePath(
+    const std::string& anchorPath, 
+    const std::string& path)
+{
+    if (TfIsRelativePath(anchorPath) ||
+        !_IsRelativePath(path)) {
+        return path;
+    }
+
+    // Ensure we are using forward slashes and not back slashes.
+    std::string forwardPath = anchorPath;
+    std::replace(forwardPath.begin(), forwardPath.end(), '\\', '/');
+
+    // If anchorPath does not end with a '/', we assume it is specifying
+    // a file, strip off the last component, and anchor the path to that
+    // directory.
+    const std::string anchoredPath = TfStringCatPaths(
+        TfStringGetBeforeSuffix(forwardPath, '/'), path);
+    return TfNormPath(anchoredPath);
+}
+
+
 UsdResolverExampleResolver::UsdResolverExampleResolver()
 {
 }
@@ -56,11 +98,24 @@ UsdResolverExampleResolver::_CreateIdentifier(
     const std::string& assetPath,
     const ArResolvedPath& anchorAssetPath) const
 {
-    TF_DEBUG(USD_RESOLVER_EXAMPLE).Msg(
-        "UsdResolverExampleResolver::_CreateIdentifier('%s', '%s')\n",
-        assetPath.c_str(), anchorAssetPath.GetPathString().c_str());
+    TF_DEBUG(USD_RESOLVER_EXAMPLE).Msg("UsdResolverExampleResolver::_CreateIdentifier('%s', '%s')\n",
+                                       assetPath.c_str(), anchorAssetPath.GetPathString().c_str());
 
-    return "/opt/hfs19.5/houdini/usd/assets/pig/pig.usd";
+    if (assetPath.empty()) {
+        return assetPath;
+    }
+
+    if (!anchorAssetPath) {
+        return TfNormPath(assetPath);
+    }
+
+    const std::string anchoredAssetPath = _AnchorRelativePath(anchorAssetPath, assetPath);
+
+    if (_IsSearchPath(assetPath) && Resolve(anchoredAssetPath).empty()) {
+        return TfNormPath(assetPath);
+    }
+
+    return TfNormPath(anchoredAssetPath);
 }
 
 std::string
@@ -72,8 +127,44 @@ UsdResolverExampleResolver::_CreateIdentifierForNewAsset(
         "UsdResolverExampleResolver::_CreateIdentifierForNewAsset"
         "('%s', '%s')\n",
         assetPath.c_str(), anchorAssetPath.GetPathString().c_str());
+    if (assetPath.empty()) {
+        return assetPath;
+    }
 
-    return assetPath;
+    if (_IsRelativePath(assetPath)) {
+        return TfNormPath(anchorAssetPath ? 
+            _AnchorRelativePath(anchorAssetPath, assetPath) :
+            TfAbsPath(assetPath));
+    }
+
+    return TfNormPath(assetPath);
+}
+
+
+
+static ArResolvedPath
+_ResolveAnchored(
+    const std::string& anchorPath,
+    const std::string& path)
+{
+    std::string resolvedPath = path;
+    if (!anchorPath.empty()) {
+        // XXX - CLEANUP:
+        // It's tempting to use AnchorRelativePath to combine the two
+        // paths here, but that function's file-relative anchoring
+        // causes consumers to break. 
+        // 
+        // Ultimately what we should do is specify whether anchorPath 
+        // in both Resolve and _AnchorRelativePath can be files or directories 
+        // and fix up all the callers to accommodate this.
+        resolvedPath = TfStringCatPaths(anchorPath, path);
+    }
+
+    // Use TfAbsPath to ensure we return an absolute path using the
+    // platform-specific representation (e.g. '\' as path separators
+    // on Windows.
+    return TfPathExists(resolvedPath) ?
+        ArResolvedPath(TfAbsPath(resolvedPath)) : ArResolvedPath();
 }
 
 
@@ -85,8 +176,24 @@ UsdResolverExampleResolver::_Resolve(
     TF_DEBUG(USD_RESOLVER_EXAMPLE).Msg(
         "UsdResolverExampleResolver::_Resolve('%s')\n",
         assetPath.c_str());
-    ArResolvedPath resolvedPath;
-    return resolvedPath;
+    if (assetPath.empty()) {
+        return ArResolvedPath();
+    }
+
+    if (_IsRelativePath(assetPath)) {
+        // First try to resolve relative paths against the current
+        // working directory.
+        return ArResolvedPath(TfAbsPath("/opt/hfs19.5/houdini/usd/assets/pig/pig.usd"));
+
+        ArResolvedPath resolvedPath = _ResolveAnchored(ArchGetCwd(), assetPath);
+        if (resolvedPath) {
+            return resolvedPath;
+        }
+
+        return _ResolveAnchored(std::string(), assetPath);
+    }
+
+    return _ResolveAnchored(std::string(), assetPath);
 }
 
 ArResolvedPath
@@ -96,8 +203,7 @@ UsdResolverExampleResolver::_ResolveForNewAsset(
     TF_DEBUG(USD_RESOLVER_EXAMPLE).Msg(
         "UsdResolverExampleResolver::_ResolveForNewAsset('%s')\n",
         assetPath.c_str());
-    ArResolvedPath resolvedPath;
-    return resolvedPath;
+    return ArResolvedPath(assetPath.empty() ? assetPath : TfAbsPath(assetPath));
 }
 
 ArResolverContext
@@ -110,13 +216,6 @@ UsdResolverExampleResolver::_CreateDefaultContext() const
     TF_DEBUG(USD_RESOLVER_EXAMPLE).Msg(
         "  - Looking for default mapping at %s...", defaultMappingFile.c_str());
 
-    if (TfIsFile(defaultMappingFile)) {
-        TF_DEBUG(USD_RESOLVER_EXAMPLE).Msg(" found\n");
-        return ArResolverContext(
-            UsdResolverExampleResolverContext(defaultMappingFile));
-    }
-    
-    TF_DEBUG(USD_RESOLVER_EXAMPLE).Msg(" not found\n");
     return ArResolverContext();
 }
 
@@ -166,7 +265,7 @@ bool
 UsdResolverExampleResolver::_IsContextDependentPath(
     const std::string& assetPath) const
 {
-    return true;
+    return _IsSearchPath(assetPath);
 }
 
 void
@@ -198,32 +297,7 @@ UsdResolverExampleResolver::_GetModificationTimestamp(
     TF_DEBUG(USD_RESOLVER_EXAMPLE).Msg(
         "UsdResolverExampleResolver::GetModificationTimestamp('%s', '%s')\n",
         assetPath.c_str(), resolvedPath.GetPathString().c_str());
-
-    std::string filesystemPath = "/opt/hfs19.5/houdini/usd/assets/pig/pig.usd";
-
-    TF_DEBUG(USD_RESOLVER_EXAMPLE).Msg(
-        "  - Getting timestamp for %s\n", filesystemPath.c_str());
-    return ArFilesystemAsset::GetModificationTimestamp(
-        ArResolvedPath(std::move(filesystemPath)));
-}
-
-ArAssetInfo
-UsdResolverExampleResolver::_GetAssetInfo(
-    const std::string& assetPath,
-    const ArResolvedPath& resolvedPath) const
-{
-    TF_DEBUG(USD_RESOLVER_EXAMPLE).Msg(
-        "UsdResolverExampleResolver::GetAssetInfo('%s', '%s')\n",
-        assetPath.c_str(), resolvedPath.GetPathString().c_str());
-
-    ArAssetInfo assetInfo;
-    assetInfo.assetName = "someName";
-    assetInfo.version = 1;
-    assetInfo.resolverInfo = VtDictionary{
-        {"filesystemPath", VtValue("/opt/hfs19.5/houdini/usd/assets/pig/pig.usd")}
-    };
-
-    return assetInfo;
+    return ArFilesystemAsset::GetModificationTimestamp(resolvedPath);
 }
 
 std::shared_ptr<ArAsset>
@@ -234,12 +308,7 @@ UsdResolverExampleResolver::_OpenAsset(
         "UsdResolverExampleResolver::OpenAsset('%s')\n",
         resolvedPath.GetPathString().c_str());
 
-    std::string filesystemPath = "/opt/hfs19.5/houdini/usd/assets/pig/pig.usd";
-
-    TF_DEBUG(USD_RESOLVER_EXAMPLE).Msg(
-        "  - Opening file at %s\n", filesystemPath.c_str());
-    return ArFilesystemAsset::Open(
-        ArResolvedPath(std::move(filesystemPath)));
+    return ArFilesystemAsset::Open(resolvedPath);
 }
 
 std::shared_ptr<ArWritableAsset>
@@ -252,10 +321,5 @@ UsdResolverExampleResolver::_OpenAssetForWrite(
         resolvedPath.GetPathString().c_str(),
         static_cast<int>(writeMode));
 
-    std::string filesystemPath = "/opt/hfs19.5/houdini/usd/assets/pig/pig.usd";
-
-    TF_DEBUG(USD_RESOLVER_EXAMPLE).Msg(
-        "  - Opening file for write at %s\n", filesystemPath.c_str());
-    return ArFilesystemWritableAsset::Create(
-        ArResolvedPath(std::move(filesystemPath)), writeMode);
+    return ArFilesystemWritableAsset::Create(resolvedPath, writeMode);
 }
