@@ -1,0 +1,20 @@
+{
+    "Plugins": [
+        {
+            "Info": {
+                "Types": {
+                    "@AR_USD_PYTHON_CLASS_NAME@": {
+                        "bases": ["ArResolver"],
+                        "uriSchemes": ["asset"],
+                        "implementsContexts" : true
+                    }
+                }
+            },
+            "LibraryPath": "../lib/@AR_TARGET_RESOLVER@.so",
+            "Name": "@AR_USD_PLUGIN_NAME@",
+            "Root": ".",
+            "Type": "library"
+        }
+    ]
+}
+
