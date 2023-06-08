@@ -4,7 +4,7 @@
 #include <thread>
 #include <unordered_map>
 
-#include "../utils/boost_include_wrapper.h"
+#include "boost_include_wrapper.h"
 #include BOOST_INCLUDE(python.hpp)
 
 #include "pxr/pxr.h"
@@ -35,7 +35,7 @@
 
 
 PXR_NAMESPACE_USING_DIRECTIVE
-namespace python = BOOST_NAMESPACE::python;
+namespace python = AR_BOOST_NAMESPACE::python;
 
 PXR_NAMESPACE_OPEN_SCOPE
 

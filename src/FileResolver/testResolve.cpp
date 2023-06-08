@@ -1,7 +1,7 @@
 #include <string>
 #include <iostream>
 
-#include "../utils/boost_include_wrapper.h"
+#include "boost_include_wrapper.h"
 #include BOOST_INCLUDE(python.hpp)
 
 #include <pxr/usd/sdf/layer.h>
@@ -9,7 +9,7 @@
 #include <pxr/usd/sdf/path.h>
 
 
-namespace python = hboost::python;
+namespace python = AR_BOOST_NAMESPACE::python;
 
 int main()
 {

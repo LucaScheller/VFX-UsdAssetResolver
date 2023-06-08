@@ -2,7 +2,6 @@
 ## Target library > FileResolver ##
 add_library(${AR_FILERESOLVER_TARGET_LIB}
     SHARED
-    ${CMAKE_SOURCE_DIR}/src/utils/boost_include_wrapper.h
     ${CMAKE_CURRENT_LIST_DIR}/resolver.cpp
     ${CMAKE_CURRENT_LIST_DIR}/resolverContext.cpp
 )
@@ -14,12 +13,12 @@ set_target_properties(${AR_FILERESOLVER_TARGET_LIB} PROPERTIES PREFIX "")
 target_compile_definitions(${AR_FILERESOLVER_TARGET_LIB} PRIVATE MFB_PACKAGE_NAME=${AR_FILERESOLVER_TARGET_LIB})
 # Libs
 target_link_libraries(${AR_FILERESOLVER_TARGET_LIB}
-                      ${AR_PXR_LIB_PREFIX}arch.so
-                      ${AR_PXR_LIB_PREFIX}tf.so
-                      ${AR_PXR_LIB_PREFIX}gf.so
-                      ${AR_PXR_LIB_PREFIX}js.so
-                      ${AR_PXR_LIB_PREFIX}vt.so
-                      ${AR_PXR_LIB_PREFIX}ar.so
+                      ${AR_PXR_LIB_PREFIX}arch.${AR_ARCH_LIB_SUFFIX}
+                      ${AR_PXR_LIB_PREFIX}tf.${AR_ARCH_LIB_SUFFIX}
+                      ${AR_PXR_LIB_PREFIX}gf.${AR_ARCH_LIB_SUFFIX}
+                      ${AR_PXR_LIB_PREFIX}js.${AR_ARCH_LIB_SUFFIX}
+                      ${AR_PXR_LIB_PREFIX}vt.${AR_ARCH_LIB_SUFFIX}
+                      ${AR_PXR_LIB_PREFIX}ar.${AR_ARCH_LIB_SUFFIX}
                       ${AR_PYTHON_LIB}
                       ${AR_BOOST_PYTHON_LIB})
 # Headers
@@ -38,7 +37,7 @@ install(TARGETS ${AR_FILERESOLVER_TARGET_LIB} DESTINATION ${AR_FILERESOLVER_INST
 ## Target library > FileResolver Python ##
 add_library(${AR_FILERESOLVER_TARGET_PYTHON}
     SHARED
-    ${CMAKE_SOURCE_DIR}/src/utils/boost_include_wrapper.h
+    ${CMAKE_CURRENT_LIST_DIR}/wrapResolver.cpp
     ${CMAKE_CURRENT_LIST_DIR}/wrapResolverContext.cpp
     ${CMAKE_CURRENT_LIST_DIR}/module.cpp
     ${CMAKE_CURRENT_LIST_DIR}/moduleDeps.cpp
