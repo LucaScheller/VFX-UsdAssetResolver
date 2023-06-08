@@ -1,3 +1,5 @@
+#include "../utils/boost_include_wrapper.h"
+
 #include "pxr/pxr.h"
 
 #include "resolverContext.h"
@@ -5,14 +7,14 @@
 #include "pxr/usd/ar/pyResolverContext.h"
 #include "pxr/base/tf/pyUtils.h"
 
-#include <hboost/python/class.hpp>
-#include <hboost/python/return_value_policy.hpp>
+#include BOOST_INCLUDE(python/class.hpp)
+#include BOOST_INCLUDE(python/return_value_policy.hpp)
 
 #include <string>
 
 PXR_NAMESPACE_USING_DIRECTIVE
 
-using namespace hboost::python;
+using namespace BOOST_NAMESPACE::python;
 
 static
 size_t

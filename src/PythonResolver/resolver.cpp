@@ -1,3 +1,12 @@
+#include <fstream>
+#include <iostream>
+#include <shared_mutex>
+#include <thread>
+#include <unordered_map>
+
+#include "../utils/boost_include_wrapper.h"
+#include BOOST_INCLUDE(python.hpp)
+
 #include "pxr/pxr.h"
 
 #include "resolver.h"
@@ -22,13 +31,10 @@
 #include "pxr/base/arch/fileSystem.h"
 #include "pxr/base/arch/systemInfo.h"
 
-#include <fstream>
-#include <iostream>
-#include <shared_mutex>
-#include <thread>
-#include <unordered_map>
+
 
 PXR_NAMESPACE_USING_DIRECTIVE
+namespace python = BOOST_NAMESPACE::python;
 
 PXR_NAMESPACE_OPEN_SCOPE
 
@@ -173,6 +179,28 @@ ArResolvedPath
 UsdResolverExampleResolver::_Resolve(
     const std::string& assetPath) const
 {
+
+    std::cout << "Resolving " << assetPath << std::endl;
+    PyGILState_STATE gstate;
+    gstate = PyGILState_Ensure();
+    // Call Python/C API functions...
+    //pValue= PyObject_CallObject(pFunc, pArgs2);  Crash is always given here
+
+    // >>> import MyPythonClass
+    try {
+        //Py_Initialize();
+        python::object my_python_class_module = python::import("MyPythonClass");
+        // >>> dog = MyPythonClass.Dog()
+        python::object dog = my_python_class_module.attr("Dog")();
+        // >>> dog.bark("woof");
+        dog.attr("bark")("woof");
+    }
+    catch (...) {
+        std::cout << "Access denied - You must be at least 18 years old.\n";
+    }
+
+    PyGILState_Release(gstate);
+
     TF_DEBUG(USD_RESOLVER_EXAMPLE).Msg(
         "UsdResolverExampleResolver::_Resolve('%s')\n",
         assetPath.c_str());
@@ -183,7 +211,12 @@ UsdResolverExampleResolver::_Resolve(
     if (_IsRelativePath(assetPath)) {
         // First try to resolve relative paths against the current
         // working directory.
+
+
         return ArResolvedPath(TfAbsPath("/opt/hfs19.5/houdini/usd/assets/pig/pig.usd"));
+
+
+        
 
         ArResolvedPath resolvedPath = _ResolveAnchored(ArchGetCwd(), assetPath);
         if (resolvedPath) {
