@@ -1,6 +1,7 @@
 ### Configuration ###
 set(AR_PROJECT_NAME UsdAssetResolver)
 
+set(AR_FILERESOLVER_BUILD 1)
 set(AR_FILERESOLVER_USD_PLUGIN_NAME FileResolver)
 set(AR_FILERESOLVER_USD_PYTHON_MODULE_NAME UsdAssetResolver)
 set(AR_FILERESOLVER_USD_PYTHON_CLASS_NAME UsdResolverExampleResolver)
@@ -8,6 +9,7 @@ set(AR_FILERESOLVER_TARGET_LIB FileResolver)
 set(AR_FILERESOLVER_TARGET_PYTHON _FileResolver)
 set(AR_FILERESOLVER_INSTALL_PREFIX ${AR_PROJECT_NAME}/${AR_FILERESOLVER_USD_PLUGIN_NAME})
 
+set(AR_PYTHONRESOLVER_BUILD 0)
 set(AR_PYTHONRESOLVER_USD_PLUGIN_NAME PythonResolver)
 set(AR_PYTHONRESOLVER_USD_PYTHON_MODULE_NAME UsdAssetResolver)
 set(AR_PYTHONRESOLVER_USD_PYTHON_CLASS_NAME UsdResolverExampleResolver)
@@ -63,6 +65,11 @@ link_directories(${AR_PYTHON_LIB_DIR})
 
 ### Targets ###
 # FileResolver
-include("src/FileResolver/FileResolver.cmake")
+if(${AR_FILERESOLVER_BUILD})
+    include("src/FileResolver/FileResolver.cmake")
+endif()
 # PythonResolver
-#include("src/PythonResolver/PythonResolver.cmake")
+if(${AR_PYTHONRESOLVER_BUILD})
+    include("src/PythonResolver/PythonResolver.cmake")
+endif()
+

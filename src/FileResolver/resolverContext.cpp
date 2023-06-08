@@ -42,5 +42,3 @@ UsdResolverExampleResolverContext::GetMappingFile() const
 {
     return _mappingFile;
 }
-
-

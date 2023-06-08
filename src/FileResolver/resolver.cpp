@@ -8,10 +8,6 @@
 #include BOOST_INCLUDE(python.hpp)
 
 #include "pxr/pxr.h"
-
-#include "resolver.h"
-#include "resolverContext.h"
-
 #include "pxr/usd/ar/assetInfo.h"
 #include "pxr/usd/ar/defineResolver.h"
 #include "pxr/usd/ar/filesystemAsset.h"
@@ -23,6 +19,7 @@
 #include "pxr/base/tf/diagnostic.h"
 #include "pxr/base/tf/envSetting.h"
 #include "pxr/base/tf/fileUtils.h"
+#include "pxr/base/tf/getenv.h"
 #include "pxr/base/tf/pathUtils.h"
 #include "pxr/base/tf/pyInvoke.h"
 #include "pxr/base/tf/staticTokens.h"
@@ -32,6 +29,8 @@
 #include "pxr/base/arch/fileSystem.h"
 #include "pxr/base/arch/systemInfo.h"
 
+#include "resolver.h"
+#include "resolverContext.h"
 
 
 PXR_NAMESPACE_USING_DIRECTIVE
@@ -93,11 +92,37 @@ _AnchorRelativePath(
 }
 
 
+
+static std::vector<std::string>
+_ParseSearchPaths(const std::string& pathStr)
+{
+    return TfStringTokenize(pathStr, ARCH_PATH_LIST_SEP);
+}
+
+static TfStaticData<std::vector<std::string>> _SearchPath;
+
 UsdResolverExampleResolver::UsdResolverExampleResolver()
 {
+    std::vector<std::string> searchPath = *_SearchPath;
+    const std::string envPath = TfGetenv("PXR_AR_DEFAULT_SEARCH_PATH");
+    if (!envPath.empty()) {
+        const std::vector<std::string> envSearchPath = 
+            _ParseSearchPaths(envPath);
+        searchPath.insert(
+            searchPath.end(), envSearchPath.begin(), envSearchPath.end());
+    }
+
+    //_fallbackContext = ArDefaultResolverContext(searchPath);
 }
 
 UsdResolverExampleResolver::~UsdResolverExampleResolver() = default;
+
+void
+UsdResolverExampleResolver::SetDefaultSearchPath(
+    const std::vector<std::string>& searchPath)
+{
+    *_SearchPath = searchPath;
+}
 
 
 std::string

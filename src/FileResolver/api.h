@@ -1,5 +1,5 @@
-#ifndef USD_RESOLVER_EXAMPLE_API_H
-#define USD_RESOLVER_EXAMPLE_API_H
+#ifndef AR_FILERESOLVER_API_H
+#define AR_FILERESOLVER_API_H
 
 #include "pxr/base/arch/export.h"
 
@@ -21,4 +21,4 @@
 #   define USDRESOLVEREXAMPLE_LOCAL ARCH_HIDDEN
 #endif
 
-#endif
+#endif // AR_FILERESOLVER_API_H

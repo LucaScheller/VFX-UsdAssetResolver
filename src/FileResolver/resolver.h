@@ -1,14 +1,20 @@
-#include "pxr/pxr.h"
+#ifndef AR_FILERESOLVER_RESOLVER_H
+#define AR_FILERESOLVER_RESOLVER_H
 
+#include <memory>
+#include <string>
+
+
+#include "pxr/pxr.h"
 #include "pxr/usd/ar/asset.h"
 #include "pxr/usd/ar/resolver.h"
 #include "pxr/usd/ar/resolvedPath.h"
 #include "pxr/usd/ar/writableAsset.h"
 #include "pxr/base/vt/value.h"
+#include "pxr/usd/ar/defineResolverContext.h"
+#include "pxr/usd/ar/resolverContext.h"
 
-#include <memory>
-#include <string>
-
+#include "resolverContext.h"
 
 class UsdResolverExampleResolver final
     : public PXR_NS::ArResolver
@@ -16,6 +22,10 @@ class UsdResolverExampleResolver final
 public:
     UsdResolverExampleResolver();
     virtual ~UsdResolverExampleResolver();
+
+    AR_API
+    static void SetDefaultSearchPath(
+        const std::vector<std::string>& searchPath);
 
 protected:
     std::string _CreateIdentifier(
@@ -58,4 +68,11 @@ protected:
         const PXR_NS::ArResolvedPath& resolvedPath,
         WriteMode writeMode) const final;
     
+private:
+    const UsdResolverExampleResolverContext* _GetCurrentContextPtr() const;
+
+    UsdResolverExampleResolverContext _fallbackContext;
+    PXR_NS::ArResolverContext _defaultContext;
 };
+
+#endif // AR_FILERESOLVER_RESOLVER_H
