@@ -4,7 +4,7 @@ SET(CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}/dist/${AR_FILERESOLVER_USD_PLUGIN_
 # Preprocessor Defines (Same as #define)
 # This is a hacky way of preprocessing the class name to a custom name.
 # It is not advised to do this in a production setup! (https://stackoverflow.com/questions/20979584)
-#add_compile_definitions(UsdResolverExampleResolver=${AR_FILERESOLVER_USD_CXX_CLASS_NAME})
+# add_compile_definitions(UsdResolverExampleResolver=${AR_FILERESOLVER_USD_CXX_CLASS_NAME})
 
 ### Targets ###
 ## Target library > PYTHONRESOLVER ##
@@ -42,6 +42,7 @@ target_compile_definitions(${AR_FILERESOLVER_TARGET_LIB}
 configure_file(plugInfo.json.in plugInfo.json)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/plugInfo.json DESTINATION resources)
 install (FILES __init__.py DESTINATION lib/python/${AR_FILERESOLVER_USD_PYTHON_MODULE_NAME})
+install (FILES MyPythonClass.py DESTINATION lib/python)
 install(TARGETS ${AR_FILERESOLVER_TARGET_LIB} RUNTIME DESTINATION lib)
 
 ## Target library > PYTHONRESOLVER Python ##
@@ -86,7 +87,14 @@ target_link_libraries(testResolve
     PUBLIC
     ${AR_PYTHON_LIB}
     ${AR_BOOST_PYTHON_LIB}
-    pxr_usd pxr_tf pxr_vt pxr_arch pxr_sdf pxr_usdGeom tbb
+    ${AR_PXR_LIB_PREFIX}arch
+    ${AR_PXR_LIB_PREFIX}tf
+    ${AR_PXR_LIB_PREFIX}gf
+    ${AR_PXR_LIB_PREFIX}js
+    ${AR_PXR_LIB_PREFIX}vt
+    ${AR_PXR_LIB_PREFIX}ar
+    ${AR_PXR_LIB_PREFIX}sdf
+    tbb
 )
 # Headers
 target_include_directories(testResolve PUBLIC ${AR_PYTHON_INCLUDE_DIR} ${AR_PXR_INCLUDE_DIR})
@@ -101,7 +109,7 @@ install(TARGETS testResolve DESTINATION bin)
 message(STATUS "--- Usd Python Resolver Instructions Start ---")
 message(NOTICE "To use the compiled files, set the following environment variables:")
 message(NOTICE "export PATH=/opt/hfs19.5/python/bin:${PATH}")
-message(NOTICE "export PYTHONPATH=${CMAKE_INSTALL_PREFIX}/lib/python:$PYTHONPATH")
+message(NOTICE "export PYTHONPATH=${CMAKE_INSTALL_PREFIX}/lib/python:${AR_PYTHON_LIB_SITEPACKAGES}:$PYTHONPATH")
 message(NOTICE "export PXR_PLUGINPATH_NAME=${CMAKE_INSTALL_PREFIX}/resources:$PXR_PLUGINPATH_NAME")
 message(NOTICE "export LD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:$LD_LIBRARY_PATH")
 message(NOTICE "To test if it worked, run: ${CMAKE_INSTALL_PREFIX}/bin/cPythonCall")

@@ -1,25 +1,31 @@
-#include "pxr/pxr.h"
+#ifndef AR_FILERESOLVER_RESOLVER_H
+#define AR_FILERESOLVER_RESOLVER_H
 
+#include <memory>
+#include <string>
+
+
+#include "pxr/pxr.h"
 #include "pxr/usd/ar/asset.h"
 #include "pxr/usd/ar/resolver.h"
 #include "pxr/usd/ar/resolvedPath.h"
 #include "pxr/usd/ar/writableAsset.h"
 #include "pxr/base/vt/value.h"
+#include "pxr/usd/ar/defineResolverContext.h"
+#include "pxr/usd/ar/resolverContext.h"
 
-#include <memory>
-#include <string>
+#include "resolverContext.h"
 
-/// \class UsdResolverExampleResolver
-///
-/// Example URI resolver supporting asset paths of the form:
-///     asset:<asset_name>/<path_to_file>
-///
 class UsdResolverExampleResolver final
     : public PXR_NS::ArResolver
 {
 public:
     UsdResolverExampleResolver();
     virtual ~UsdResolverExampleResolver();
+
+    AR_API
+    static void SetDefaultSearchPath(
+        const std::vector<std::string>& searchPath);
 
 protected:
     std::string _CreateIdentifier(
@@ -54,10 +60,6 @@ protected:
         const std::string& assetPath,
         const PXR_NS::ArResolvedPath& resolvedPath) const final;
 
-    PXR_NS::ArAssetInfo _GetAssetInfo(
-        const std::string& assetPath,
-        const PXR_NS::ArResolvedPath& resolvedPath) const final;
-
     std::shared_ptr<PXR_NS::ArAsset> _OpenAsset(
         const PXR_NS::ArResolvedPath& resolvedPath) const final;
 
@@ -65,10 +67,12 @@ protected:
     _OpenAssetForWrite(
         const PXR_NS::ArResolvedPath& resolvedPath,
         WriteMode writeMode) const final;
-
-private:
-    PXR_NS::ArResolvedPath _ResolveHelper(
-        const std::string& assetPath,
-        bool forNewAsset) const;
     
+private:
+    const UsdResolverExampleResolverContext* _GetCurrentContextPtr() const;
+
+    UsdResolverExampleResolverContext _fallbackContext;
+    PXR_NS::ArResolverContext _defaultContext;
 };
+
+#endif // AR_FILERESOLVER_RESOLVER_H
