@@ -1,3 +1,3 @@
 
-def bark(self):
+def bark():
     print("woofy")

@@ -21,8 +21,7 @@ public:
     UsdResolverExampleResolverContext();
 
     AR_FILERESOLVER_API
-    UsdResolverExampleResolverContext(
-        const UsdResolverExampleResolverContext& rhs);
+    UsdResolverExampleResolverContext(const UsdResolverExampleResolverContext& rhs);
 
     AR_FILERESOLVER_API
     bool operator<(const UsdResolverExampleResolverContext& rhs) const;

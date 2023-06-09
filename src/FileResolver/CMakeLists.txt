@@ -48,6 +48,7 @@ install(TARGETS ${AR_FILERESOLVER_TARGET_LIB} RUNTIME DESTINATION lib)
 ## Target library > PYTHONRESOLVER Python ##
 add_library(${AR_FILERESOLVER_TARGET_PYTHON}
     SHARED
+        wrapResolver.cpp
         wrapResolverContext.cpp
         module.cpp
         moduleDeps.cpp
@@ -80,7 +81,7 @@ install(
     DESTINATION lib/python/${AR_FILERESOLVER_USD_PYTHON_MODULE_NAME}
 )
 
-## Target Executable > cPythonCall ##
+## Target Executable > testResolve ##
 add_executable(testResolve testResolve.cpp)
 # Libs
 target_link_libraries(testResolve 
@@ -102,7 +103,6 @@ target_include_directories(testResolve PUBLIC ${AR_PYTHON_INCLUDE_DIR} ${AR_PXR_
 set_target_properties(testResolve PROPERTIES PREFIX "")
 # Install
 install(TARGETS testResolve DESTINATION bin)
-
 
 
 ### Status ###

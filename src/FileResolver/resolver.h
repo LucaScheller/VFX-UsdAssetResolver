@@ -24,7 +24,7 @@ public:
     virtual ~UsdResolverExampleResolver();
 
     AR_API
-    static void SetDefaultSearchPath(
+    static void SetDefaultSearchPaths(
         const std::vector<std::string>& searchPath);
 
 protected:

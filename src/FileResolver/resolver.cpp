@@ -118,7 +118,7 @@ UsdResolverExampleResolver::UsdResolverExampleResolver()
 UsdResolverExampleResolver::~UsdResolverExampleResolver() = default;
 
 void
-UsdResolverExampleResolver::SetDefaultSearchPath(
+UsdResolverExampleResolver::SetDefaultSearchPaths(
     const std::vector<std::string>& searchPath)
 {
     *_SearchPath = searchPath;

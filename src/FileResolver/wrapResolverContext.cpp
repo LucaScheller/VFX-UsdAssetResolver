@@ -37,13 +37,8 @@ wrapResolverContext()
 
     class_<UsdResolverExampleResolverContext>("ResolverContext")
         .def(init<const std::string&>(args("mappingFile")))
-        
         .def("__hash__", _Hash)
         .def("__repr__", _Repr)
-
-        .def("GetMappingFile", &This::GetMappingFile,
-            return_value_policy<return_by_value>())
-        ;
-
+        .def("GetMappingFile", &This::GetMappingFile, return_value_policy<return_by_value>());
     ArWrapResolverContextForPython<This>();
 }
