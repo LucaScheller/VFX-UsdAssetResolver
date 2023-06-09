@@ -10,27 +10,27 @@
 
 #include <string>
 
-class UsdResolverExampleResolverContext
+class FileResolverContext
 {
 public:
     AR_FILERESOLVER_API
-    explicit UsdResolverExampleResolverContext(
+    explicit FileResolverContext(
         const std::string& mappingFile);
 
     AR_FILERESOLVER_API
-    UsdResolverExampleResolverContext();
+    FileResolverContext();
 
     AR_FILERESOLVER_API
-    UsdResolverExampleResolverContext(const UsdResolverExampleResolverContext& rhs);
+    FileResolverContext(const FileResolverContext& rhs);
 
     AR_FILERESOLVER_API
-    bool operator<(const UsdResolverExampleResolverContext& rhs) const;
+    bool operator<(const FileResolverContext& rhs) const;
 
     AR_FILERESOLVER_API
-    bool operator==(const UsdResolverExampleResolverContext& rhs) const;
+    bool operator==(const FileResolverContext& rhs) const;
     
     AR_FILERESOLVER_API
-    friend size_t hash_value(const UsdResolverExampleResolverContext& ctx);
+    friend size_t hash_value(const FileResolverContext& ctx);
 
     AR_FILERESOLVER_API
     const std::string& GetMappingFile() const;
@@ -40,7 +40,7 @@ private:
 };
 
 PXR_NAMESPACE_OPEN_SCOPE
-AR_DECLARE_RESOLVER_CONTEXT(UsdResolverExampleResolverContext);
+AR_DECLARE_RESOLVER_CONTEXT(FileResolverContext);
 PXR_NAMESPACE_CLOSE_SCOPE
 
 #endif // AR_FILERESOLVER_RESOLVER_CONTEXT_H

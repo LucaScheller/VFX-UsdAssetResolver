@@ -14,10 +14,11 @@ PXR_NAMESPACE_USING_DIRECTIVE
 void
 wrapResolver()
 {
-    using This = UsdResolverExampleResolver;
+    using This = FileResolver;
 
     class_<This, bases<ArResolver>, AR_BOOST_NAMESPACE::noncopyable>
         ("Resolver", no_init)
-        .def("SetDefaultSearchPaths", &This::SetDefaultSearchPaths, args("searchPath"))
-        .staticmethod("SetDefaultSearchPaths");
+        .def("GetDefaultSearchPaths", &This::GetDefaultSearchPaths, return_value_policy<return_by_value>()).staticmethod("GetDefaultSearchPaths")
+        .def("SetDefaultSearchPaths", &This::SetDefaultSearchPaths, args("searchPath")).staticmethod("SetDefaultSearchPaths")
+    ;
 }

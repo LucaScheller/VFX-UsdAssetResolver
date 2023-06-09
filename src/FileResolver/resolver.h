@@ -16,12 +16,15 @@
 
 #include "resolverContext.h"
 
-class UsdResolverExampleResolver final
+class FileResolver final
     : public PXR_NS::ArResolver
 {
 public:
-    UsdResolverExampleResolver();
-    virtual ~UsdResolverExampleResolver();
+    FileResolver();
+    virtual ~FileResolver();
+
+    AR_API
+    static std::vector<std::string> GetDefaultSearchPaths();
 
     AR_API
     static void SetDefaultSearchPaths(
@@ -63,15 +66,13 @@ protected:
     std::shared_ptr<PXR_NS::ArAsset> _OpenAsset(
         const PXR_NS::ArResolvedPath& resolvedPath) const final;
 
-    std::shared_ptr<PXR_NS::ArWritableAsset>
-    _OpenAssetForWrite(
+    std::shared_ptr<PXR_NS::ArWritableAsset> _OpenAssetForWrite(
         const PXR_NS::ArResolvedPath& resolvedPath,
         WriteMode writeMode) const final;
     
 private:
-    const UsdResolverExampleResolverContext* _GetCurrentContextPtr() const;
-
-    UsdResolverExampleResolverContext _fallbackContext;
+    const FileResolverContext* _GetCurrentContextPtr() const;
+    FileResolverContext _fallbackContext;
     PXR_NS::ArResolverContext _defaultContext;
 };
 
