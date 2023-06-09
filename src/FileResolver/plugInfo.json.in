@@ -9,7 +9,7 @@
                     }
                 }
             },
-            "LibraryPath": "../lib/@AR_FILERESOLVER_TARGET_LIB@.so",
+            "LibraryPath": "../lib/@AR_FILERESOLVER_TARGET_LIB@.@AR_ARCH_LIB_SUFFIX@",
             "Name": "@AR_FILERESOLVER_USD_PLUGIN_NAME@",
             "Root": ".",
             "Type": "library"

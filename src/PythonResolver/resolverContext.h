@@ -10,27 +10,27 @@
 class UsdResolverExampleResolverContext
 {
 public:
-    USDRESOLVEREXAMPLE_API
+    AR_FILERESOLVER_API
     explicit UsdResolverExampleResolverContext(
         const std::string& mappingFile);
 
-    USDRESOLVEREXAMPLE_API
+    AR_FILERESOLVER_API
     UsdResolverExampleResolverContext();
 
-    USDRESOLVEREXAMPLE_API
+    AR_FILERESOLVER_API
     UsdResolverExampleResolverContext(
         const UsdResolverExampleResolverContext& rhs);
 
-    USDRESOLVEREXAMPLE_API
+    AR_FILERESOLVER_API
     bool operator<(const UsdResolverExampleResolverContext& rhs) const;
 
-    USDRESOLVEREXAMPLE_API
+    AR_FILERESOLVER_API
     bool operator==(const UsdResolverExampleResolverContext& rhs) const;
     
-    USDRESOLVEREXAMPLE_API
+    AR_FILERESOLVER_API
     friend size_t hash_value(const UsdResolverExampleResolverContext& ctx);
 
-    USDRESOLVEREXAMPLE_API
+    AR_FILERESOLVER_API
     const std::string& GetMappingFile() const;
 
 private:

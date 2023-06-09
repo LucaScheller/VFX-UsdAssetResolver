@@ -9,10 +9,10 @@
 # used in boost_include_wrapper.h to define a BOOST_INCLUDE macro that helps
 # with setting the proper boost root folder for files to include.
 function(set_boost_namespace target)
-  if(DEFINED BOOST_NAMESPACE)
+  if(DEFINED AR_BOOST_NAMESPACE)
     target_compile_definitions(${target}
       PRIVATE
-        BOOST_NAMESPACE=${BOOST_NAMESPACE}
+        AR_BOOST_NAMESPACE=${AR_BOOST_NAMESPACE}
     )
   endif()
 endfunction(set_boost_namespace)
