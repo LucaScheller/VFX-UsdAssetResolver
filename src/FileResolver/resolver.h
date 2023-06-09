@@ -11,17 +11,16 @@
 #include "pxr/usd/ar/resolvedPath.h"
 #include "pxr/usd/ar/writableAsset.h"
 #include "pxr/base/vt/value.h"
-#include "pxr/usd/ar/defineResolverContext.h"
 #include "pxr/usd/ar/resolverContext.h"
 
 #include "resolverContext.h"
 
-class UsdResolverExampleResolver final
+class FileResolver final
     : public PXR_NS::ArResolver
 {
 public:
-    UsdResolverExampleResolver();
-    virtual ~UsdResolverExampleResolver();
+    FileResolver();
+    virtual ~FileResolver();
 
     AR_API
     static void SetDefaultSearchPath(
@@ -69,10 +68,11 @@ protected:
         WriteMode writeMode) const final;
     
 private:
-    const UsdResolverExampleResolverContext* _GetCurrentContextPtr() const;
+    const FileResolverContext* _GetCurrentContextPtr() const;
 
-    UsdResolverExampleResolverContext _fallbackContext;
+    FileResolverContext _fallbackContext;
     PXR_NS::ArResolverContext _defaultContext;
 };
+
 
 #endif // AR_FILERESOLVER_RESOLVER_H

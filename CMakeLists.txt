@@ -1,15 +1,16 @@
 ### Configuration ###
 set(AR_PROJECT_NAME UsdAssetResolver)
 
-set(AR_FILERESOLVER_BUILD 1)
+option(AR_FILERESOLVER_BUILD "Build the FileResolver" ON)
 set(AR_FILERESOLVER_USD_PLUGIN_NAME FileResolver)
-set(AR_FILERESOLVER_USD_PYTHON_MODULE_NAME UsdAssetResolver)
-set(AR_FILERESOLVER_USD_PYTHON_CLASS_NAME UsdResolverExampleResolver)
+set(AR_FILERESOLVER_USD_CXX_CLASS_NAME FileResolver)
+set(AR_FILERESOLVER_USD_PYTHON_MODULE_NAME FileResolver)
+set(AR_FILERESOLVER_USD_PYTHON_CLASS_NAME FileResolver)
 set(AR_FILERESOLVER_TARGET_LIB FileResolver)
 set(AR_FILERESOLVER_TARGET_PYTHON _FileResolver)
 set(AR_FILERESOLVER_INSTALL_PREFIX ${AR_PROJECT_NAME}/${AR_FILERESOLVER_USD_PLUGIN_NAME})
 
-set(AR_PYTHONRESOLVER_BUILD 0)
+option(AR_PYTHONRESOLVER_BUILD "Build the PythonResolver" OFF)
 set(AR_PYTHONRESOLVER_USD_PLUGIN_NAME PythonResolver)
 set(AR_PYTHONRESOLVER_USD_PYTHON_MODULE_NAME UsdAssetResolver)
 set(AR_PYTHONRESOLVER_USD_PYTHON_CLASS_NAME UsdResolverExampleResolver)
@@ -44,12 +45,13 @@ project(${AR_PROJECT_NAME} VERSION 1.0.0 LANGUAGES CXX)
 
 ### CPP Settings ###
 set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/bin")
-# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_GLIBCXX_USE_CXX11_ABI=0 ")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DHBOOST_ALL_NO_LIB -DBOOST_ALL_NO_LIB -D_GLIBCXX_USE_CXX11_ABI=0")
 SET(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/dist/" CACHE PATH "Default install dir " FORCE)
 set(BUILD_SHARED_LIBS ON)
-# Mute warnings
-add_definitions(-D_GLIBCXX_USE_CXX11_ABI=0)
-add_compile_options(-fPIC -Wno-deprecated -Wno-deprecated-declarations -Wno-changes-meaning ) # -Zc:inline-
+# Preprocessor Defines (Same as #define)
+#add_compile_definitions(_GLIBCXX_USE_CXX11_ABI=0 HBOOST_ALL_NO_LIB BOOST_ALL_NO_LIB)
+# Compiler Options
+add_compile_options(-fPIC -Wno-deprecated -Wno-deprecated-declarations -Wno-changes-meaning) # -Zc:inline-
 
 ### Packages ###
 # Defaults

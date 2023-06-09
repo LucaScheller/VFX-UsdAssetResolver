@@ -10,30 +10,30 @@
 
 #include <string>
 
-class UsdResolverExampleResolverContext
+class FileResolverContext
 {
 public:
-    USDRESOLVEREXAMPLE_API
-    explicit UsdResolverExampleResolverContext(
+    AR_FILERESOLVER_API
+    explicit FileResolverContext(
         const std::string& mappingFile);
 
-    USDRESOLVEREXAMPLE_API
-    UsdResolverExampleResolverContext();
+    AR_FILERESOLVER_API
+    FileResolverContext();
 
-    USDRESOLVEREXAMPLE_API
-    UsdResolverExampleResolverContext(
-        const UsdResolverExampleResolverContext& rhs);
+    AR_FILERESOLVER_API
+    FileResolverContext(
+        const FileResolverContext& rhs);
 
-    USDRESOLVEREXAMPLE_API
-    bool operator<(const UsdResolverExampleResolverContext& rhs) const;
+    AR_FILERESOLVER_API
+    bool operator<(const FileResolverContext& rhs) const;
 
-    USDRESOLVEREXAMPLE_API
-    bool operator==(const UsdResolverExampleResolverContext& rhs) const;
+    AR_FILERESOLVER_API
+    bool operator==(const FileResolverContext& rhs) const;
     
-    USDRESOLVEREXAMPLE_API
-    friend size_t hash_value(const UsdResolverExampleResolverContext& ctx);
+    AR_FILERESOLVER_API
+    friend size_t hash_value(const FileResolverContext& ctx);
 
-    USDRESOLVEREXAMPLE_API
+    AR_FILERESOLVER_API
     const std::string& GetMappingFile() const;
 
 private:
@@ -41,7 +41,7 @@ private:
 };
 
 PXR_NAMESPACE_OPEN_SCOPE
-AR_DECLARE_RESOLVER_CONTEXT(UsdResolverExampleResolverContext);
+AR_DECLARE_RESOLVER_CONTEXT(FileResolverContext);
 PXR_NAMESPACE_CLOSE_SCOPE
 
 #endif // AR_FILERESOLVER_RESOLVER_CONTEXT_H

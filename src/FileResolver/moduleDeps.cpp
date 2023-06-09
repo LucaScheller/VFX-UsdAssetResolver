@@ -16,8 +16,8 @@ TF_REGISTRY_FUNCTION(TfScriptModuleLoader) {
         TfToken("tf"),
         TfToken("vt")
     };
-    TfScriptModuleLoader::GetInstance().
-        RegisterLibrary(TfToken("usdResolverExample"), TfToken("pxr.UsdResolverExample"), reqs);
+    TfScriptModuleLoader::GetInstance().RegisterLibrary(TfToken("fileResolver"), TfToken("vfx.FileResolver"), reqs);
+    // TfScriptModuleLoader::GetInstance().RegisterLibrary(TfToken("fileResolver"), TfToken("pxr.UsdResolverExample"), reqs);
 }
 
 PXR_NAMESPACE_CLOSE_SCOPE

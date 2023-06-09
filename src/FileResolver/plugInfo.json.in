@@ -3,7 +3,7 @@
         {
             "Info": {
                 "Types": {
-                    "@AR_FILERESOLVER_USD_PYTHON_CLASS_NAME@": {
+                    "@AR_FILERESOLVER_USD_CXX_CLASS_NAME@": {
                         "bases": ["ArResolver"],
                         "implementsContexts" : true
                     }

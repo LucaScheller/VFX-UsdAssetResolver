@@ -6,39 +6,39 @@
 
 PXR_NAMESPACE_USING_DIRECTIVE
 
-UsdResolverExampleResolverContext::UsdResolverExampleResolverContext()
+FileResolverContext::FileResolverContext()
     = default;
 
-UsdResolverExampleResolverContext::UsdResolverExampleResolverContext(
-    const UsdResolverExampleResolverContext&) = default;
+FileResolverContext::FileResolverContext(
+    const FileResolverContext&) = default;
 
-UsdResolverExampleResolverContext::UsdResolverExampleResolverContext(
+FileResolverContext::FileResolverContext(
     const std::string& mappingFile)
     : _mappingFile(TfAbsPath(mappingFile))
 {
 }
 
 bool
-UsdResolverExampleResolverContext::operator<(
-    const UsdResolverExampleResolverContext& rhs) const
+FileResolverContext::operator<(
+    const FileResolverContext& rhs) const
 {
     return _mappingFile < rhs._mappingFile;
 }
 
 bool
-UsdResolverExampleResolverContext::operator==(
-    const UsdResolverExampleResolverContext& rhs) const
+FileResolverContext::operator==(
+    const FileResolverContext& rhs) const
 {
     return _mappingFile == rhs._mappingFile;
 }
     
-size_t hash_value(const UsdResolverExampleResolverContext& ctx)
+size_t hash_value(const FileResolverContext& ctx)
 {
     return TfHash()(ctx._mappingFile);
 }
 
 const std::string& 
-UsdResolverExampleResolverContext::GetMappingFile() const
+FileResolverContext::GetMappingFile() const
 {
     return _mappingFile;
 }

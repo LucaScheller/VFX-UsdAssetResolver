@@ -9,8 +9,14 @@ set_boost_namespace(${AR_FILERESOLVER_TARGET_LIB})
 # Props
 # Remove default "lib" prefix
 set_target_properties(${AR_FILERESOLVER_TARGET_LIB} PROPERTIES PREFIX "")
-# USD Plugins use this as the internal plugin name
-target_compile_definitions(${AR_FILERESOLVER_TARGET_LIB} PRIVATE MFB_PACKAGE_NAME=${AR_FILERESOLVER_TARGET_LIB})
+# Preprocessor Defines (Same as #define)
+target_compile_definitions(${AR_FILERESOLVER_TARGET_LIB}
+                           PRIVATE
+                           # USD Plugins use this as the internal plugin name
+                           MFB_PACKAGE_NAME=${AR_FILERESOLVER_USD_PLUGIN_NAME} 
+                           # Hacky Way to Replace Class Name https://stackoverflow.com/questions/20979584
+                           # FileResolver=${AR_FILERESOLVER_USD_CXX_CLASS_NAME}
+)
 # Libs
 target_link_libraries(${AR_FILERESOLVER_TARGET_LIB}
                       ${AR_PXR_LIB_PREFIX}arch.${AR_ARCH_LIB_SUFFIX}
@@ -19,8 +25,7 @@ target_link_libraries(${AR_FILERESOLVER_TARGET_LIB}
                       ${AR_PXR_LIB_PREFIX}js.${AR_ARCH_LIB_SUFFIX}
                       ${AR_PXR_LIB_PREFIX}vt.${AR_ARCH_LIB_SUFFIX}
                       ${AR_PXR_LIB_PREFIX}ar.${AR_ARCH_LIB_SUFFIX}
-                      ${AR_PYTHON_LIB}
-                      ${AR_BOOST_PYTHON_LIB})
+                      ${AR_PYTHON_LIB})
 # Headers
 target_include_directories(${AR_FILERESOLVER_TARGET_LIB}
     PUBLIC
@@ -37,7 +42,6 @@ install(TARGETS ${AR_FILERESOLVER_TARGET_LIB} DESTINATION ${AR_FILERESOLVER_INST
 ## Target library > FileResolver Python ##
 add_library(${AR_FILERESOLVER_TARGET_PYTHON}
     SHARED
-    ${CMAKE_CURRENT_LIST_DIR}/wrapResolver.cpp
     ${CMAKE_CURRENT_LIST_DIR}/wrapResolverContext.cpp
     ${CMAKE_CURRENT_LIST_DIR}/module.cpp
     ${CMAKE_CURRENT_LIST_DIR}/moduleDeps.cpp
@@ -46,16 +50,21 @@ set_boost_namespace(${AR_FILERESOLVER_TARGET_PYTHON})
 # Props
 # Remove default "lib" prefix
 set_target_properties(${AR_FILERESOLVER_TARGET_PYTHON} PROPERTIES PREFIX "")
-# USD Plugins use this as the internal plugin name
-target_compile_definitions(${AR_FILERESOLVER_TARGET_PYTHON} PRIVATE
+# Preprocessor Defines (Same as #define)
+target_compile_definitions(${AR_FILERESOLVER_TARGET_PYTHON} 
+    PRIVATE
+    # USD Plugins use this as the internal plugin name
     MFB_PACKAGE_NAME=${AR_FILERESOLVER_USD_PLUGIN_NAME}
     MFB_PACKAGE_MODULE=${AR_FILERESOLVER_USD_PYTHON_MODULE_NAME}
+    # Hacky Way to Replace Class Name https://stackoverflow.com/questions/20979584
+    # FileResolver=${AR_FILERESOLVER_USD_CXX_CLASS_NAME}
 )
 # Libs
 target_link_libraries(${AR_FILERESOLVER_TARGET_PYTHON}
     ${AR_FILERESOLVER_TARGET_LIB}
     ${AR_BOOST_PYTHON_LIB}
 )
+message(WARNING ${AR_BOOST_PYTHON_LIB})
 # Headers
 target_include_directories(${AR_FILERESOLVER_TARGET_PYTHON}
     PUBLIC
@@ -71,7 +80,10 @@ add_executable(testResolve ${CMAKE_CURRENT_LIST_DIR}/testResolve.cpp)
 # Props
 set_target_properties(testResolve PROPERTIES PREFIX "")
 # Libs
-target_link_libraries(testResolve PUBLIC ${AR_PYTHON_LIB} ${AR_BOOST_PYTHON_LIB} pxr_usd pxr_tf pxr_vt pxr_arch pxr_sdf pxr_usdGeom tbb)
+target_link_libraries(testResolve PUBLIC
+                     ${AR_PYTHON_LIB}
+                     ${AR_BOOST_PYTHON_LIB}
+                     pxr_usd pxr_tf pxr_vt pxr_arch pxr_sdf pxr_usdGeom tbb)
 # Headers
 target_include_directories(testResolve PUBLIC ${AR_PYTHON_INCLUDE_DIR} ${AR_PXR_INCLUDE_DIR})
 # Install
