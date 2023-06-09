@@ -26,8 +26,8 @@ std::string
 _Repr(const FileResolverContext& ctx)
 {
     return TF_PY_REPR_PREFIX + "ResolverContext" +
-        (ctx.GetMappingFile().empty() ? "()" : 
-            "('" + ctx.GetMappingFile() + "')");
+        (ctx.GetMappingFilePath().empty() ? "()" : 
+            "('" + ctx.GetMappingFilePath() + "')");
 }
 
 void
@@ -35,10 +35,17 @@ wrapResolverContext()
 {
     using This = FileResolverContext;
 
-    class_<FileResolverContext>("ResolverContext")
-        .def(init<const std::string&>(args("mappingFile")))
+    class_<FileResolverContext>("ResolverContext", no_init)
+        //.def(init<const std::string&>(args("mappingFile")))
         .def("__hash__", _Hash)
         .def("__repr__", _Repr)
-        .def("GetMappingFile", &This::GetMappingFile, return_value_policy<return_by_value>());
+        //.def("GetMappingFile", &This::GetMappingFile, return_value_policy<return_by_value>())
+    ;
     ArWrapResolverContextForPython<This>();
 }
+
+/*
+
+        .def("GetDefaultSearchPaths", &This::GetDefaultSearchPaths, return_value_policy<return_by_value>()).staticmethod("GetDefaultSearchPaths")
+        .def("SetDefaultSearchPaths", &This::SetDefaultSearchPaths, args("searchPath")).staticmethod("SetDefaultSearchPaths")
+*/

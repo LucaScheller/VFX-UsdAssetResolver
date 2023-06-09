@@ -4,7 +4,7 @@ SET(CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}/dist/${AR_FILERESOLVER_USD_PLUGIN_
 # Preprocessor Defines (Same as #define)
 # This is a hacky way of preprocessing the class name to a custom name.
 # It is not advised to do this in a production setup! (https://stackoverflow.com/questions/20979584)
-# add_compile_definitions(UsdResolverExampleResolver=${AR_FILERESOLVER_USD_CXX_CLASS_NAME})
+# add_compile_definitions(FileResolver=${AR_FILERESOLVER_USD_CXX_CLASS_NAME})
 
 ### Targets ###
 ## Target library > PYTHONRESOLVER ##
@@ -33,10 +33,12 @@ target_include_directories(${AR_FILERESOLVER_TARGET_LIB}
 # Props
 # Remove default "lib" prefix
 set_target_properties(${AR_FILERESOLVER_TARGET_LIB} PROPERTIES PREFIX "")
-# USD Plugin Internal Namings
+# Preprocessor Defines (Same as #define)
 target_compile_definitions(${AR_FILERESOLVER_TARGET_LIB}
     PRIVATE
+        # USD Plugin Internal Namings
         MFB_PACKAGE_NAME=${AR_FILERESOLVER_USD_PLUGIN_NAME}
+        AR_FILERESOLVER_ENV_SEARCH_PATHS=${AR_FILERESOLVER_ENV_SEARCH_PATHS}
 )
 # Install
 configure_file(plugInfo.json.in plugInfo.json)
@@ -69,11 +71,13 @@ target_include_directories(${AR_FILERESOLVER_TARGET_PYTHON}
 # Props
 # Remove default "lib" prefix
 set_target_properties(${AR_FILERESOLVER_TARGET_PYTHON} PROPERTIES PREFIX "")
-# USD Plugin Internal Namings
+# Preprocessor Defines (Same as #define)
 target_compile_definitions(${AR_FILERESOLVER_TARGET_PYTHON}
     PRIVATE
+        # USD Plugin Internal Namings
         MFB_PACKAGE_NAME=${AR_FILERESOLVER_USD_PLUGIN_NAME}
         MFB_PACKAGE_MODULE=${AR_FILERESOLVER_USD_PYTHON_MODULE_NAME}
+        AR_FILERESOLVER_ENV_SEARCH_PATHS=${AR_FILERESOLVER_ENV_SEARCH_PATHS}
 )
 # Install
 install(

@@ -18,7 +18,5 @@ wrapResolver()
 
     class_<This, bases<ArResolver>, AR_BOOST_NAMESPACE::noncopyable>
         ("Resolver", no_init)
-        .def("GetDefaultSearchPaths", &This::GetDefaultSearchPaths, return_value_policy<return_by_value>()).staticmethod("GetDefaultSearchPaths")
-        .def("SetDefaultSearchPaths", &This::SetDefaultSearchPaths, args("searchPath")).staticmethod("SetDefaultSearchPaths")
     ;
 }

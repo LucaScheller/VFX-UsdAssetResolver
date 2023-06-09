@@ -1,9 +1,9 @@
+#include <vector>
+
 #include "pxr/pxr.h"
 #include "pxr/base/tf/registryManager.h"
 #include "pxr/base/tf/scriptModuleLoader.h"
 #include "pxr/base/tf/token.h"
-
-#include <vector>
 
 PXR_NAMESPACE_OPEN_SCOPE
 
@@ -16,8 +16,7 @@ TF_REGISTRY_FUNCTION(TfScriptModuleLoader) {
         TfToken("tf"),
         TfToken("vt")
     };
-    TfScriptModuleLoader::GetInstance().
-        RegisterLibrary(TfToken("fileResolver"), TfToken("vfx.FileResolver"), reqs);
+    TfScriptModuleLoader::GetInstance().RegisterLibrary(TfToken("fileResolver"), TfToken("vfx.FileResolver"), reqs);
 }
 
 PXR_NAMESPACE_CLOSE_SCOPE

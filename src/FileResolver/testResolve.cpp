@@ -10,5 +10,5 @@
 int main()
 {
   auto layer = pxr::SdfLayer::FindOrOpen("./input.usda");
-  //std::cout << layer->GetIdentifier() << std::endl;
+  std::cout << layer->GetIdentifier() << std::endl;
 }
