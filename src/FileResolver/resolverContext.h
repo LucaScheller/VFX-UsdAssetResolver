@@ -34,18 +34,26 @@ public:
 
     // Methods
     AR_FILERESOLVER_API
-    const std::string& GetMappingFilePath();
+    const std::string& GetMappingFilePath() const { return _mappingFilePath;}
     AR_FILERESOLVER_API
     void SetMappingFilePath(std::string);
+    AR_FILERESOLVER_API
+    void AddMappingPair(const std::string& sourceStr, const std::string& targetStr);
+    AR_FILERESOLVER_API
+    void RemoveMappingByKey(const std::string& sourceStr);
+    AR_FILERESOLVER_API
+    void RemoveMappingByValue(const std::string& sourceStr);
+    AR_FILERESOLVER_API
+    const std::map<std::string, std::string>& GetMappingPairs() const { return _mappingPairs; }
 
     AR_FILERESOLVER_API
-    std::vector<std::string> GetSearchPaths();
+    std::vector<std::string> GetSearchPaths() const { return _searchPaths; }
     AR_FILERESOLVER_API
     void RefreshSearchPaths();
     AR_FILERESOLVER_API
-    std::vector<std::string> GetEnvSearchPaths();
+    std::vector<std::string> GetEnvSearchPaths() const { return _envSearchPaths; }
     AR_FILERESOLVER_API
-    std::vector<std::string> GetCustomSearchPaths();
+    std::vector<std::string> GetCustomSearchPaths() const { return _customSearchPaths; }
     AR_FILERESOLVER_API
     void SetCustomSearchPaths(const std::vector<std::string>& searchPaths);
 
@@ -57,6 +65,7 @@ private:
     std::vector<std::string> _envSearchPaths;
     std::vector<std::string> _customSearchPaths;
     // Methods
+    bool _GetMappingPairsFromUsdFile(const std::string& filePath);
     void _LoadEnvSearchPaths();
 };
 

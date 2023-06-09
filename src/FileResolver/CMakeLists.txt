@@ -44,7 +44,6 @@ target_compile_definitions(${AR_FILERESOLVER_TARGET_LIB}
 configure_file(plugInfo.json.in plugInfo.json)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/plugInfo.json DESTINATION resources)
 install (FILES __init__.py DESTINATION lib/python/${AR_FILERESOLVER_USD_PYTHON_MODULE_NAME})
-install (FILES MyPythonClass.py DESTINATION lib/python)
 install(TARGETS ${AR_FILERESOLVER_TARGET_LIB} RUNTIME DESTINATION lib)
 
 ## Target library > PYTHONRESOLVER Python ##
@@ -107,7 +106,8 @@ target_include_directories(testResolve PUBLIC ${AR_PYTHON_INCLUDE_DIR} ${AR_PXR_
 set_target_properties(testResolve PROPERTIES PREFIX "")
 # Install
 install(TARGETS testResolve DESTINATION bin)
-
+install (FILES MyPythonClass.py DESTINATION lib/python)
+install (FILES testPinning.usda DESTINATION bin)
 
 ### Status ###
 message(STATUS "--- Usd Python Resolver Instructions Start ---")

@@ -39,13 +39,11 @@ wrapResolverContext()
         //.def(init<const std::string&>(args("mappingFile")))
         .def("__hash__", _Hash)
         .def("__repr__", _Repr)
-        //.def("GetMappingFile", &This::GetMappingFile, return_value_policy<return_by_value>())
+        .def("GetMappingFilePath", &This::GetMappingFilePath, return_value_policy<return_by_value>())
+        .def("GetMappingPairs", &This::GetMappingPairs, return_value_policy<return_by_value>())
+        .def("GetSearchPaths", &This::GetSearchPaths, return_value_policy<return_by_value>())
+        .def("GetEnvSearchPaths", &This::GetEnvSearchPaths, return_value_policy<return_by_value>())
+        .def("GetCustomSearchPaths", &This::GetCustomSearchPaths, return_value_policy<return_by_value>())
     ;
     ArWrapResolverContextForPython<This>();
 }
-
-/*
-
-        .def("GetDefaultSearchPaths", &This::GetDefaultSearchPaths, return_value_policy<return_by_value>()).staticmethod("GetDefaultSearchPaths")
-        .def("SetDefaultSearchPaths", &This::SetDefaultSearchPaths, args("searchPath")).staticmethod("SetDefaultSearchPaths")
-*/

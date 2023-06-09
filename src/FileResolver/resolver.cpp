@@ -166,6 +166,7 @@ FileResolver::_Resolve(
     PyGILState_Release(gstate);
     */
     TfPyInvoke("MyPythonClass", "bark");
+    return _ResolveAnchored(std::string(), assetPath);
     TF_DEBUG(USD_RESOLVER_EXAMPLE).Msg("FileResolver::_Resolve('%s')\n", assetPath.c_str());
 
     if (assetPath.empty()) {
@@ -216,7 +217,8 @@ ArResolverContext
 FileResolver::_CreateDefaultContextForAsset(
     const std::string& assetPath) const
 {
-    return ArResolverContext(FileResolverContext());
+    std::cout << "Created Context For Asset" << assetPath<< std::endl;
+    return ArResolverContext(FileResolverContext(assetPath));
     TF_DEBUG(USD_RESOLVER_EXAMPLE).Msg(
         "FileResolver::_CreateDefaultContextForAsset('%s')\n",
         assetPath.c_str());
@@ -232,7 +234,8 @@ ArResolverContext
 FileResolver::_CreateContextFromString(
     const std::string& contextStr) const
 {
-    return ArResolverContext(FileResolverContext());
+    std::cout << "Created Context From String" << std::endl;
+    return ArResolverContext(FileResolverContext(contextStr));
 }
 
 bool

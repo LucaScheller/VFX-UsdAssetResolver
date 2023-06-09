@@ -24,10 +24,11 @@
 #include "pxr/base/tf/stl.h"
 #include "pxr/base/tf/stringUtils.h"
 #include "pxr/base/vt/dictionary.h"
+#include <pxr/usd/sdf/layer.h>
 
 #include "resolverContext.h"
 
-PXR_NAMESPACE_OPEN_SCOPE
+PXR_NAMESPACE_USING_DIRECTIVE
 
 FileResolverContext::FileResolverContext() {
     // Init
@@ -37,16 +38,18 @@ FileResolverContext::FileResolverContext() {
 FileResolverContext::FileResolverContext(
     const FileResolverContext&) = default;
 
-FileResolverContext::FileResolverContext(const std::string& mappingFilePath) : _mappingFilePath(TfAbsPath(mappingFilePath))
+FileResolverContext::FileResolverContext(const std::string& mappingFilePath)
 {
     // Init
     this->RefreshSearchPaths();
+    _mappingFilePath = TfAbsPath(mappingFilePath);
+    this->_GetMappingPairsFromUsdFile(_mappingFilePath);
 }
 
 FileResolverContext::FileResolverContext(const std::vector<std::string>& searchPaths)
 {
     // Init
-    this->SetCustomSearchPaths(searchPaths); // This refreshes automatically
+    this->SetCustomSearchPaths(searchPaths); // This refreshes
 }
 
 bool
@@ -75,14 +78,33 @@ size_t hash_value(const FileResolverContext& ctx)
     return TfHash()(ctx._mappingFilePath);
 }
 
-const std::string& 
-FileResolverContext::GetMappingFilePath() const
+
+bool FileResolverContext::_GetMappingPairsFromUsdFile(const std::string& filePath)
 {
-    return _mappingFilePath;
+    auto layer = SdfLayer::FindOrOpen(TfAbsPath(filePath));
+    if (!layer){
+        return false;
+    }
+    auto layerMetaData = layer->GetCustomLayerData();
+    auto mappingDataPtr = layerMetaData.GetValueAtPath("debugPinning");
+    if (!mappingDataPtr){
+        return false;
+    }
+    pxr::VtStringArray mappingDataArray = mappingDataPtr->Get<pxr::VtStringArray>();
+    if (mappingDataArray.size() % 2 != 0){
+        return false;
+    }
+    for (size_t i = 0; i < mappingDataArray.size(); i+=2) {
+        this->AddMappingPair(mappingDataArray[i], mappingDataArray[i+1]);
+    }
+    return true;
 }
 
-std::vector<std::string> FileResolverContext::GetSearchPaths(){
-    return _searchPaths;
+void FileResolverContext::AddMappingPair(const std::string& sourceStr, const std::string& targetStr){
+    _mappingPairs.emplace(std::piecewise_construct,
+                          std::forward_as_tuple(sourceStr),
+                          std::forward_as_tuple(targetStr)
+                          );
 }
 
 void FileResolverContext::RefreshSearchPaths(){
@@ -96,18 +118,21 @@ void FileResolverContext::RefreshSearchPaths(){
     }
 }
 
-std::vector<std::string> FileResolverContext::GetEnvSearchPaths(){
-    return _envSearchPaths;
-}
-
-std::vector<std::string> FileResolverContext::GetCustomSearchPaths(){
-    return _customSearchPaths;
-}
 
 void FileResolverContext::SetCustomSearchPaths(const std::vector<std::string>& searchPaths){
     _customSearchPaths.clear();
     if (!searchPaths.empty()) {
-        _customSearchPaths.insert(_customSearchPaths.end(), searchPaths.begin(), searchPaths.end());
+        for (const std::string& searchPath : searchPaths) {
+            if (searchPath.empty()) { continue; }
+            const std::string absSearchPath = TfAbsPath(searchPath);
+            if (absSearchPath.empty()) {
+                TF_WARN(
+                    "Could not determine absolute path for search path prefix "
+                    "'%s'", searchPath.c_str());
+                continue;
+            }
+            _customSearchPaths.push_back(absSearchPath);
+        }
     }
     this->RefreshSearchPaths();
 }
@@ -119,8 +144,16 @@ FileResolverContext::_LoadEnvSearchPaths()
     const std::string envSearchPathsStr = TfGetenv(DEFINE_STRING(AR_FILERESOLVER_ENV_SEARCH_PATHS));
     if (!envSearchPathsStr.empty()) {
         const std::vector<std::string> envSearchPaths = TfStringTokenize(envSearchPathsStr, ARCH_PATH_LIST_SEP);
-        _envSearchPaths.insert(_envSearchPaths.end(), envSearchPaths.begin(), envSearchPaths.end());
+        for (const std::string& envSearchPath : envSearchPaths) {
+            if (envSearchPath.empty()) { continue; }
+            const std::string absEnvSearchPath = TfAbsPath(envSearchPath);
+            if (absEnvSearchPath.empty()) {
+                TF_WARN(
+                    "Could not determine absolute path for search path prefix "
+                    "'%s'", envSearchPath.c_str());
+                continue;
+            }
+            _envSearchPaths.push_back(absEnvSearchPath);
+        }
     }
 }
-
-PXR_NAMESPACE_CLOSE_SCOPE

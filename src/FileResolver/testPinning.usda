@@ -1,0 +1,7 @@
+#usda 1.0
+(
+    customLayerData = {
+        string[] debugPinning = ["testSourceA", "testTargetA", "testSourceB", "testTargetB"]
+    }
+)
+
