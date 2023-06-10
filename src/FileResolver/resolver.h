@@ -6,13 +6,7 @@
 #include <map>
 
 #include "pxr/pxr.h"
-#include "pxr/usd/ar/asset.h"
-#include "pxr/usd/ar/defineResolverContext.h"
 #include "pxr/usd/ar/resolver.h"
-#include "pxr/usd/ar/resolvedPath.h"
-#include "pxr/usd/ar/resolverContext.h"
-#include "pxr/usd/ar/writableAsset.h"
-#include "pxr/base/vt/value.h"
 
 #include "api.h"
 #include "resolverContext.h"
@@ -24,7 +18,6 @@ struct FileResolverContextRecord
     ArTimestamp timestamp;
     FileResolverContext ctx;
 };
-
 
 static std::map<std::string, FileResolverContextRecord> _sharedContexts;
 

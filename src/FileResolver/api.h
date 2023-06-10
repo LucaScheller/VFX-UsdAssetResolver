@@ -2,6 +2,13 @@
 #define AR_FILERESOLVER_API_H
 
 #include "pxr/base/arch/export.h"
+#include "pxr/base/tf/debug.h"
+
+PXR_NAMESPACE_OPEN_SCOPE
+TF_DEBUG_CODES(
+    FILERESOLVER_RESOLVER, FILERESOLVER_RESOLVER_CONTEXT
+);
+PXR_NAMESPACE_CLOSE_SCOPE
 
 #if defined(PXR_STATIC)
 #   define AR_FILERESOLVER_API
