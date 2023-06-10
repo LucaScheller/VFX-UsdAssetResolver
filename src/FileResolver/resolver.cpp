@@ -72,7 +72,7 @@ FileResolver::_CreateIdentifier(
     const std::string& assetPath,
     const ArResolvedPath& anchorAssetPath) const
 {
-    TF_DEBUG(FILERESOLVER_RESOLVER).Msg("FileResolver::_CreateIdentifier('%s', '%s')\n",
+    TF_DEBUG(FILERESOLVER_RESOLVER).Msg("::_CreateIdentifier('%s', '%s')\n",
                                         assetPath.c_str(), anchorAssetPath.GetPathString().c_str());
 
     if (assetPath.empty()) {
@@ -98,7 +98,7 @@ FileResolver::_CreateIdentifierForNewAsset(
     const ArResolvedPath& anchorAssetPath) const
 {
     TF_DEBUG(FILERESOLVER_RESOLVER).Msg(
-        "FileResolver::_CreateIdentifierForNewAsset"
+        "::_CreateIdentifierForNewAsset"
         "('%s', '%s')\n",
         assetPath.c_str(), anchorAssetPath.GetPathString().c_str());
     if (assetPath.empty()) {
@@ -149,7 +149,7 @@ FileResolver::_Resolve(
                                                         ctx->GetMappingRegexExpression(),
                                                         ctx->GetMappingRegexFormat());
 
-                         TF_DEBUG(FILERESOLVER_RESOLVER_CONTEXT).Msg("FileResolver::_CreateDefaultContextForAsset('%s') - Mapped to '%s' via regex expression '%s' with formatting '%s'\n", assetPath.c_str(), mappedPath.c_str(), ctx->GetMappingRegexExpressionStr().c_str(), ctx->GetMappingRegexFormat().c_str());
+                         TF_DEBUG(FILERESOLVER_RESOLVER_CONTEXT).Msg("::_CreateDefaultContextForAsset('%s') - Mapped to '%s' via regex expression '%s' with formatting '%s'\n", assetPath.c_str(), mappedPath.c_str(), ctx->GetMappingRegexExpressionStr().c_str(), ctx->GetMappingRegexFormat().c_str());
                     }
                     auto mappingPairs = ctx->GetMappingPairs();
                     if (mappingPairs.count(mappedPath)){
@@ -173,14 +173,14 @@ ArResolvedPath
 FileResolver::_ResolveForNewAsset(
     const std::string& assetPath) const
 {
-    TF_DEBUG(FILERESOLVER_RESOLVER).Msg("FileResolver::_ResolveForNewAsset('%s')\n", assetPath.c_str());
+    TF_DEBUG(FILERESOLVER_RESOLVER).Msg("::_ResolveForNewAsset('%s')\n", assetPath.c_str());
     return ArResolvedPath(assetPath.empty() ? assetPath : TfAbsPath(assetPath));
 }
 
 ArResolverContext
 FileResolver::_CreateDefaultContext() const
 {
-    TF_DEBUG(FILERESOLVER_RESOLVER_CONTEXT).Msg("FileResolver::_CreateDefaultContext()\n");
+    TF_DEBUG(FILERESOLVER_RESOLVER_CONTEXT).Msg("::_CreateDefaultContext()\n");
     return _fallbackContext;
 }
 
@@ -194,7 +194,7 @@ FileResolver::_CreateDefaultContextForAsset(
     // a FileResolverContext, thats why we just use the fallback context.
     // See for more info: https://openusd.org/release/api/class_ar_resolver_context.html
     // > Note that an ArResolverContext may not hold multiple context objects with the same type.
-    TF_DEBUG(FILERESOLVER_RESOLVER_CONTEXT).Msg("FileResolver::_CreateDefaultContextForAsset('%s')\n", assetPath.c_str());
+    TF_DEBUG(FILERESOLVER_RESOLVER_CONTEXT).Msg("::_CreateDefaultContextForAsset('%s')\n", assetPath.c_str());
     // Fallback to existing context
     if (assetPath.empty()){
         return ArResolverContext(_fallbackContext);
@@ -205,23 +205,23 @@ FileResolver::_CreateDefaultContextForAsset(
     }
     std::string resolvedPathStr = resolvedPath.GetPathString();
     if(this->_GetCurrentContextObject<FileResolverContext>() != nullptr){
-        TF_DEBUG(FILERESOLVER_RESOLVER_CONTEXT).Msg("FileResolver::_CreateDefaultContextForAsset('%s') - Skipping on same stage\n", assetPath.c_str());
+        TF_DEBUG(FILERESOLVER_RESOLVER_CONTEXT).Msg("::_CreateDefaultContextForAsset('%s') - Skipping on same stage\n", assetPath.c_str());
         return ArResolverContext(_fallbackContext);
     }
     auto map_iter = _sharedContexts.find(resolvedPath);
     if(map_iter != _sharedContexts.end()){
         if (map_iter->second.timestamp.GetTime() == this->_GetModificationTimestamp(assetPath, resolvedPath).GetTime())
         {
-            TF_DEBUG(FILERESOLVER_RESOLVER_CONTEXT).Msg("FileResolver::_CreateDefaultContextForAsset('%s') - Reusing context on different stage\n", assetPath.c_str());
+            TF_DEBUG(FILERESOLVER_RESOLVER_CONTEXT).Msg("::_CreateDefaultContextForAsset('%s') - Reusing context on different stage\n", assetPath.c_str());
             return ArResolverContext(map_iter->second.ctx);
         }else{
-            TF_DEBUG(FILERESOLVER_RESOLVER_CONTEXT).Msg("FileResolver::_CreateDefaultContextForAsset('%s') - Reusing context on different stage, reloading due to changed timestamp\n", assetPath.c_str());
-            map_iter->second.ctx.RefreshMapping();
+            TF_DEBUG(FILERESOLVER_RESOLVER_CONTEXT).Msg("::_CreateDefaultContextForAsset('%s') - Reusing context on different stage, reloading due to changed timestamp\n", assetPath.c_str());
+            map_iter->second.ctx.RefreshFromMappingFilePath();
             return ArResolverContext(map_iter->second.ctx);
         }
     }
     // Create new context
-    TF_DEBUG(FILERESOLVER_RESOLVER_CONTEXT).Msg("FileResolver::_CreateDefaultContextForAsset('%s') - Constructing new context\n", assetPath.c_str());
+    TF_DEBUG(FILERESOLVER_RESOLVER_CONTEXT).Msg("::_CreateDefaultContextForAsset('%s') - Constructing new context\n", assetPath.c_str());
     std::string assetDir = TfGetPathName(TfAbsPath(resolvedPathStr));
     struct FileResolverContextRecord record;
     record.timestamp = this->_GetModificationTimestamp(assetPath, resolvedPath);
@@ -241,23 +241,15 @@ void
 FileResolver::_RefreshContext(
     const ArResolverContext& context)
 {
-    TF_DEBUG(FILERESOLVER_RESOLVER_CONTEXT).Msg(
-        "UsdResolverExample::_RefreshContext()\n");
+    TF_DEBUG(FILERESOLVER_RESOLVER_CONTEXT).Msg("::_RefreshContext()\n");
 
-    /*
-    // If the given ArResolverContext isn't holding a context object
-    // used by this resolver, there's nothing to do so we can exit.    
-    const FileResolverContext* ctx = 
-        context.Get<FileResolverContext>();
+    const FileResolverContext* ctx = this->_GetCurrentContextPtr();
     if (!ctx) {
         return;
     }
 
-    // Send notification that any asset resolution done with an
-    // ArResolverContext holding an equivalent context object to
-    // ctx has been invalidated.
+
     ArNotice::ResolverChanged(*ctx).Send();
-    */
 }
 
 ArTimestamp
@@ -266,7 +258,7 @@ FileResolver::_GetModificationTimestamp(
     const ArResolvedPath& resolvedPath) const
 {
     TF_DEBUG(FILERESOLVER_RESOLVER).Msg(
-        "FileResolver::GetModificationTimestamp('%s', '%s')\n",
+        "::GetModificationTimestamp('%s', '%s')\n",
         assetPath.c_str(), resolvedPath.GetPathString().c_str());
     return ArFilesystemAsset::GetModificationTimestamp(resolvedPath);
 }
@@ -276,7 +268,7 @@ FileResolver::_OpenAsset(
     const ArResolvedPath& resolvedPath) const
 {
     TF_DEBUG(FILERESOLVER_RESOLVER).Msg(
-        "FileResolver::OpenAsset('%s')\n",
+        "::OpenAsset('%s')\n",
         resolvedPath.GetPathString().c_str());
 
     return ArFilesystemAsset::Open(resolvedPath);
@@ -288,7 +280,7 @@ FileResolver::_OpenAssetForWrite(
     WriteMode writeMode) const
 {
     TF_DEBUG(FILERESOLVER_RESOLVER).Msg(
-        "FileResolver::_OpenAssetForWrite('%s', %d)\n",
+        "::_OpenAssetForWrite('%s', %d)\n",
         resolvedPath.GetPathString().c_str(),
         static_cast<int>(writeMode));
 

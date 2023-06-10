@@ -6,6 +6,7 @@
 
 #include "../utils/boost_include_wrapper.h"
 #include BOOST_INCLUDE(python/class.hpp)
+#include BOOST_INCLUDE(python/operators.hpp)
 #include BOOST_INCLUDE(python/return_value_policy.hpp)
 
 #include "resolverContext.h"
@@ -36,16 +37,31 @@ wrapResolverContext()
     using This = FileResolverContext;
 
     class_<FileResolverContext>("ResolverContext", no_init)
-        //.def(init<const std::string&>(args("mappingFile")))
+        .def(init<>())
+        .def(init<const std::string&>(args("mappingFile")))
+        .def(init<const std::vector<std::string>&>(args("searchPaths")))
+        .def(init<const std::string&, const std::vector<std::string>&>(args("mappingFile", "searchPaths")))
+        .def(self == self)
+        .def(self != self)
         .def("__hash__", _Hash)
         .def("__repr__", _Repr)
-        .def("GetMappingFilePath", &This::GetMappingFilePath, return_value_policy<return_by_value>())
-        .def("GetMappingPairs", &This::GetMappingPairs, return_value_policy<return_by_value>())
-        .def("GetMappingRegexExpression", &This::GetMappingRegexExpressionStr, return_value_policy<return_by_value>())
-        .def("GetMappingRegexFormat", &This::GetMappingRegexFormat, return_value_policy<return_by_value>())
         .def("GetSearchPaths", &This::GetSearchPaths, return_value_policy<return_by_value>())
+        .def("RefreshSearchPaths", &This::RefreshSearchPaths)
         .def("GetEnvSearchPaths", &This::GetEnvSearchPaths, return_value_policy<return_by_value>())
         .def("GetCustomSearchPaths", &This::GetCustomSearchPaths, return_value_policy<return_by_value>())
+        .def("SetCustomSearchPaths", &This::SetCustomSearchPaths)
+        .def("GetMappingFilePath", &This::GetMappingFilePath, return_value_policy<return_by_value>())
+        .def("SetMappingFilePath", &This::SetMappingFilePath)
+        .def("RefreshFromMappingFilePath", &This::RefreshFromMappingFilePath)
+        .def("GetMappingPairs", &This::GetMappingPairs, return_value_policy<return_by_value>())
+        .def("AddMappingPair", &This::AddMappingPair)
+        .def("RemoveMappingByKey", &This::RemoveMappingByKey)
+        .def("RemoveMappingByValue", &This::RemoveMappingByValue)
+        .def("ClearMappingPairs", &This::ClearMappingPairs)
+        .def("GetMappingRegexExpression", &This::GetMappingRegexExpressionStr, return_value_policy<return_by_value>())
+        .def("SetMappingRegexExpression", &This::SetMappingRegexExpression)
+        .def("GetMappingRegexFormat", &This::GetMappingRegexFormat, return_value_policy<return_by_value>())
+        .def("SetMappingRegexFormat", &This::SetMappingRegexFormat)
     ;
     ArWrapResolverContextForPython<This>();
 }

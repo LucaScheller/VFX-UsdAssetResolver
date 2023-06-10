@@ -1,3 +1,5 @@
+#define CONVERT_STRING(string) #string
+#define DEFINE_STRING(string) CONVERT_STRING(string)
 #include <vector>
 
 #include "pxr/pxr.h"
@@ -16,7 +18,8 @@ TF_REGISTRY_FUNCTION(TfScriptModuleLoader) {
         TfToken("tf"),
         TfToken("vt")
     };
-    TfScriptModuleLoader::GetInstance().RegisterLibrary(TfToken("fileResolver"), TfToken("vfx.FileResolver"), reqs);
+    
+    TfScriptModuleLoader::GetInstance().RegisterLibrary(TfToken(DEFINE_STRING(AR_FILERESOLVER_USD_PLUGIN_NAME)), TfToken(DEFINE_STRING(AR_FILERESOLVER_USD_PYTHON_MODULE_FULLNAME)), reqs);
 }
 
 PXR_NAMESPACE_CLOSE_SCOPE
