@@ -10,6 +10,8 @@ SET(CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}/dist/${AR_FILERESOLVER_USD_PLUGIN_
 ## Target library > PYTHONRESOLVER ##
 add_library(${AR_FILERESOLVER_TARGET_LIB}
     SHARED
+        debugCodes.cpp
+        tokens.cpp
         resolver.cpp
         resolverContext.cpp
 )
@@ -49,8 +51,11 @@ install(TARGETS ${AR_FILERESOLVER_TARGET_LIB} RUNTIME DESTINATION lib)
 ## Target library > PYTHONRESOLVER Python ##
 add_library(${AR_FILERESOLVER_TARGET_PYTHON}
     SHARED
+        debugCodes.cpp
+        tokens.cpp
         wrapResolver.cpp
         wrapResolverContext.cpp
+        wrapResolverTokens.cpp
         module.cpp
         moduleDeps.cpp
 )

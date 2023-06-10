@@ -8,6 +8,7 @@
 #include "pxr/usd/ar/resolverContext.h"
 
 #include "api.h"
+#include "debugCodes.h"
 
 
 class FileResolverContext

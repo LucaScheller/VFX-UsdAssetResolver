@@ -10,9 +10,9 @@
 
 #include "resolverContext.h"
 
-PXR_NAMESPACE_USING_DIRECTIVE
-
 using namespace AR_BOOST_NAMESPACE::python;
+
+PXR_NAMESPACE_USING_DIRECTIVE
 
 static
 size_t

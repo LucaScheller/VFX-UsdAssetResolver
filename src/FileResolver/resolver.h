@@ -9,6 +9,7 @@
 #include "pxr/usd/ar/resolver.h"
 
 #include "api.h"
+#include "debugCodes.h"
 #include "resolverContext.h"
 
 PXR_NAMESPACE_OPEN_SCOPE
@@ -84,6 +85,5 @@ private:
 };
 
 PXR_NAMESPACE_CLOSE_SCOPE
-
 
 #endif // AR_FILERESOLVER_RESOLVER_H
