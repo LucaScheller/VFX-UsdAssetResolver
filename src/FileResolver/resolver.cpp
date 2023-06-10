@@ -241,13 +241,13 @@ void
 FileResolver::_RefreshContext(
     const ArResolverContext& context)
 {
-    TF_DEBUG(FILERESOLVER_RESOLVER_CONTEXT).Msg("::_RefreshContext()\n");
+
 
     const FileResolverContext* ctx = this->_GetCurrentContextPtr();
     if (!ctx) {
         return;
     }
-
+    TF_DEBUG(FILERESOLVER_RESOLVER_CONTEXT).Msg("::_RefreshContext()\n");
 
     ArNotice::ResolverChanged(*ctx).Send();
 }

@@ -13,24 +13,24 @@
 
 PXR_NAMESPACE_USING_DIRECTIVE
 
-bool get_string_endswith_string(const std::string &value, const std::string &compare_value)
+bool getStringEndswithString(const std::string &value, const std::string &compareValue)
 {
-    if (compare_value.size() > value.size())
+    if (compareValue.size() > value.size())
     {
         return false;
     }
-    if (std::equal(compare_value.rbegin(), compare_value.rend(), value.rbegin()))
+    if (std::equal(compareValue.rbegin(), compareValue.rend(), value.rbegin()))
     {
         return true;
     }
     return false;
 }
 
-bool get_string_endswith_strings(const std::string &value, const std::vector<std::string> array)
+bool getStringEndswithStrings(const std::string &value, const std::vector<std::string> array)
 {
     for (int i; i < array.size(); i++)
     {
-        if (get_string_endswith_string(value, array[i]))
+        if (getStringEndswithString(value, array[i]))
         {
             return true;
         }
@@ -106,15 +106,15 @@ size_t hash_value(const FileResolverContext& ctx)
 void
 FileResolverContext::_LoadEnvMappingRegex()
 {
-    _mappingRegexExpressionStr = TfGetenv(DEFINE_STRING(AR_ENV_SEARCH_REGEX_EXPRESSION));
-    _mappingRegexExpression = std::regex(_mappingRegexExpressionStr);
-    _mappingRegexFormat = TfGetenv(DEFINE_STRING(AR_ENV_SEARCH_REGEX_FORMAT));
+    data->mappingRegexExpressionStr = TfGetenv(DEFINE_STRING(AR_ENV_SEARCH_REGEX_EXPRESSION));
+    data->mappingRegexExpression = std::regex(data->mappingRegexExpressionStr);
+    data->mappingRegexFormat = TfGetenv(DEFINE_STRING(AR_ENV_SEARCH_REGEX_FORMAT));
 }
 
 void
 FileResolverContext::_LoadEnvSearchPaths()
 {
-    _envSearchPaths.clear();
+    data->envSearchPaths.clear();
     const std::string envSearchPathsStr = TfGetenv(DEFINE_STRING(AR_ENV_SEARCH_PATHS));
     if (!envSearchPathsStr.empty()) {
         const std::vector<std::string> envSearchPaths = TfStringTokenize(envSearchPathsStr, ARCH_PATH_LIST_SEP);
@@ -127,16 +127,16 @@ FileResolverContext::_LoadEnvSearchPaths()
                     "'%s'", envSearchPath.c_str());
                 continue;
             }
-            _envSearchPaths.push_back(absEnvSearchPath);
+            data->envSearchPaths.push_back(absEnvSearchPath);
         }
     }
 }
 
 bool FileResolverContext::_GetMappingPairsFromUsdFile(const std::string& filePath)
 {
-    _mappingPairs.clear();
+    data->mappingPairs.clear();
     std::vector<std::string> usdFilePathExts{ ".usd", ".usdc", ".usda" };
-    if (!get_string_endswith_strings(filePath, usdFilePathExts))
+    if (!getStringEndswithStrings(filePath, usdFilePathExts))
     {
         return false;
     }
@@ -160,26 +160,26 @@ bool FileResolverContext::_GetMappingPairsFromUsdFile(const std::string& filePat
 }
 
 void FileResolverContext::AddMappingPair(const std::string& sourceStr, const std::string& targetStr){
-    if (_mappingPairs.count(sourceStr)){
-        _mappingPairs[sourceStr] = targetStr;
+    if (data->mappingPairs.count(sourceStr)){
+        data->mappingPairs[sourceStr] = targetStr;
     }else{
-        _mappingPairs.insert(std::pair<std::string, std::string>(sourceStr,targetStr));
+        data->mappingPairs.insert(std::pair<std::string, std::string>(sourceStr,targetStr));
     }
 }
 
 void FileResolverContext::RemoveMappingByKey(const std::string& sourceStr){
-    const auto &it = _mappingPairs.find(sourceStr);
-    if (it != _mappingPairs.end()){
-        _mappingPairs.erase(it);
+    const auto &it = data->mappingPairs.find(sourceStr);
+    if (it != data->mappingPairs.end()){
+        data->mappingPairs.erase(it);
     }
 }
 
 void FileResolverContext::RemoveMappingByValue(const std::string& targetStr){
-    for (auto it = _mappingPairs.cbegin(); it != _mappingPairs.cend();)
+    for (auto it = data->mappingPairs.cbegin(); it != data->mappingPairs.cend();)
     {
         if (it->second == targetStr)
         {
-            _mappingPairs.erase(it++);
+            data->mappingPairs.erase(it++);
         }
         else
         {
@@ -189,18 +189,18 @@ void FileResolverContext::RemoveMappingByValue(const std::string& targetStr){
 }
 
 void FileResolverContext::RefreshSearchPaths(){
-    _searchPaths.clear();
+    data->searchPaths.clear();
     this->_LoadEnvSearchPaths();
-    if (!_envSearchPaths.empty()) {
-        _searchPaths.insert(_searchPaths.end(), _envSearchPaths.begin(), _envSearchPaths.end());
+    if (!data->envSearchPaths.empty()) {
+        data->searchPaths.insert(data->searchPaths.end(), data->envSearchPaths.begin(), data->envSearchPaths.end());
     }
-    if (!_customSearchPaths.empty()) {
-        _searchPaths.insert(_searchPaths.end(), _customSearchPaths.begin(), _customSearchPaths.end());
+    if (!data->customSearchPaths.empty()) {
+        data->searchPaths.insert(data->searchPaths.end(), data->customSearchPaths.begin(), data->customSearchPaths.end());
     }
 }
 
 void FileResolverContext::SetCustomSearchPaths(const std::vector<std::string>& searchPaths){
-    _customSearchPaths.clear();
+    data->customSearchPaths.clear();
     if (!searchPaths.empty()) {
         for (const std::string& searchPath : searchPaths) {
             if (searchPath.empty()) { continue; }
@@ -211,7 +211,7 @@ void FileResolverContext::SetCustomSearchPaths(const std::vector<std::string>& s
                     "'%s'", searchPath.c_str());
                 continue;
             }
-            _customSearchPaths.push_back(absSearchPath);
+            data->customSearchPaths.push_back(absSearchPath);
         }
     }
 }

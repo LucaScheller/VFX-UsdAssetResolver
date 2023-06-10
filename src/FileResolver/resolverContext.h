@@ -12,6 +12,25 @@
 #include "api.h"
 #include "debugCodes.h"
 
+/* Data Model
+We use an internal data struct that is accessed via a shared pointer
+as Usd currently creates resolver context copies when exposed via python
+instead of passing thru the pointer. This way we can send
+> ArNotice::ResolverChanged(*ctx).Send();
+notifications to the stages.
+> See for more info: https://groups.google.com/g/usd-interest/c/9JrXGGbzBnQ/m/_f3oaqBdAwAJ
+*/
+struct FileResolverContextInternalData
+{
+    std::vector<std::string> searchPaths;
+    std::vector<std::string> envSearchPaths;
+    std::vector<std::string> customSearchPaths;
+    std::string mappingFilePath;
+    std::map<std::string, std::string> mappingPairs;
+    std::regex mappingRegexExpression;
+    std::string mappingRegexExpressionStr;
+    std::string mappingRegexFormat;
+};
 
 class FileResolverContext
 {
@@ -39,20 +58,20 @@ public:
 
     // Methods
     AR_FILERESOLVER_API
-    std::vector<std::string> GetSearchPaths() const { return _searchPaths; }
+    std::vector<std::string> GetSearchPaths() const { return data->searchPaths; }
     AR_FILERESOLVER_API
     void RefreshSearchPaths();
     AR_FILERESOLVER_API
-    std::vector<std::string> GetEnvSearchPaths() const { return _envSearchPaths; }
+    std::vector<std::string> GetEnvSearchPaths() const { return data->envSearchPaths; }
     AR_FILERESOLVER_API
-    std::vector<std::string> GetCustomSearchPaths() const { return _customSearchPaths; }
+    std::vector<std::string> GetCustomSearchPaths() const { return data->customSearchPaths; }
     AR_FILERESOLVER_API
     void SetCustomSearchPaths(const std::vector<std::string>& searchPaths);
 
     AR_FILERESOLVER_API
-    const std::string& GetMappingFilePath() const { return *_mappingFilePath;}
+    const std::string& GetMappingFilePath() const { return data->mappingFilePath;}
     AR_FILERESOLVER_API
-    void SetMappingFilePath(std::string mappingFilePath) { *_mappingFilePath = mappingFilePath; }
+    void SetMappingFilePath(std::string mappingFilePath) { data->mappingFilePath = mappingFilePath; }
     AR_FILERESOLVER_API
     void RefreshFromMappingFilePath();
     AR_FILERESOLVER_API
@@ -62,33 +81,26 @@ public:
     AR_FILERESOLVER_API
     void RemoveMappingByValue(const std::string& targetStr);
     AR_FILERESOLVER_API
-    const std::map<std::string, std::string>& GetMappingPairs() const { return _mappingPairs; }
+    const std::map<std::string, std::string>& GetMappingPairs() const { return data->mappingPairs; }
     AR_FILERESOLVER_API
-    void ClearMappingPairs() { _mappingPairs.clear(); }
+    void ClearMappingPairs() { data->mappingPairs.clear(); }
     AR_FILERESOLVER_API
-    const std::regex& GetMappingRegexExpression() const { return _mappingRegexExpression; }
+    const std::regex& GetMappingRegexExpression() const { return data->mappingRegexExpression; }
     AR_FILERESOLVER_API
-    const std::string& GetMappingRegexExpressionStr() const { return _mappingRegexExpressionStr; }
+    const std::string& GetMappingRegexExpressionStr() const { return data->mappingRegexExpressionStr; }
     AR_FILERESOLVER_API
     void SetMappingRegexExpression(std::string& mappingRegexExpressionStr) { 
-        _mappingRegexExpressionStr = mappingRegexExpressionStr;
-        _mappingRegexExpression = std::regex(mappingRegexExpressionStr);
+        data->mappingRegexExpressionStr = mappingRegexExpressionStr;
+        data->mappingRegexExpression = std::regex(mappingRegexExpressionStr);
     }
     AR_FILERESOLVER_API
-    const std::string& GetMappingRegexFormat() const { return _mappingRegexFormat; }
+    const std::string& GetMappingRegexFormat() const { return data->mappingRegexFormat; }
     AR_FILERESOLVER_API
-    void SetMappingRegexFormat(std::string& mappingRegexFormat) { _mappingRegexFormat = mappingRegexFormat; }
+    void SetMappingRegexFormat(std::string& mappingRegexFormat) { data->mappingRegexFormat = mappingRegexFormat; }
 
 private:
     // Vars
-    std::vector<std::string> _searchPaths;
-    std::vector<std::string> _envSearchPaths;
-    std::vector<std::string> _customSearchPaths;
-    std::shared_ptr<std::string> _mappingFilePath{ new std::string}; 
-    std::map<std::string, std::string> _mappingPairs;
-    std::regex _mappingRegexExpression;
-    std::string _mappingRegexExpressionStr;
-    std::string _mappingRegexFormat;
+    std::shared_ptr<FileResolverContextInternalData> data = std::make_shared<FileResolverContextInternalData>();
     
     // Methods
     void _LoadEnvMappingRegex();
