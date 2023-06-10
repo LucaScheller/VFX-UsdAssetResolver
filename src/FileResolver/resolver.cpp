@@ -3,6 +3,8 @@
 #include <shared_mutex>
 #include <thread>
 #include <unordered_map>
+#include <string>
+#include <map>
 
 #include "boost_include_wrapper.h"
 #include BOOST_INCLUDE(python.hpp)
@@ -79,10 +81,7 @@ _AnchorRelativePath(
     return TfNormPath(anchoredPath);
 }
 
-FileResolver::FileResolver()
-{
-    _fallbackContext = FileResolverContext();
-}
+FileResolver::FileResolver() = default;
 
 FileResolver::~FileResolver() = default;
 
@@ -209,6 +208,7 @@ FileResolver::_ResolveForNewAsset(
 ArResolverContext
 FileResolver::_CreateDefaultContext() const
 {
+    std::cout << "_CreateDefaultContext" << std::endl;
     TF_DEBUG(USD_RESOLVER_EXAMPLE).Msg("FileResolver::_CreateDefaultContext()\n");
     return _fallbackContext;
 }
@@ -217,25 +217,44 @@ ArResolverContext
 FileResolver::_CreateDefaultContextForAsset(
     const std::string& assetPath) const
 {
-    std::cout << "Created Context For Asset" << assetPath<< std::endl;
-    return ArResolverContext(FileResolverContext(assetPath));
-    TF_DEBUG(USD_RESOLVER_EXAMPLE).Msg(
-        "FileResolver::_CreateDefaultContextForAsset('%s')\n",
-        assetPath.c_str());
+    // As there can be only one context class instance per context class
+    // we automatically skip creation of contexts if it exists (The performance heavy
+    // part is the pinning data creation). Here we can return any existing instance of
+    // a FileResolverContext, thats why we just use the fallback context.
+    // See for more info: https://openusd.org/release/api/class_ar_resolver_context.html
+    // > Note that an ArResolverContext may not hold multiple context objects with the same type.
+    std::cout << "_CreateDefaultContextForAsset " << assetPath << std::endl;
+    TF_DEBUG(USD_RESOLVER_EXAMPLE).Msg("FileResolver::_CreateDefaultContextForAsset('%s')\n", assetPath.c_str());
+    // Fallback to existing context
     if (assetPath.empty()){
-        return ArResolverContext(FileResolverContext());
+        return ArResolverContext(_fallbackContext);
     }
-
-    std::string assetDir = TfGetPathName(TfAbsPath(assetPath));
-    return ArResolverContext(FileResolverContext(std::vector<std::string>(1, assetDir)));
-}
-
-ArResolverContext
-FileResolver::_CreateContextFromString(
-    const std::string& contextStr) const
-{
-    std::cout << "Created Context From String" << std::endl;
-    return ArResolverContext(FileResolverContext(contextStr));
+    ArResolvedPath resolvedPath = this->_Resolve(assetPath);
+    std::string resolvedPathStr = resolvedPath.GetPathString();
+    if(this->_GetCurrentContextObject<FileResolverContext>() != nullptr){
+        std::cout << "_CreateDefaultContextForAsset " << assetPath << " - Skipping on same stage" << std::endl;
+        return ArResolverContext(_fallbackContext);
+    }
+    auto map_iter = _sharedContexts.find(resolvedPath);
+    if(map_iter != _sharedContexts.end()){
+        if (map_iter->second.timestamp.GetTime() == this->_GetModificationTimestamp(assetPath, resolvedPath).GetTime())
+        {
+            std::cout << "_CreateDefaultContextForAsset " << assetPath << " - Reusing context on different stage" << std::endl;
+            return ArResolverContext(map_iter->second.ctx);
+        }else{
+            std::cout << "_CreateDefaultContextForAsset " << assetPath << " - Reusing context on different stage, reloading due to changed timestamp" << std::endl;
+            map_iter->second.ctx.RefreshMapping();
+            return ArResolverContext(map_iter->second.ctx);
+        }
+    }
+    std::cout << "_CreateDefaultContextForAsset " << assetPath << " - Constructing new context" << std::endl;
+    // Create new context
+    std::string assetDir = TfGetPathName(TfAbsPath(resolvedPathStr));
+    struct FileResolverContextRecord record;
+    record.timestamp = this->_GetModificationTimestamp(assetPath, resolvedPath);
+    record.ctx = FileResolverContext(resolvedPath, std::vector<std::string>(1, assetDir));;
+    _sharedContexts.insert(std::pair<std::string, FileResolverContextRecord>(resolvedPath, record));
+    return ArResolverContext(record.ctx);
 }
 
 bool

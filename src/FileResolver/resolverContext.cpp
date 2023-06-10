@@ -1,6 +1,8 @@
 #define CONVERT_STRING(string) #string
 #define DEFINE_STRING(string) CONVERT_STRING(string)
 
+#include <iostream>
+
 #include "pxr/pxr.h"
 #include "pxr/base/tf/getenv.h"
 #include "pxr/base/tf/pathUtils.h"
@@ -44,12 +46,22 @@ FileResolverContext::FileResolverContext(const std::string& mappingFilePath)
     this->RefreshSearchPaths();
     _mappingFilePath = TfAbsPath(mappingFilePath);
     this->_GetMappingPairsFromUsdFile(_mappingFilePath);
+    std::cout << "Read env and mapping file for " << mappingFilePath << std::endl;
+}
+
+FileResolverContext::FileResolverContext(const std::string& mappingFilePath, const std::vector<std::string>& searchPaths)
+{
+    // Init
+    this->SetCustomSearchPaths(searchPaths); // This calls RefreshSearchPaths
+    _mappingFilePath = TfAbsPath(mappingFilePath);
+    this->_GetMappingPairsFromUsdFile(_mappingFilePath);
+    std::cout << "Read user searchpaths and mapping file for " << mappingFilePath << std::endl;
 }
 
 FileResolverContext::FileResolverContext(const std::vector<std::string>& searchPaths)
 {
     // Init
-    this->SetCustomSearchPaths(searchPaths); // This refreshes
+    this->SetCustomSearchPaths(searchPaths); // This calls RefreshSearchPaths
 }
 
 bool
@@ -81,6 +93,7 @@ size_t hash_value(const FileResolverContext& ctx)
 
 bool FileResolverContext::_GetMappingPairsFromUsdFile(const std::string& filePath)
 {
+    _mappingPairs.clear();
     auto layer = SdfLayer::FindOrOpen(TfAbsPath(filePath));
     if (!layer){
         return false;
@@ -101,10 +114,11 @@ bool FileResolverContext::_GetMappingPairsFromUsdFile(const std::string& filePat
 }
 
 void FileResolverContext::AddMappingPair(const std::string& sourceStr, const std::string& targetStr){
-    _mappingPairs.emplace(std::piecewise_construct,
-                          std::forward_as_tuple(sourceStr),
-                          std::forward_as_tuple(targetStr)
-                          );
+    if (_mappingPairs.count(sourceStr)){
+        _mappingPairs[sourceStr] = targetStr;
+    }else{
+        _mappingPairs.insert(std::pair<std::string, std::string>(sourceStr,targetStr));
+    }
 }
 
 void FileResolverContext::RefreshSearchPaths(){
@@ -135,6 +149,10 @@ void FileResolverContext::SetCustomSearchPaths(const std::vector<std::string>& s
         }
     }
     this->RefreshSearchPaths();
+}
+
+void FileResolverContext::RefreshMapping(){
+    this->_GetMappingPairsFromUsdFile(_mappingFilePath);
 }
 
 void

@@ -98,7 +98,6 @@ target_link_libraries(testResolve
     ${AR_PXR_LIB_PREFIX}vt
     ${AR_PXR_LIB_PREFIX}ar
     ${AR_PXR_LIB_PREFIX}sdf
-    tbb
 )
 # Headers
 target_include_directories(testResolve PUBLIC ${AR_PYTHON_INCLUDE_DIR} ${AR_PXR_INCLUDE_DIR})

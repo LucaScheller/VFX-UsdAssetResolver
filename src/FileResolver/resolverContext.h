@@ -20,6 +20,8 @@ public:
     AR_FILERESOLVER_API
     FileResolverContext(const std::string& mappingFilePath);
     AR_FILERESOLVER_API
+    FileResolverContext(const std::string& mappingFilePath, const std::vector<std::string>& searchPaths);
+    AR_FILERESOLVER_API
     FileResolverContext(const std::vector<std::string>& searchPaths);
     
     // Standard Ops
@@ -45,6 +47,8 @@ public:
     void RemoveMappingByValue(const std::string& sourceStr);
     AR_FILERESOLVER_API
     const std::map<std::string, std::string>& GetMappingPairs() const { return _mappingPairs; }
+    AR_FILERESOLVER_API
+    void RefreshMapping();
 
     AR_FILERESOLVER_API
     std::vector<std::string> GetSearchPaths() const { return _searchPaths; }
