@@ -6,29 +6,10 @@
 #include "pxr/pxr.h"
 #include "pxr/base/tf/getenv.h"
 #include "pxr/base/tf/pathUtils.h"
-#include "pxr/base/arch/fileSystem.h"
-#include "pxr/base/arch/systemInfo.h"
-#include "pxr/usd/ar/assetInfo.h"
-#include "pxr/usd/ar/defineResolver.h"
-#include "pxr/usd/ar/filesystemAsset.h"
-#include "pxr/usd/ar/filesystemWritableAsset.h"
-#include "pxr/usd/ar/notice.h"
-#include "pxr/base/js/json.h"
-#include "pxr/base/js/value.h"
-#include "pxr/base/tf/debug.h"
-#include "pxr/base/tf/diagnostic.h"
-#include "pxr/base/tf/envSetting.h"
-#include "pxr/base/tf/fileUtils.h"
-#include "pxr/base/tf/getenv.h"
-#include "pxr/base/tf/pathUtils.h"
-#include "pxr/base/tf/pyInvoke.h"
-#include "pxr/base/tf/staticTokens.h"
-#include "pxr/base/tf/stl.h"
-#include "pxr/base/tf/stringUtils.h"
-#include "pxr/base/vt/dictionary.h"
 #include <pxr/usd/sdf/layer.h>
 
 #include "resolverContext.h"
+#include "resolverTokens.h"
 
 PXR_NAMESPACE_USING_DIRECTIVE
 
@@ -46,7 +27,7 @@ FileResolverContext::FileResolverContext(const std::string& mappingFilePath)
     this->RefreshSearchPaths();
     _mappingFilePath = TfAbsPath(mappingFilePath);
     this->_GetMappingPairsFromUsdFile(_mappingFilePath);
-    std::cout << "Read env and mapping file for " << mappingFilePath << std::endl;
+    TF_DEBUG(FILERESOLVER_RESOLVER_CONTEXT).Msg("FileResolverContext::FileResolverContext('%s') -  Creating new context\n", mappingFilePath.c_str());
 }
 
 FileResolverContext::FileResolverContext(const std::string& mappingFilePath, const std::vector<std::string>& searchPaths)
@@ -55,7 +36,7 @@ FileResolverContext::FileResolverContext(const std::string& mappingFilePath, con
     this->SetCustomSearchPaths(searchPaths); // This calls RefreshSearchPaths
     _mappingFilePath = TfAbsPath(mappingFilePath);
     this->_GetMappingPairsFromUsdFile(_mappingFilePath);
-    std::cout << "Read user searchpaths and mapping file for " << mappingFilePath << std::endl;
+    TF_DEBUG(FILERESOLVER_RESOLVER_CONTEXT).Msg("FileResolverContext::FileResolverContext('%s') -  Creating new context with custom search paths\n", mappingFilePath.c_str());
 }
 
 FileResolverContext::FileResolverContext(const std::vector<std::string>& searchPaths)
@@ -68,7 +49,8 @@ bool
 FileResolverContext::operator<(
     const FileResolverContext& ctx) const
 {
-    return _mappingFilePath < ctx._mappingFilePath;
+    // This is a no-op
+    return true;
 }
 
 bool
@@ -99,7 +81,7 @@ bool FileResolverContext::_GetMappingPairsFromUsdFile(const std::string& filePat
         return false;
     }
     auto layerMetaData = layer->GetCustomLayerData();
-    auto mappingDataPtr = layerMetaData.GetValueAtPath("debugPinning");
+    auto mappingDataPtr = layerMetaData.GetValueAtPath(FileResolverTokens->mappingPairs);
     if (!mappingDataPtr){
         return false;
     }

@@ -1,4 +1,5 @@
 # Clear existing build data and invoke cmake
+clear
 rm -R build
 rm -R dist
 cmake . -B build

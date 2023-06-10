@@ -1,4 +1,4 @@
-#include "tokens.h"
+#include "resolverTokens.h"
 
 PXR_NAMESPACE_OPEN_SCOPE
 
