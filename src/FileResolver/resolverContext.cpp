@@ -49,7 +49,7 @@ bool
 FileResolverContext::operator<(
     const FileResolverContext& ctx) const
 {
-    // This is a no-op
+    // This is a no-op as a < compare can't be implemented.
     return true;
 }
 

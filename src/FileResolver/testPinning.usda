@@ -1,7 +1,7 @@
 #usda 1.0
 (
     customLayerData = {
-        string[] mappingPairs = ["testSourceA", "testTargetA", "testSourceB", "testTargetB"]
+        string[] mappingPairs = ["files/box.usda", "files/cylinder.usda", "testSourceB", "testTargetB"]
     }
 )
 

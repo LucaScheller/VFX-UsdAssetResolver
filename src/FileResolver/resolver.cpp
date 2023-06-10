@@ -132,26 +132,6 @@ ArResolvedPath
 FileResolver::_Resolve(
     const std::string& assetPath) const
 {
-    /*
-    if (!Py_IsInitialized()){Py_Initialize();}
-    PyGILState_STATE gstate;
-    gstate = PyGILState_Ensure();
-    // Call Python/C API functions...
-    try {
-        python::object my_python_class_module = python::import("MyPythonClass");
-        python::object dog = my_python_class_module.attr("Dog")();
-        dog.attr("bark")();
-    }
-    catch (...) {
-        PyErr_Print();
-        std::cout << "No implementation for '_Resolve' found\n";
-    }
-    PyGILState_Release(gstate);
-    */
-    TfPyInvoke("MyPythonClass", "bark");
-    return _ResolveAnchored(std::string(), assetPath);
-    TF_DEBUG(FILERESOLVER_RESOLVER).Msg("FileResolver::_Resolve('%s')\n", assetPath.c_str());
-
     if (assetPath.empty()) {
         return ArResolvedPath();
     }
@@ -160,14 +140,17 @@ FileResolver::_Resolve(
         if (resolvedPath) {
             return resolvedPath;
         }
-        return ArResolvedPath();
-        /*
-        if (_IsSearchPath(assetPath)) {
-            const FileResolverContext* contexts[2] = {_GetCurrentContextPtr(), &_fallbackContext};
+        if (this->_IsContextDependentPath(assetPath)) {
+            const FileResolverContext* contexts[2] = {this->_GetCurrentContextPtr(), &_fallbackContext};
             for (const FileResolverContext* ctx : contexts) {
                 if (ctx) {
+                    std::string mappedPath = assetPath;
+                    auto mappingPairs = ctx->GetMappingPairs();
+                    if (mappingPairs.count(assetPath)){
+                        mappedPath = mappingPairs[assetPath];
+                    }
                     for (const auto& searchPath : ctx->GetSearchPaths()) {
-                        resolvedPath = _ResolveAnchored(searchPath, assetPath);
+                        resolvedPath = _ResolveAnchored(searchPath, mappedPath);
                         if (resolvedPath) {
                             return resolvedPath;
                         }
@@ -176,7 +159,6 @@ FileResolver::_Resolve(
             }
         }
         return ArResolvedPath();
-        */
     }
     return _ResolveAnchored(std::string(), assetPath);
 }
