@@ -1,10 +1,8 @@
 #include <fstream>
 #include <iostream>
-#include <shared_mutex>
-#include <thread>
-#include <unordered_map>
-#include <string>
 #include <map>
+#include <string>
+#include <regex>
 
 #include "boost_include_wrapper.h"
 #include BOOST_INCLUDE(python.hpp)
@@ -145,9 +143,17 @@ FileResolver::_Resolve(
             for (const FileResolverContext* ctx : contexts) {
                 if (ctx) {
                     std::string mappedPath = assetPath;
+                    if (!ctx->GetMappingRegexExpressionStr().empty())
+                    {
+                        mappedPath = std::regex_replace(mappedPath,
+                                                        ctx->GetMappingRegexExpression(),
+                                                        ctx->GetMappingRegexFormat());
+
+                         TF_DEBUG(FILERESOLVER_RESOLVER_CONTEXT).Msg("FileResolver::_CreateDefaultContextForAsset('%s') - Mapped to '%s' via regex expression '%s' with formatting '%s'\n", assetPath.c_str(), mappedPath.c_str(), ctx->GetMappingRegexExpressionStr().c_str(), ctx->GetMappingRegexFormat().c_str());
+                    }
                     auto mappingPairs = ctx->GetMappingPairs();
-                    if (mappingPairs.count(assetPath)){
-                        mappedPath = mappingPairs[assetPath];
+                    if (mappingPairs.count(mappedPath)){
+                        mappedPath = mappingPairs[mappedPath];
                     }
                     for (const auto& searchPath : ctx->GetSearchPaths()) {
                         resolvedPath = _ResolveAnchored(searchPath, mappedPath);
@@ -194,6 +200,9 @@ FileResolver::_CreateDefaultContextForAsset(
         return ArResolverContext(_fallbackContext);
     }
     ArResolvedPath resolvedPath = this->_Resolve(assetPath);
+    if (!TfPathExists(resolvedPath)){
+        return ArResolverContext(_fallbackContext);
+    }
     std::string resolvedPathStr = resolvedPath.GetPathString();
     if(this->_GetCurrentContextObject<FileResolverContext>() != nullptr){
         TF_DEBUG(FILERESOLVER_RESOLVER_CONTEXT).Msg("FileResolver::_CreateDefaultContextForAsset('%s') - Skipping on same stage\n", assetPath.c_str());

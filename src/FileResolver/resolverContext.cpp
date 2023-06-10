@@ -15,6 +15,7 @@ PXR_NAMESPACE_USING_DIRECTIVE
 
 FileResolverContext::FileResolverContext() {
     // Init
+    this->_LoadEnvMappingRegex();
     this->RefreshSearchPaths();
 }
 
@@ -24,6 +25,7 @@ FileResolverContext::FileResolverContext(
 FileResolverContext::FileResolverContext(const std::string& mappingFilePath)
 {
     // Init
+    this->_LoadEnvMappingRegex();
     this->RefreshSearchPaths();
     _mappingFilePath = TfAbsPath(mappingFilePath);
     this->_GetMappingPairsFromUsdFile(_mappingFilePath);
@@ -33,6 +35,7 @@ FileResolverContext::FileResolverContext(const std::string& mappingFilePath)
 FileResolverContext::FileResolverContext(const std::string& mappingFilePath, const std::vector<std::string>& searchPaths)
 {
     // Init
+    this->_LoadEnvMappingRegex();
     this->SetCustomSearchPaths(searchPaths); // This calls RefreshSearchPaths
     _mappingFilePath = TfAbsPath(mappingFilePath);
     this->_GetMappingPairsFromUsdFile(_mappingFilePath);
@@ -42,6 +45,7 @@ FileResolverContext::FileResolverContext(const std::string& mappingFilePath, con
 FileResolverContext::FileResolverContext(const std::vector<std::string>& searchPaths)
 {
     // Init
+    this->_LoadEnvMappingRegex();
     this->SetCustomSearchPaths(searchPaths); // This calls RefreshSearchPaths
 }
 
@@ -72,7 +76,6 @@ size_t hash_value(const FileResolverContext& ctx)
     return TfHash()(ctx._mappingFilePath);
 }
 
-
 bool FileResolverContext::_GetMappingPairsFromUsdFile(const std::string& filePath)
 {
     _mappingPairs.clear();
@@ -95,6 +98,14 @@ bool FileResolverContext::_GetMappingPairsFromUsdFile(const std::string& filePat
     return true;
 }
 
+void
+FileResolverContext::_LoadEnvMappingRegex()
+{
+    _mappingRegexExpressionStr = TfGetenv(DEFINE_STRING(AR_ENV_SEARCH_REGEX_EXPRESSION));
+    _mappingRegexExpression = std::regex(_mappingRegexExpressionStr);
+    _mappingRegexFormat = TfGetenv(DEFINE_STRING(AR_ENV_SEARCH_REGEX_FORMAT));
+}
+
 void FileResolverContext::AddMappingPair(const std::string& sourceStr, const std::string& targetStr){
     if (_mappingPairs.count(sourceStr)){
         _mappingPairs[sourceStr] = targetStr;
@@ -113,7 +124,6 @@ void FileResolverContext::RefreshSearchPaths(){
         _searchPaths.insert(_searchPaths.end(), _customSearchPaths.begin(), _customSearchPaths.end());
     }
 }
-
 
 void FileResolverContext::SetCustomSearchPaths(const std::vector<std::string>& searchPaths){
     _customSearchPaths.clear();
@@ -141,7 +151,7 @@ void
 FileResolverContext::_LoadEnvSearchPaths()
 {
     _envSearchPaths.clear();
-    const std::string envSearchPathsStr = TfGetenv(DEFINE_STRING(AR_FILERESOLVER_ENV_SEARCH_PATHS));
+    const std::string envSearchPathsStr = TfGetenv(DEFINE_STRING(AR_ENV_SEARCH_PATHS));
     if (!envSearchPathsStr.empty()) {
         const std::vector<std::string> envSearchPaths = TfStringTokenize(envSearchPathsStr, ARCH_PATH_LIST_SEP);
         for (const std::string& envSearchPath : envSearchPaths) {

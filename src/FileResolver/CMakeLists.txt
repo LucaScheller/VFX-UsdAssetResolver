@@ -40,7 +40,9 @@ target_compile_definitions(${AR_FILERESOLVER_TARGET_LIB}
     PRIVATE
         # USD Plugin Internal Namings
         MFB_PACKAGE_NAME=${AR_FILERESOLVER_USD_PLUGIN_NAME}
-        AR_FILERESOLVER_ENV_SEARCH_PATHS=${AR_FILERESOLVER_ENV_SEARCH_PATHS}
+        AR_ENV_SEARCH_PATHS=${AR_ENV_SEARCH_PATHS}
+        AR_ENV_SEARCH_REGEX_EXPRESSION=${AR_ENV_SEARCH_REGEX_EXPRESSION}
+        AR_ENV_SEARCH_REGEX_FORMAT=${AR_ENV_SEARCH_REGEX_FORMAT}
 )
 # Install
 configure_file(plugInfo.json.in plugInfo.json)
@@ -51,7 +53,6 @@ install(TARGETS ${AR_FILERESOLVER_TARGET_LIB} RUNTIME DESTINATION lib)
 ## Target library > PYTHONRESOLVER Python ##
 add_library(${AR_FILERESOLVER_TARGET_PYTHON}
     SHARED
-        debugCodes.cpp
         wrapResolver.cpp
         wrapResolverContext.cpp
         wrapResolverTokens.cpp
@@ -80,7 +81,9 @@ target_compile_definitions(${AR_FILERESOLVER_TARGET_PYTHON}
         # USD Plugin Internal Namings
         MFB_PACKAGE_NAME=${AR_FILERESOLVER_USD_PLUGIN_NAME}
         MFB_PACKAGE_MODULE=${AR_FILERESOLVER_USD_PYTHON_MODULE_NAME}
-        AR_FILERESOLVER_ENV_SEARCH_PATHS=${AR_FILERESOLVER_ENV_SEARCH_PATHS}
+        AR_ENV_SEARCH_PATHS=${AR_ENV_SEARCH_PATHS}
+        AR_ENV_SEARCH_REGEX_EXPRESSION=${AR_ENV_SEARCH_REGEX_EXPRESSION}
+        AR_ENV_SEARCH_REGEX_FORMAT=${AR_ENV_SEARCH_REGEX_FORMAT}
 )
 # Install
 install(
@@ -110,7 +113,6 @@ set_target_properties(testResolve PROPERTIES PREFIX "")
 # Install
 install(TARGETS testResolve DESTINATION bin)
 install (FILES MyPythonClass.py DESTINATION lib/python)
-install (FILES testPinning.usda DESTINATION bin)
 
 ### Status ###
 message(STATUS "--- Usd Python Resolver Instructions Start ---")

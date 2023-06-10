@@ -1,6 +1,7 @@
 #ifndef AR_FILERESOLVER_RESOLVER_CONTEXT_H
 #define AR_FILERESOLVER_RESOLVER_CONTEXT_H
 
+#include <regex>
 #include <string>
 
 #include "pxr/pxr.h"
@@ -50,6 +51,19 @@ public:
     const std::map<std::string, std::string>& GetMappingPairs() const { return _mappingPairs; }
     AR_FILERESOLVER_API
     void RefreshMapping();
+    AR_FILERESOLVER_API
+    const std::regex& GetMappingRegexExpression() const { return _mappingRegexExpression; }
+    AR_FILERESOLVER_API
+    const std::string& GetMappingRegexExpressionStr() const { return _mappingRegexExpressionStr; }
+    AR_FILERESOLVER_API
+    void SetMappingRegexExpression(std::string& mappingRegexExpressionStr) { 
+        _mappingRegexExpressionStr = mappingRegexExpressionStr;
+        _mappingRegexExpression = std::regex(mappingRegexExpressionStr);
+    }
+    AR_FILERESOLVER_API
+    const std::string& GetMappingRegexFormat() const { return _mappingRegexFormat; }
+    AR_FILERESOLVER_API
+    void SetMappingRegexFormat(std::string& mappingRegexFormat) { _mappingRegexFormat = mappingRegexFormat; }
 
     AR_FILERESOLVER_API
     std::vector<std::string> GetSearchPaths() const { return _searchPaths; }
@@ -66,11 +80,15 @@ private:
     // Vars
     std::string _mappingFilePath;
     std::map<std::string, std::string> _mappingPairs;
+    std::regex _mappingRegexExpression;
+    std::string _mappingRegexExpressionStr;
+    std::string _mappingRegexFormat;
     std::vector<std::string> _searchPaths;
     std::vector<std::string> _envSearchPaths;
     std::vector<std::string> _customSearchPaths;
     // Methods
     bool _GetMappingPairsFromUsdFile(const std::string& filePath);
+    void _LoadEnvMappingRegex();
     void _LoadEnvSearchPaths();
 };
 

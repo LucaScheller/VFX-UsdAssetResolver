@@ -1,9 +1,8 @@
-#include "debugCodes.h"
-
 #include <pxr/base/tf/registryManager.h>
 
-PXR_NAMESPACE_OPEN_SCOPE
+#include "debugCodes.h"
 
+PXR_NAMESPACE_OPEN_SCOPE
 
 TF_REGISTRY_FUNCTION(TfDebug)
 {
