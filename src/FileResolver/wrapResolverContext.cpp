@@ -4,7 +4,7 @@
 #include "pxr/base/tf/pyUtils.h"
 #include "pxr/usd/ar/pyResolverContext.h"
 
-#include "../utils/boost_include_wrapper.h"
+#include "boost_include_wrapper.h"
 #include BOOST_INCLUDE(python/class.hpp)
 #include BOOST_INCLUDE(python/operators.hpp)
 #include BOOST_INCLUDE(python/return_value_policy.hpp)

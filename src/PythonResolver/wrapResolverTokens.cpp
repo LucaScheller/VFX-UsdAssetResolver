@@ -32,7 +32,7 @@ namespace {
 
 void wrapResolverTokens()
 {
-    class_<FileResolverTokensType, AR_BOOST_NAMESPACE::noncopyable>
+    class_<PythonResolverTokensType, AR_BOOST_NAMESPACE::noncopyable>
         cls("Tokens", no_init);
-    _AddToken(cls, "mappingPairs", FileResolverTokens->mappingPairs);
+    _AddToken(cls, "mappingPairs", PythonResolverTokens->mappingPairs);
 }

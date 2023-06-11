@@ -1,61 +1,89 @@
-#include "pxr/pxr.h"
-
-#include "pxr/usd/ar/asset.h"
-#include "pxr/usd/ar/resolver.h"
-#include "pxr/usd/ar/resolvedPath.h"
-#include "pxr/usd/ar/writableAsset.h"
-#include "pxr/base/vt/value.h"
+#ifndef AR_PYTHONRESOLVER_RESOLVER_H
+#define AR_PYTHONRESOLVER_RESOLVER_H
 
 #include <memory>
 #include <string>
+#include <map>
 
+#include "pxr/pxr.h"
+#include "pxr/usd/ar/resolver.h"
 
-class UsdResolverExampleResolver final
-    : public PXR_NS::ArResolver
+#include "api.h"
+#include "debugCodes.h"
+#include "resolverContext.h"
+
+PXR_NAMESPACE_OPEN_SCOPE
+
+struct PythonResolverContextRecord
+{
+    ArTimestamp timestamp;
+    PythonResolverContext ctx;
+};
+
+static std::map<std::string, PythonResolverContextRecord> _sharedContexts;
+
+class PythonResolver final : public ArResolver
 {
 public:
-    UsdResolverExampleResolver();
-    virtual ~UsdResolverExampleResolver();
+    AR_PYTHONRESOLVER_API
+    PythonResolver();
+
+    AR_PYTHONRESOLVER_API
+    virtual ~PythonResolver();
 
 protected:
+    AR_PYTHONRESOLVER_API
     std::string _CreateIdentifier(
         const std::string& assetPath,
-        const PXR_NS::ArResolvedPath& anchorAssetPath) const final;
+        const ArResolvedPath& anchorAssetPath) const final;
 
+    AR_PYTHONRESOLVER_API
     std::string _CreateIdentifierForNewAsset(
         const std::string& assetPath,
-        const PXR_NS::ArResolvedPath& anchorAssetPath) const final;
+        const ArResolvedPath& anchorAssetPath) const final;
 
-    PXR_NS::ArResolvedPath _Resolve(
+    AR_PYTHONRESOLVER_API
+    ArResolvedPath _Resolve(
         const std::string& assetPath) const final;
 
-    PXR_NS::ArResolvedPath _ResolveForNewAsset(
+    AR_PYTHONRESOLVER_API
+    ArResolvedPath _ResolveForNewAsset(
         const std::string& assetPath) const final;
 
-    PXR_NS::ArResolverContext _CreateDefaultContext() const final;
+    AR_PYTHONRESOLVER_API
+    ArResolverContext _CreateDefaultContext() const final;
 
-    PXR_NS::ArResolverContext _CreateDefaultContextForAsset(
-        const std::string& assetPath) const final;
+    AR_PYTHONRESOLVER_API
+    ArResolverContext _CreateDefaultContextForAsset(
+        const std::string& assetPath) const final; 
 
-    PXR_NS::ArResolverContext _CreateContextFromString(
-        const std::string& contextStr) const final;
-
+    AR_PYTHONRESOLVER_API
     bool _IsContextDependentPath(
         const std::string& assetPath) const final;
 
+    AR_PYTHONRESOLVER_API
     void _RefreshContext(
-        const PXR_NS::ArResolverContext& context) final;
+        const ArResolverContext& context) final;
 
-    PXR_NS::ArTimestamp _GetModificationTimestamp(
+    AR_PYTHONRESOLVER_API
+    ArTimestamp _GetModificationTimestamp(
         const std::string& assetPath,
-        const PXR_NS::ArResolvedPath& resolvedPath) const final;
+        const ArResolvedPath& resolvedPath) const final;
 
-    std::shared_ptr<PXR_NS::ArAsset> _OpenAsset(
-        const PXR_NS::ArResolvedPath& resolvedPath) const final;
+    AR_PYTHONRESOLVER_API
+    std::shared_ptr<ArAsset> _OpenAsset(
+        const ArResolvedPath& resolvedPath) const final;
 
-    std::shared_ptr<PXR_NS::ArWritableAsset>
-    _OpenAssetForWrite(
-        const PXR_NS::ArResolvedPath& resolvedPath,
+    AR_PYTHONRESOLVER_API
+    std::shared_ptr<ArWritableAsset> _OpenAssetForWrite(
+        const ArResolvedPath& resolvedPath,
         WriteMode writeMode) const final;
     
+private:
+    const PythonResolverContext* _GetCurrentContextPtr() const;
+    PythonResolverContext _fallbackContext;
 };
+
+PXR_NAMESPACE_CLOSE_SCOPE
+
+#endif // AR_PYTHONRESOLVER_RESOLVER_H

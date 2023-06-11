@@ -1,61 +1,45 @@
 #include <fstream>
 #include <iostream>
-#include <shared_mutex>
-#include <thread>
-#include <unordered_map>
+#include <map>
+#include <string>
+#include <regex>
 
-#include "../utils/boost_include_wrapper.h"
-#include BOOST_INCLUDE(python.hpp)
-
-#include "pxr/pxr.h"
-
-#include "resolver.h"
-#include "resolverContext.h"
-
-#include "pxr/usd/ar/assetInfo.h"
+#include "pxr/base/arch/systemInfo.h"
+#include "pxr/base/tf/fileUtils.h"
+#include "pxr/base/tf/pathUtils.h"
+#include "pxr/base/tf/pyInvoke.h"
+#include "pxr/base/tf/staticTokens.h"
 #include "pxr/usd/ar/defineResolver.h"
 #include "pxr/usd/ar/filesystemAsset.h"
 #include "pxr/usd/ar/filesystemWritableAsset.h"
 #include "pxr/usd/ar/notice.h"
-#include "pxr/base/js/json.h"
-#include "pxr/base/js/value.h"
-#include "pxr/base/tf/debug.h"
-#include "pxr/base/tf/diagnostic.h"
-#include "pxr/base/tf/envSetting.h"
-#include "pxr/base/tf/fileUtils.h"
-#include "pxr/base/tf/pathUtils.h"
-#include "pxr/base/tf/staticTokens.h"
-#include "pxr/base/tf/stl.h"
-#include "pxr/base/tf/stringUtils.h"
-#include "pxr/base/vt/dictionary.h"
-#include "pxr/base/arch/fileSystem.h"
-#include "pxr/base/arch/systemInfo.h"
+
+#include "resolver.h"
+#include "resolverContext.h"
+
+namespace python = AR_BOOST_NAMESPACE::python;
 
 
-
-PXR_NAMESPACE_USING_DIRECTIVE
-namespace python = BOOST_NAMESPACE::python;
+/*
+if (!Py_IsInitialized()){Py_Initialize();}
+PyGILState_STATE gstate;
+gstate = PyGILState_Ensure();
+// Call Python/C API functions...
+try {
+    python::object my_python_class_module = python::import("MyPythonClass");
+    python::object dog = my_python_class_module.attr("Dog")();
+    dog.attr("bark")();
+}
+catch (...) {
+    PyErr_Print();
+    std::cout << "No implementation for '_Resolve' found\n";
+}
+PyGILState_Release(gstate);
+*/
 
 PXR_NAMESPACE_OPEN_SCOPE
 
-AR_DEFINE_RESOLVER(UsdResolverExampleResolver, ArResolver);
-
-TF_DEBUG_CODES(
-    USD_RESOLVER_EXAMPLE
-);
-
-TF_DEFINE_ENV_SETTING(
-    USD_RESOLVER_EXAMPLE_ASSET_DIR, ".",
-    "Root of asset directory used by UsdResolverExampleResolver.")
-
-
-PXR_NAMESPACE_CLOSE_SCOPE
-
-
-static bool
-_IsFileRelative(const std::string& path) {
-    return path.find("./") == 0 || path.find("../") == 0;
-}
+AR_DEFINE_RESOLVER(PythonResolver, ArResolver);
 
 static bool
 _IsRelativePath(const std::string& path)
@@ -64,9 +48,14 @@ _IsRelativePath(const std::string& path)
 }
 
 static bool
+_IsFileRelativePath(const std::string& path) {
+    return path.find("./") == 0 || path.find("../") == 0;
+}
+
+static bool
 _IsSearchPath(const std::string& path)
 {
-    return _IsRelativePath(path) && !_IsFileRelative(path);
+    return _IsRelativePath(path) && !_IsFileRelativePath(path);
 }
 
 static std::string
@@ -78,7 +67,6 @@ _AnchorRelativePath(
         !_IsRelativePath(path)) {
         return path;
     }
-
     // Ensure we are using forward slashes and not back slashes.
     std::string forwardPath = anchorPath;
     std::replace(forwardPath.begin(), forwardPath.end(), '\\', '/');
@@ -86,67 +74,40 @@ _AnchorRelativePath(
     // If anchorPath does not end with a '/', we assume it is specifying
     // a file, strip off the last component, and anchor the path to that
     // directory.
-    const std::string anchoredPath = TfStringCatPaths(
-        TfStringGetBeforeSuffix(forwardPath, '/'), path);
+    const std::string anchoredPath = TfStringCatPaths(TfStringGetBeforeSuffix(forwardPath, '/'), path);
     return TfNormPath(anchoredPath);
 }
 
+PythonResolver::PythonResolver() = default;
 
-UsdResolverExampleResolver::UsdResolverExampleResolver()
-{
-}
-
-UsdResolverExampleResolver::~UsdResolverExampleResolver() = default;
-
+PythonResolver::~PythonResolver() = default;
 
 std::string
-UsdResolverExampleResolver::_CreateIdentifier(
+PythonResolver::_CreateIdentifier(
     const std::string& assetPath,
     const ArResolvedPath& anchorAssetPath) const
 {
-    TF_DEBUG(USD_RESOLVER_EXAMPLE).Msg("UsdResolverExampleResolver::_CreateIdentifier('%s', '%s')\n",
-                                       assetPath.c_str(), anchorAssetPath.GetPathString().c_str());
+    TF_DEBUG(PYTHONRESOLVER_RESOLVER).Msg("::_CreateIdentifier('%s', '%s')\n",
+                                        assetPath.c_str(), anchorAssetPath.GetPathString().c_str());
 
-    if (assetPath.empty()) {
-        return assetPath;
-    }
-
-    if (!anchorAssetPath) {
-        return TfNormPath(assetPath);
-    }
-
-    const std::string anchoredAssetPath = _AnchorRelativePath(anchorAssetPath, assetPath);
-
-    if (_IsSearchPath(assetPath) && Resolve(anchoredAssetPath).empty()) {
-        return TfNormPath(assetPath);
-    }
-
-    return TfNormPath(anchoredAssetPath);
+    std::string pythonResult;
+    TfPyInvokeAndExtract("PythonExpose", "PythonResolver._CreateIdentifier", &pythonResult);
+    return pythonResult;
 }
 
 std::string
-UsdResolverExampleResolver::_CreateIdentifierForNewAsset(
+PythonResolver::_CreateIdentifierForNewAsset(
     const std::string& assetPath,
     const ArResolvedPath& anchorAssetPath) const
 {
-    TF_DEBUG(USD_RESOLVER_EXAMPLE).Msg(
-        "UsdResolverExampleResolver::_CreateIdentifierForNewAsset"
+    TF_DEBUG(PYTHONRESOLVER_RESOLVER).Msg(
+        "::_CreateIdentifierForNewAsset"
         "('%s', '%s')\n",
         assetPath.c_str(), anchorAssetPath.GetPathString().c_str());
-    if (assetPath.empty()) {
-        return assetPath;
-    }
-
-    if (_IsRelativePath(assetPath)) {
-        return TfNormPath(anchorAssetPath ? 
-            _AnchorRelativePath(anchorAssetPath, assetPath) :
-            TfAbsPath(assetPath));
-    }
-
-    return TfNormPath(assetPath);
+    std::string pythonResult;
+    TfPyInvokeAndExtract("PythonExpose", "PythonResolver._CreateIdentifierForNewAsset", &pythonResult);
+    return pythonResult;
 }
-
-
 
 static ArResolvedPath
 _ResolveAnchored(
@@ -155,204 +116,176 @@ _ResolveAnchored(
 {
     std::string resolvedPath = path;
     if (!anchorPath.empty()) {
-        // XXX - CLEANUP:
-        // It's tempting to use AnchorRelativePath to combine the two
-        // paths here, but that function's file-relative anchoring
-        // causes consumers to break. 
-        // 
-        // Ultimately what we should do is specify whether anchorPath 
-        // in both Resolve and _AnchorRelativePath can be files or directories 
-        // and fix up all the callers to accommodate this.
         resolvedPath = TfStringCatPaths(anchorPath, path);
     }
-
-    // Use TfAbsPath to ensure we return an absolute path using the
-    // platform-specific representation (e.g. '\' as path separators
-    // on Windows.
-    return TfPathExists(resolvedPath) ?
-        ArResolvedPath(TfAbsPath(resolvedPath)) : ArResolvedPath();
+    return TfPathExists(resolvedPath) ? ArResolvedPath(TfAbsPath(resolvedPath)) : ArResolvedPath();
 }
 
-
-
 ArResolvedPath
-UsdResolverExampleResolver::_Resolve(
+PythonResolver::_Resolve(
     const std::string& assetPath) const
 {
-
-    std::cout << "Resolving " << assetPath << std::endl;
-    PyGILState_STATE gstate;
-    gstate = PyGILState_Ensure();
-    // Call Python/C API functions...
-    //pValue= PyObject_CallObject(pFunc, pArgs2);  Crash is always given here
-
-    // >>> import MyPythonClass
-    try {
-        //Py_Initialize();
-        python::object my_python_class_module = python::import("MyPythonClass");
-        // >>> dog = MyPythonClass.Dog()
-        python::object dog = my_python_class_module.attr("Dog")();
-        // >>> dog.bark("woof");
-        dog.attr("bark")("woof");
-    }
-    catch (...) {
-        std::cout << "Access denied - You must be at least 18 years old.\n";
-    }
-
-    PyGILState_Release(gstate);
-
-    TF_DEBUG(USD_RESOLVER_EXAMPLE).Msg(
-        "UsdResolverExampleResolver::_Resolve('%s')\n",
-        assetPath.c_str());
     if (assetPath.empty()) {
         return ArResolvedPath();
     }
-
     if (_IsRelativePath(assetPath)) {
-        // First try to resolve relative paths against the current
-        // working directory.
-
-
-        return ArResolvedPath(TfAbsPath("/opt/hfs19.5/houdini/usd/assets/pig/pig.usd"));
-
-
-        
-
         ArResolvedPath resolvedPath = _ResolveAnchored(ArchGetCwd(), assetPath);
         if (resolvedPath) {
             return resolvedPath;
         }
+        if (this->_IsContextDependentPath(assetPath)) {
+            const PythonResolverContext* contexts[2] = {this->_GetCurrentContextPtr(), &_fallbackContext};
+            for (const PythonResolverContext* ctx : contexts) {
+                if (ctx) {
+                    std::string mappedPath = assetPath;
+                    if (!ctx->GetMappingRegexExpressionStr().empty())
+                    {
+                        mappedPath = std::regex_replace(mappedPath,
+                                                        ctx->GetMappingRegexExpression(),
+                                                        ctx->GetMappingRegexFormat());
 
-        return _ResolveAnchored(std::string(), assetPath);
+                         TF_DEBUG(PYTHONRESOLVER_RESOLVER_CONTEXT).Msg("::_CreateDefaultContextForAsset('%s') - Mapped to '%s' via regex expression '%s' with formatting '%s'\n", assetPath.c_str(), mappedPath.c_str(), ctx->GetMappingRegexExpressionStr().c_str(), ctx->GetMappingRegexFormat().c_str());
+                    }
+                    auto mappingPairs = ctx->GetMappingPairs();
+                    if (mappingPairs.count(mappedPath)){
+                        mappedPath = mappingPairs[mappedPath];
+                    }
+                    for (const auto& searchPath : ctx->GetSearchPaths()) {
+                        resolvedPath = _ResolveAnchored(searchPath, mappedPath);
+                        if (resolvedPath) {
+                            return resolvedPath;
+                        }
+                    }
+                }
+            }
+        }
+        return ArResolvedPath();
     }
-
     return _ResolveAnchored(std::string(), assetPath);
 }
 
 ArResolvedPath
-UsdResolverExampleResolver::_ResolveForNewAsset(
+PythonResolver::_ResolveForNewAsset(
     const std::string& assetPath) const
 {
-    TF_DEBUG(USD_RESOLVER_EXAMPLE).Msg(
-        "UsdResolverExampleResolver::_ResolveForNewAsset('%s')\n",
-        assetPath.c_str());
+    TF_DEBUG(PYTHONRESOLVER_RESOLVER).Msg("::_ResolveForNewAsset('%s')\n", assetPath.c_str());
     return ArResolvedPath(assetPath.empty() ? assetPath : TfAbsPath(assetPath));
 }
 
 ArResolverContext
-UsdResolverExampleResolver::_CreateDefaultContext() const
+PythonResolver::_CreateDefaultContext() const
 {
-    TF_DEBUG(USD_RESOLVER_EXAMPLE).Msg(
-        "UsdResolverExampleResolver::_CreateDefaultContext()\n");
-
-    const std::string defaultMappingFile = TfAbsPath("versions.json");
-    TF_DEBUG(USD_RESOLVER_EXAMPLE).Msg(
-        "  - Looking for default mapping at %s...", defaultMappingFile.c_str());
-
-    return ArResolverContext();
+    TF_DEBUG(PYTHONRESOLVER_RESOLVER_CONTEXT).Msg("::_CreateDefaultContext()\n");
+    return _fallbackContext;
 }
 
 ArResolverContext
-UsdResolverExampleResolver::_CreateDefaultContextForAsset(
+PythonResolver::_CreateDefaultContextForAsset(
     const std::string& assetPath) const
 {
-    TF_DEBUG(USD_RESOLVER_EXAMPLE).Msg(
-        "UsdResolverExampleResolver::_CreateDefaultContextForAsset('%s')\n",
-        assetPath.c_str());
-
-    const std::string assetDir = TfGetPathName(assetPath);
-    const std::string mappingFile = 
-        TfAbsPath(TfStringCatPaths(assetDir, "versions.json"));
-
-    TF_DEBUG(USD_RESOLVER_EXAMPLE).Msg(
-        "  - Looking for mapping at %s...", mappingFile.c_str());
-
-    if (TfIsFile(mappingFile)) {
-        TF_DEBUG(USD_RESOLVER_EXAMPLE).Msg(" found\n");
-        return ArResolverContext(
-            UsdResolverExampleResolverContext(mappingFile));
+    // As there can be only one context class instance per context class
+    // we automatically skip creation of contexts if it exists (The performance heavy
+    // part is the pinning data creation). Here we can return any existing instance of
+    // a PythonResolverContext, thats why we just use the fallback context.
+    // See for more info: https://openusd.org/release/api/class_ar_resolver_context.html
+    // > Note that an ArResolverContext may not hold multiple context objects with the same type.
+    TF_DEBUG(PYTHONRESOLVER_RESOLVER_CONTEXT).Msg("::_CreateDefaultContextForAsset('%s')\n", assetPath.c_str());
+    // Fallback to existing context
+    if (assetPath.empty()){
+        return ArResolverContext(_fallbackContext);
     }
-
-    TF_DEBUG(USD_RESOLVER_EXAMPLE).Msg(" not found\n");
-    return ArResolverContext();
-}
-
-ArResolverContext
-UsdResolverExampleResolver::_CreateContextFromString(
-    const std::string& contextStr) const
-{
-    // This resolver assumes the given context string will be a path to a
-    // mapping file. This allows client code to call
-    // ArGetResolver()->CreateContextFromString("asset", <filepath>) to create a
-    // UsdResolverExampleResolverContext without having to link against this
-    // library directly.
-    if (TfIsFile(contextStr)) {
-        return ArResolverContext(
-            UsdResolverExampleResolverContext(contextStr));
+    ArResolvedPath resolvedPath = this->_Resolve(assetPath);
+    if (!TfPathExists(resolvedPath)){
+        return ArResolverContext(_fallbackContext);
     }
-
-    return ArResolverContext();
+    std::string resolvedPathStr = resolvedPath.GetPathString();
+    if(this->_GetCurrentContextObject<PythonResolverContext>() != nullptr){
+        TF_DEBUG(PYTHONRESOLVER_RESOLVER_CONTEXT).Msg("::_CreateDefaultContextForAsset('%s') - Skipping on same stage\n", assetPath.c_str());
+        return ArResolverContext(_fallbackContext);
+    }
+    auto map_iter = _sharedContexts.find(resolvedPath);
+    if(map_iter != _sharedContexts.end()){
+        if (map_iter->second.timestamp.GetTime() == this->_GetModificationTimestamp(assetPath, resolvedPath).GetTime())
+        {
+            TF_DEBUG(PYTHONRESOLVER_RESOLVER_CONTEXT).Msg("::_CreateDefaultContextForAsset('%s') - Reusing context on different stage\n", assetPath.c_str());
+            return ArResolverContext(map_iter->second.ctx);
+        }else{
+            TF_DEBUG(PYTHONRESOLVER_RESOLVER_CONTEXT).Msg("::_CreateDefaultContextForAsset('%s') - Reusing context on different stage, reloading due to changed timestamp\n", assetPath.c_str());
+            map_iter->second.ctx.RefreshFromMappingFilePath();
+            return ArResolverContext(map_iter->second.ctx);
+        }
+    }
+    // Create new context
+    TF_DEBUG(PYTHONRESOLVER_RESOLVER_CONTEXT).Msg("::_CreateDefaultContextForAsset('%s') - Constructing new context\n", assetPath.c_str());
+    std::string assetDir = TfGetPathName(TfAbsPath(resolvedPathStr));
+    struct PythonResolverContextRecord record;
+    record.timestamp = this->_GetModificationTimestamp(assetPath, resolvedPath);
+    record.ctx = PythonResolverContext(resolvedPath, std::vector<std::string>(1, assetDir));;
+    _sharedContexts.insert(std::pair<std::string, PythonResolverContextRecord>(resolvedPath, record));
+    return ArResolverContext(record.ctx);
 }
 
 bool
-UsdResolverExampleResolver::_IsContextDependentPath(
+PythonResolver::_IsContextDependentPath(
     const std::string& assetPath) const
 {
     return _IsSearchPath(assetPath);
 }
 
 void
-UsdResolverExampleResolver::_RefreshContext(
+PythonResolver::_RefreshContext(
     const ArResolverContext& context)
 {
-    TF_DEBUG(USD_RESOLVER_EXAMPLE).Msg(
-        "UsdResolverExample::_RefreshContext()\n");
 
-    // If the given ArResolverContext isn't holding a context object
-    // used by this resolver, there's nothing to do so we can exit.    
-    const UsdResolverExampleResolverContext* ctx = 
-        context.Get<UsdResolverExampleResolverContext>();
+
+    const PythonResolverContext* ctx = this->_GetCurrentContextPtr();
     if (!ctx) {
         return;
     }
+    TF_DEBUG(PYTHONRESOLVER_RESOLVER_CONTEXT).Msg("::_RefreshContext()\n");
 
-    // Send notification that any asset resolution done with an
-    // ArResolverContext holding an equivalent context object to
-    // ctx has been invalidated.
     ArNotice::ResolverChanged(*ctx).Send();
 }
 
 ArTimestamp
-UsdResolverExampleResolver::_GetModificationTimestamp(
+PythonResolver::_GetModificationTimestamp(
     const std::string& assetPath,
     const ArResolvedPath& resolvedPath) const
 {
-    TF_DEBUG(USD_RESOLVER_EXAMPLE).Msg(
-        "UsdResolverExampleResolver::GetModificationTimestamp('%s', '%s')\n",
+    TF_DEBUG(PYTHONRESOLVER_RESOLVER).Msg(
+        "::GetModificationTimestamp('%s', '%s')\n",
         assetPath.c_str(), resolvedPath.GetPathString().c_str());
     return ArFilesystemAsset::GetModificationTimestamp(resolvedPath);
 }
 
 std::shared_ptr<ArAsset>
-UsdResolverExampleResolver::_OpenAsset(
+PythonResolver::_OpenAsset(
     const ArResolvedPath& resolvedPath) const
 {
-    TF_DEBUG(USD_RESOLVER_EXAMPLE).Msg(
-        "UsdResolverExampleResolver::OpenAsset('%s')\n",
+    TF_DEBUG(PYTHONRESOLVER_RESOLVER).Msg(
+        "::OpenAsset('%s')\n",
         resolvedPath.GetPathString().c_str());
 
     return ArFilesystemAsset::Open(resolvedPath);
 }
 
 std::shared_ptr<ArWritableAsset>
-UsdResolverExampleResolver::_OpenAssetForWrite(
+PythonResolver::_OpenAssetForWrite(
     const ArResolvedPath& resolvedPath,
     WriteMode writeMode) const
 {
-    TF_DEBUG(USD_RESOLVER_EXAMPLE).Msg(
-        "UsdResolverExampleResolver::_OpenAssetForWrite('%s', %d)\n",
+    TF_DEBUG(PYTHONRESOLVER_RESOLVER).Msg(
+        "::_OpenAssetForWrite('%s', %d)\n",
         resolvedPath.GetPathString().c_str(),
         static_cast<int>(writeMode));
 
     return ArFilesystemWritableAsset::Create(resolvedPath, writeMode);
 }
+
+const PythonResolverContext* 
+PythonResolver::_GetCurrentContextPtr() const
+{
+    return _GetCurrentContextObject<PythonResolverContext>();
+}
+
+PXR_NAMESPACE_CLOSE_SCOPE

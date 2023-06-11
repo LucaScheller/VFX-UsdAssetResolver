@@ -3,14 +3,14 @@
         {
             "Info": {
                 "Types": {
-                    "@AR_FILERESOLVER_USD_PYTHON_CLASS_NAME@": {
+                    "@AR_PYTHONRESOLVER_USD_CXX_CLASS_NAME@": {
                         "bases": ["ArResolver"],
                         "implementsContexts" : true
                     }
                 }
             },
-            "LibraryPath": "../lib/@AR_FILERESOLVER_TARGET_LIB@.so",
-            "Name": "@AR_FILERESOLVER_USD_PLUGIN_NAME@",
+            "LibraryPath": "../lib/@AR_PYTHONRESOLVER_TARGET_LIB@.@AR_ARCH_LIB_SUFFIX@",
+            "Name": "@AR_PYTHONRESOLVER_USD_PLUGIN_NAME@",
             "Root": ".",
             "Type": "library"
         }

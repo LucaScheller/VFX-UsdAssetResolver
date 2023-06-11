@@ -4,9 +4,6 @@
 #include <string>
 #include <regex>
 
-#include "boost_include_wrapper.h"
-#include BOOST_INCLUDE(python.hpp)
-
 #include "pxr/base/arch/systemInfo.h"
 #include "pxr/base/tf/fileUtils.h"
 #include "pxr/base/tf/pathUtils.h"

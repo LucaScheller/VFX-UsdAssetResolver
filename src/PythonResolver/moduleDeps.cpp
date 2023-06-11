@@ -1,9 +1,11 @@
+#define CONVERT_STRING(string) #string
+#define DEFINE_STRING(string) CONVERT_STRING(string)
+#include <vector>
+
 #include "pxr/pxr.h"
 #include "pxr/base/tf/registryManager.h"
 #include "pxr/base/tf/scriptModuleLoader.h"
 #include "pxr/base/tf/token.h"
-
-#include <vector>
 
 PXR_NAMESPACE_OPEN_SCOPE
 
@@ -16,10 +18,8 @@ TF_REGISTRY_FUNCTION(TfScriptModuleLoader) {
         TfToken("tf"),
         TfToken("vt")
     };
-    TfScriptModuleLoader::GetInstance().
-        RegisterLibrary(TfToken("usdResolverExample"), TfToken("pxr.UsdResolverExample"), reqs);
+    
+    TfScriptModuleLoader::GetInstance().RegisterLibrary(TfToken(DEFINE_STRING(AR_PYTHONRESOLVER_USD_PLUGIN_NAME)), TfToken(DEFINE_STRING(AR_PYTHONRESOLVER_USD_PYTHON_MODULE_FULLNAME)), reqs);
 }
 
 PXR_NAMESPACE_CLOSE_SCOPE
-
-
