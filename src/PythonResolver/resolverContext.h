@@ -41,11 +41,7 @@ public:
     PythonResolverContext(const PythonResolverContext& ctx);
     AR_PYTHONRESOLVER_API
     PythonResolverContext(const std::string& mappingFilePath);
-    AR_PYTHONRESOLVER_API
-    PythonResolverContext(const std::vector<std::string>& searchPaths);
-    AR_PYTHONRESOLVER_API
-    PythonResolverContext(const std::string& mappingFilePath, const std::vector<std::string>& searchPaths);
-    
+
     // Standard Ops
     AR_PYTHONRESOLVER_API
     bool operator<(const PythonResolverContext& ctx) const;
@@ -58,55 +54,17 @@ public:
 
     // Methods
     AR_PYTHONRESOLVER_API
-    std::vector<std::string> GetSearchPaths() const { return data->searchPaths; }
-    AR_PYTHONRESOLVER_API
-    void RefreshSearchPaths();
-    AR_PYTHONRESOLVER_API
-    std::vector<std::string> GetEnvSearchPaths() const { return data->envSearchPaths; }
-    AR_PYTHONRESOLVER_API
-    std::vector<std::string> GetCustomSearchPaths() const { return data->customSearchPaths; }
-    AR_PYTHONRESOLVER_API
-    void SetCustomSearchPaths(const std::vector<std::string>& searchPaths);
-
-    AR_PYTHONRESOLVER_API
     const std::string& GetMappingFilePath() const { return data->mappingFilePath;}
     AR_PYTHONRESOLVER_API
     void SetMappingFilePath(std::string mappingFilePath) { data->mappingFilePath = mappingFilePath; }
     AR_PYTHONRESOLVER_API
     void RefreshFromMappingFilePath();
     AR_PYTHONRESOLVER_API
-    void AddMappingPair(const std::string& sourceStr, const std::string& targetStr);
-    AR_PYTHONRESOLVER_API
-    void RemoveMappingByKey(const std::string& sourceStr);
-    AR_PYTHONRESOLVER_API
-    void RemoveMappingByValue(const std::string& targetStr);
-    AR_PYTHONRESOLVER_API
     const std::map<std::string, std::string>& GetMappingPairs() const { return data->mappingPairs; }
-    AR_PYTHONRESOLVER_API
-    void ClearMappingPairs() { data->mappingPairs.clear(); }
-    AR_PYTHONRESOLVER_API
-    const std::regex& GetMappingRegexExpression() const { return data->mappingRegexExpression; }
-    AR_PYTHONRESOLVER_API
-    const std::string& GetMappingRegexExpressionStr() const { return data->mappingRegexExpressionStr; }
-    AR_PYTHONRESOLVER_API
-    void SetMappingRegexExpression(std::string& mappingRegexExpressionStr) { 
-        data->mappingRegexExpressionStr = mappingRegexExpressionStr;
-        data->mappingRegexExpression = std::regex(mappingRegexExpressionStr);
-    }
-    AR_PYTHONRESOLVER_API
-    const std::string& GetMappingRegexFormat() const { return data->mappingRegexFormat; }
-    AR_PYTHONRESOLVER_API
-    void SetMappingRegexFormat(std::string& mappingRegexFormat) { data->mappingRegexFormat = mappingRegexFormat; }
 
 private:
     // Vars
-    std::shared_ptr<PythonResolverContextInternalData> data = std::make_shared<PythonResolverContextInternalData>();
-    
-    // Methods
-    void _LoadEnvMappingRegex();
-    void _LoadEnvSearchPaths();
-    bool _GetMappingPairsFromUsdFile(const std::string& filePath);
-
+    std::shared_ptr<std::string> data = std::make_shared<std::string>();
 };
 
 PXR_NAMESPACE_OPEN_SCOPE

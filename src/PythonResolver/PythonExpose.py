@@ -2,15 +2,27 @@ import inspect
 import logging
 from functools import wraps
 
-from pxr import Ar, Sdf
+from pxr import Ar
 
 # Init logger
-logging.basicConfig(format="%(asctime)s %(message)s", datefmt="%Y/%m/%d %I:%M:%S %p")
+logging.basicConfig(format="%(asctime)s %(message)s", datefmt="%Y/%m/%d %I:%M:%S%p")
 LOG = logging.getLogger("Python | {file_name}".format(file_name=__name__))
 LOG.setLevel(level=logging.INFO)
 
+# Utils
+def log_function_args(func):
+    """Decorator to print function call details."""
 
-class PythonResolver:
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        func_args = inspect.signature(func).bind(*args, **kwargs).arguments
+        func_args_str = ", ".join(map("{0[0]} = {0[1]!r}".format, func_args.items()))
+        LOG.info(f"{func.__module__}.{func.__qualname__} ({func_args_str})")
+        return func(*args, **kwargs)
+
+    return wrapper
+
+class Resolver:
     @staticmethod
     @log_function_args
     def _CreateIdentifier(assetPath, anchorAssetPath):
@@ -49,6 +61,7 @@ class PythonResolver:
         Returns:
             Ar.ResolvedPath: The resolved path.
         """
+        print(">>>>>>>>>>>>>>>>>>>>", assetPath)
         return Ar.ResolvedPath(assetPath)
 
     @staticmethod
@@ -97,16 +110,8 @@ class PythonResolver:
         """
         return Ar.Timestamp(0)
 
-
-# Utils
-def log_function_args(func):
-    """Decorator to print function call details."""
-
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        func_args = inspect.signature(func).bind(*args, **kwargs).arguments
-        func_args_str = ", ".join(map("{0[0]} = {0[1]!r}".format, func_args.items()))
-        LOG.info(f"{func.__module__}.{func.__qualname__} ( {func_args_str} )")
-        return func(*args, **kwargs)
-
-    return wrapper
+class ResolverContext:
+    @staticmethod
+    @log_function_args
+    def test():
+        pass

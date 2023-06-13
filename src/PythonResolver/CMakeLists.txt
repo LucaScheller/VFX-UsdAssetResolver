@@ -43,6 +43,7 @@ target_compile_definitions(${AR_PYTHONRESOLVER_TARGET_LIB}
         AR_ENV_SEARCH_PATHS=${AR_ENV_SEARCH_PATHS}
         AR_ENV_SEARCH_REGEX_EXPRESSION=${AR_ENV_SEARCH_REGEX_EXPRESSION}
         AR_ENV_SEARCH_REGEX_FORMAT=${AR_ENV_SEARCH_REGEX_FORMAT}
+        AR_PYTHONRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME=${AR_PYTHONRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME}
 )
 # Install
 configure_file(plugInfo.json.in plugInfo.json)
@@ -85,6 +86,7 @@ target_compile_definitions(${AR_PYTHONRESOLVER_TARGET_PYTHON}
         AR_ENV_SEARCH_REGEX_FORMAT=${AR_ENV_SEARCH_REGEX_FORMAT}
         AR_PYTHONRESOLVER_USD_PLUGIN_NAME=${AR_PYTHONRESOLVER_USD_PLUGIN_NAME}
         AR_PYTHONRESOLVER_USD_PYTHON_MODULE_FULLNAME=${AR_PYTHONRESOLVER_USD_PYTHON_MODULE_FULLNAME}
+        AR_PYTHONRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME=${AR_PYTHONRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME}
 )
 # Install
 install (
@@ -92,35 +94,13 @@ install (
     DESTINATION lib/python/${AR_RESOLVER_USD_PYTHON_MODULE_NAME}/${AR_PYTHONRESOLVER_USD_PYTHON_MODULE_NAME}
 )
 install (
-    FILES PythonExpose.py
+    FILES ${AR_PYTHONRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME}.py
     DESTINATION lib/python
 )
 install(
     TARGETS ${AR_PYTHONRESOLVER_TARGET_PYTHON}
     DESTINATION lib/python/${AR_RESOLVER_USD_PYTHON_MODULE_NAME}/${AR_PYTHONRESOLVER_USD_PYTHON_MODULE_NAME}
 )
-
-## Target Executable > testResolve ##
-add_executable(testResolve testResolve.cpp)
-# Libs
-target_link_libraries(testResolve 
-    PUBLIC
-    ${AR_PYTHON_LIB}
-    ${AR_BOOST_PYTHON_LIB}
-    ${AR_PXR_LIB_PREFIX}arch
-    ${AR_PXR_LIB_PREFIX}tf
-    ${AR_PXR_LIB_PREFIX}gf
-    ${AR_PXR_LIB_PREFIX}js
-    ${AR_PXR_LIB_PREFIX}vt
-    ${AR_PXR_LIB_PREFIX}ar
-    ${AR_PXR_LIB_PREFIX}sdf
-)
-# Headers
-target_include_directories(testResolve PUBLIC ${AR_PYTHON_INCLUDE_DIR} ${AR_PXR_INCLUDE_DIR})
-# Props
-set_target_properties(testResolve PROPERTIES PREFIX "")
-# Install
-install(TARGETS testResolve DESTINATION bin)
 
 ### Status ###
 message(STATUS "--- Usd Python Resolver Instructions Start ---")
