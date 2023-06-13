@@ -59,6 +59,18 @@ _AnchorRelativePath(
     return TfNormPath(anchoredPath);
 }
 
+static ArResolvedPath
+_ResolveAnchored(
+    const std::string& anchorPath,
+    const std::string& path)
+{
+    std::string resolvedPath = path;
+    if (!anchorPath.empty()) {
+        resolvedPath = TfStringCatPaths(anchorPath, path);
+    }
+    return TfPathExists(resolvedPath) ? ArResolvedPath(TfAbsPath(resolvedPath)) : ArResolvedPath();
+}
+
 FileResolver::FileResolver() = default;
 
 FileResolver::~FileResolver() = default;
@@ -108,18 +120,6 @@ FileResolver::_CreateIdentifierForNewAsset(
     }
 
     return TfNormPath(assetPath);
-}
-
-static ArResolvedPath
-_ResolveAnchored(
-    const std::string& anchorPath,
-    const std::string& path)
-{
-    std::string resolvedPath = path;
-    if (!anchorPath.empty()) {
-        resolvedPath = TfStringCatPaths(anchorPath, path);
-    }
-    return TfPathExists(resolvedPath) ? ArResolvedPath(TfAbsPath(resolvedPath)) : ArResolvedPath();
 }
 
 ArResolvedPath
@@ -235,6 +235,7 @@ bool
 FileResolver::_IsContextDependentPath(
     const std::string& assetPath) const
 {
+    TF_DEBUG(FILERESOLVER_RESOLVER_CONTEXT).Msg("::_IsContextDependentPath()\n");
     return _IsSearchPath(assetPath);
 }
 
@@ -268,7 +269,6 @@ FileResolver::_OpenAsset(
     TF_DEBUG(FILERESOLVER_RESOLVER).Msg(
         "::OpenAsset('%s')\n",
         resolvedPath.GetPathString().c_str());
-
     return ArFilesystemAsset::Open(resolvedPath);
 }
 
@@ -281,7 +281,6 @@ FileResolver::_OpenAssetForWrite(
         "::_OpenAssetForWrite('%s', %d)\n",
         resolvedPath.GetPathString().c_str(),
         static_cast<int>(writeMode));
-
     return ArFilesystemWritableAsset::Create(resolvedPath, writeMode);
 }
 

@@ -13,29 +13,13 @@
 #include "pxr/usd/ar/filesystemAsset.h"
 #include "pxr/usd/ar/filesystemWritableAsset.h"
 #include "pxr/usd/ar/notice.h"
+#include "pxr/usd/ar/timestamp.h"
 
 #include "resolver.h"
 #include "resolverContext.h"
 
 namespace python = AR_BOOST_NAMESPACE::python;
 
-
-/*
-if (!Py_IsInitialized()){Py_Initialize();}
-PyGILState_STATE gstate;
-gstate = PyGILState_Ensure();
-// Call Python/C API functions...
-try {
-    python::object my_python_class_module = python::import("MyPythonClass");
-    python::object dog = my_python_class_module.attr("Dog")();
-    dog.attr("bark")();
-}
-catch (...) {
-    PyErr_Print();
-    std::cout << "No implementation for '_Resolve' found\n";
-}
-PyGILState_Release(gstate);
-*/
 
 PXR_NAMESPACE_OPEN_SCOPE
 
@@ -88,10 +72,11 @@ PythonResolver::_CreateIdentifier(
     const ArResolvedPath& anchorAssetPath) const
 {
     TF_DEBUG(PYTHONRESOLVER_RESOLVER).Msg("::_CreateIdentifier('%s', '%s')\n",
-                                        assetPath.c_str(), anchorAssetPath.GetPathString().c_str());
+                                          assetPath.c_str(), anchorAssetPath.GetPathString().c_str());
 
     std::string pythonResult;
-    TfPyInvokeAndExtract("PythonExpose", "PythonResolver._CreateIdentifier", &pythonResult);
+    TfPyInvokeAndExtract("PythonExpose", "PythonResolver._CreateIdentifier",
+                         &pythonResult, assetPath, anchorAssetPath);
     return pythonResult;
 }
 
@@ -101,67 +86,22 @@ PythonResolver::_CreateIdentifierForNewAsset(
     const ArResolvedPath& anchorAssetPath) const
 {
     TF_DEBUG(PYTHONRESOLVER_RESOLVER).Msg(
-        "::_CreateIdentifierForNewAsset"
-        "('%s', '%s')\n",
+        "::_CreateIdentifierForNewAsset ('%s', '%s')\n",
         assetPath.c_str(), anchorAssetPath.GetPathString().c_str());
     std::string pythonResult;
-    TfPyInvokeAndExtract("PythonExpose", "PythonResolver._CreateIdentifierForNewAsset", &pythonResult);
+    TfPyInvokeAndExtract("PythonExpose", "PythonResolver._CreateIdentifierForNewAsset",
+                         &pythonResult, assetPath, anchorAssetPath);
     return pythonResult;
-}
-
-static ArResolvedPath
-_ResolveAnchored(
-    const std::string& anchorPath,
-    const std::string& path)
-{
-    std::string resolvedPath = path;
-    if (!anchorPath.empty()) {
-        resolvedPath = TfStringCatPaths(anchorPath, path);
-    }
-    return TfPathExists(resolvedPath) ? ArResolvedPath(TfAbsPath(resolvedPath)) : ArResolvedPath();
 }
 
 ArResolvedPath
 PythonResolver::_Resolve(
     const std::string& assetPath) const
 {
-    if (assetPath.empty()) {
-        return ArResolvedPath();
-    }
-    if (_IsRelativePath(assetPath)) {
-        ArResolvedPath resolvedPath = _ResolveAnchored(ArchGetCwd(), assetPath);
-        if (resolvedPath) {
-            return resolvedPath;
-        }
-        if (this->_IsContextDependentPath(assetPath)) {
-            const PythonResolverContext* contexts[2] = {this->_GetCurrentContextPtr(), &_fallbackContext};
-            for (const PythonResolverContext* ctx : contexts) {
-                if (ctx) {
-                    std::string mappedPath = assetPath;
-                    if (!ctx->GetMappingRegexExpressionStr().empty())
-                    {
-                        mappedPath = std::regex_replace(mappedPath,
-                                                        ctx->GetMappingRegexExpression(),
-                                                        ctx->GetMappingRegexFormat());
-
-                         TF_DEBUG(PYTHONRESOLVER_RESOLVER_CONTEXT).Msg("::_CreateDefaultContextForAsset('%s') - Mapped to '%s' via regex expression '%s' with formatting '%s'\n", assetPath.c_str(), mappedPath.c_str(), ctx->GetMappingRegexExpressionStr().c_str(), ctx->GetMappingRegexFormat().c_str());
-                    }
-                    auto mappingPairs = ctx->GetMappingPairs();
-                    if (mappingPairs.count(mappedPath)){
-                        mappedPath = mappingPairs[mappedPath];
-                    }
-                    for (const auto& searchPath : ctx->GetSearchPaths()) {
-                        resolvedPath = _ResolveAnchored(searchPath, mappedPath);
-                        if (resolvedPath) {
-                            return resolvedPath;
-                        }
-                    }
-                }
-            }
-        }
-        return ArResolvedPath();
-    }
-    return _ResolveAnchored(std::string(), assetPath);
+    ArResolvedPath pythonResult;
+    TfPyInvokeAndExtract("PythonExpose", "PythonResolver._Resolve",
+                         &pythonResult, assetPath);
+    return pythonResult;
 }
 
 ArResolvedPath
@@ -169,7 +109,10 @@ PythonResolver::_ResolveForNewAsset(
     const std::string& assetPath) const
 {
     TF_DEBUG(PYTHONRESOLVER_RESOLVER).Msg("::_ResolveForNewAsset('%s')\n", assetPath.c_str());
-    return ArResolvedPath(assetPath.empty() ? assetPath : TfAbsPath(assetPath));
+    ArResolvedPath pythonResult;
+    TfPyInvokeAndExtract("PythonExpose", "PythonResolver._ResolveForNewAsset",
+                         &pythonResult, assetPath);
+    return pythonResult;
 }
 
 ArResolverContext
@@ -229,21 +172,22 @@ bool
 PythonResolver::_IsContextDependentPath(
     const std::string& assetPath) const
 {
-    return _IsSearchPath(assetPath);
+    TF_DEBUG(PYTHONRESOLVER_RESOLVER_CONTEXT).Msg("::_IsContextDependentPath()\n");
+    bool pythonResult;
+    TfPyInvokeAndExtract("PythonExpose", "PythonResolver._IsContextDependentPath",
+                         &pythonResult, assetPath);
+    return pythonResult;
 }
 
 void
 PythonResolver::_RefreshContext(
     const ArResolverContext& context)
 {
-
-
     const PythonResolverContext* ctx = this->_GetCurrentContextPtr();
     if (!ctx) {
         return;
     }
     TF_DEBUG(PYTHONRESOLVER_RESOLVER_CONTEXT).Msg("::_RefreshContext()\n");
-
     ArNotice::ResolverChanged(*ctx).Send();
 }
 
@@ -255,7 +199,10 @@ PythonResolver::_GetModificationTimestamp(
     TF_DEBUG(PYTHONRESOLVER_RESOLVER).Msg(
         "::GetModificationTimestamp('%s', '%s')\n",
         assetPath.c_str(), resolvedPath.GetPathString().c_str());
-    return ArFilesystemAsset::GetModificationTimestamp(resolvedPath);
+    ArTimestamp pythonResult;
+    TfPyInvokeAndExtract("PythonExpose", "PythonResolver._GetModificationTimestamp",
+                         &pythonResult, assetPath, resolvedPath);
+    return pythonResult;
 }
 
 std::shared_ptr<ArAsset>
@@ -265,7 +212,6 @@ PythonResolver::_OpenAsset(
     TF_DEBUG(PYTHONRESOLVER_RESOLVER).Msg(
         "::OpenAsset('%s')\n",
         resolvedPath.GetPathString().c_str());
-
     return ArFilesystemAsset::Open(resolvedPath);
 }
 
@@ -278,7 +224,6 @@ PythonResolver::_OpenAssetForWrite(
         "::_OpenAssetForWrite('%s', %d)\n",
         resolvedPath.GetPathString().c_str(),
         static_cast<int>(writeMode));
-
     return ArFilesystemWritableAsset::Create(resolvedPath, writeMode);
 }
 
