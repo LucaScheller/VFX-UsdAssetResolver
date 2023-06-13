@@ -4,7 +4,7 @@ SET(CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}/dist/${AR_PYTHONRESOLVER_USD_PLUGI
 # Preprocessor Defines (Same as #define)
 # This is a hacky way of preprocessing the class name to a custom name.
 # It is not advised to do this in a production setup! (https://stackoverflow.com/questions/20979584)
-add_compile_definitions(PythonResolver=${AR_PYTHONRESOLVER_USD_CXX_CLASS_NAME})
+# add_compile_definitions(PythonResolver=${AR_PYTHONRESOLVER_USD_CXX_CLASS_NAME})
 
 ### Targets ###
 ## Target library > PYTHONRESOLVER ##

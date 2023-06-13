@@ -160,8 +160,9 @@ bool FileResolverContext::_GetMappingPairsFromUsdFile(const std::string& filePat
 }
 
 void FileResolverContext::AddMappingPair(const std::string& sourceStr, const std::string& targetStr){
-    if (data->mappingPairs.count(sourceStr)){
-        data->mappingPairs[sourceStr] = targetStr;
+    auto map_find = data->mappingPairs.find(sourceStr);
+    if(map_find != data->mappingPairs.end()){
+        map_find->second = targetStr;
     }else{
         data->mappingPairs.insert(std::pair<std::string, std::string>(sourceStr,targetStr));
     }

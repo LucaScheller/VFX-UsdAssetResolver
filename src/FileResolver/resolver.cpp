@@ -52,7 +52,6 @@ _AnchorRelativePath(
     // Ensure we are using forward slashes and not back slashes.
     std::string forwardPath = anchorPath;
     std::replace(forwardPath.begin(), forwardPath.end(), '\\', '/');
-
     // If anchorPath does not end with a '/', we assume it is specifying
     // a file, strip off the last component, and anchor the path to that
     // directory.
@@ -145,12 +144,17 @@ FileResolver::_Resolve(
                         mappedPath = std::regex_replace(mappedPath,
                                                         ctx->GetMappingRegexExpression(),
                                                         ctx->GetMappingRegexFormat());
-
-                         TF_DEBUG(FILERESOLVER_RESOLVER_CONTEXT).Msg("::_CreateDefaultContextForAsset('%s') - Mapped to '%s' via regex expression '%s' with formatting '%s'\n", assetPath.c_str(), mappedPath.c_str(), ctx->GetMappingRegexExpressionStr().c_str(), ctx->GetMappingRegexFormat().c_str());
+                         TF_DEBUG(FILERESOLVER_RESOLVER_CONTEXT).Msg("::_CreateDefaultContextForAsset('%s')"
+                                                                     " - Mapped to '%s' via regex expression '%s' with formatting '%s'\n", 
+                                                                     assetPath.c_str(),
+                                                                     mappedPath.c_str(),
+                                                                     ctx->GetMappingRegexExpressionStr().c_str(),
+                                                                     ctx->GetMappingRegexFormat().c_str());
                     }
-                    auto mappingPairs = ctx->GetMappingPairs();
-                    if (mappingPairs.count(mappedPath)){
-                        mappedPath = mappingPairs[mappedPath];
+                    auto &mappingPairs = ctx->GetMappingPairs();
+                    auto map_find = mappingPairs.find(resolvedPath);
+                    if(map_find != mappingPairs.end()){
+                        mappedPath = map_find->second;
                     }
                     for (const auto& searchPath : ctx->GetSearchPaths()) {
                         resolvedPath = _ResolveAnchored(searchPath, mappedPath);
@@ -238,14 +242,11 @@ void
 FileResolver::_RefreshContext(
     const ArResolverContext& context)
 {
-
-
     const FileResolverContext* ctx = this->_GetCurrentContextPtr();
     if (!ctx) {
         return;
     }
     TF_DEBUG(FILERESOLVER_RESOLVER_CONTEXT).Msg("::_RefreshContext()\n");
-
     ArNotice::ResolverChanged(*ctx).Send();
 }
 

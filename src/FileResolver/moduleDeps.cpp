@@ -19,7 +19,8 @@ TF_REGISTRY_FUNCTION(TfScriptModuleLoader) {
         TfToken("vt")
     };
     
-    TfScriptModuleLoader::GetInstance().RegisterLibrary(TfToken(DEFINE_STRING(AR_FILERESOLVER_USD_PLUGIN_NAME)), TfToken(DEFINE_STRING(AR_FILERESOLVER_USD_PYTHON_MODULE_FULLNAME)), reqs);
+    TfScriptModuleLoader::GetInstance().RegisterLibrary(TfToken(DEFINE_STRING(AR_FILERESOLVER_USD_PLUGIN_NAME)), 
+                                                        TfToken(DEFINE_STRING(AR_FILERESOLVER_USD_PYTHON_MODULE_FULLNAME)), reqs);
 }
 
 PXR_NAMESPACE_CLOSE_SCOPE
