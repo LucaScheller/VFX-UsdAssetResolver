@@ -51,7 +51,7 @@ public:
     AR_PYTHONRESOLVER_API
     const std::string GetData() const { return *_data; }
     AR_PYTHONRESOLVER_API
-    void SetData(std::string &data) { *_data = data; }
+    void SetData(std::string data) { *_data = data; }
 private:
     // Vars
     std::shared_ptr<std::string> _mappingFilePath = std::make_shared<std::string>();

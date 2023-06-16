@@ -54,13 +54,14 @@ size_t hash_value(const PythonResolverContext& ctx)
 
 
 void PythonResolverContext::LoadOrRefreshData(){
-    TF_DEBUG(PYTHONRESOLVER_RESOLVER_CONTEXT).Msg("ResolverContext::LoadOrRefreshData('%s') - Loading data\n", this->GetMappingFilePath().c_str());
+    TF_DEBUG(PYTHONRESOLVER_RESOLVER_CONTEXT).Msg("ResolverContext::LoadOrRefreshData('%s', '%s', '%s', '%s') - Loading data\n", this->GetMappingFilePath().c_str(), DEFINE_STRING(AR_ENV_SEARCH_PATHS), DEFINE_STRING(AR_ENV_SEARCH_REGEX_EXPRESSION), DEFINE_STRING(AR_ENV_SEARCH_REGEX_FORMAT));
     std::string pythonResult;    
     int state = TfPyInvokeAndExtract(DEFINE_STRING(AR_PYTHONRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME),
                                      "ResolverContext.LoadOrRefreshData",
-                                     &pythonResult, this->GetMappingFilePath(), DEFINE_STRING(AR_ENV_SEARCH_PATHS));  
+                                     &pythonResult, this->GetMappingFilePath(), DEFINE_STRING(AR_ENV_SEARCH_PATHS),
+                                     DEFINE_STRING(AR_ENV_SEARCH_REGEX_EXPRESSION), DEFINE_STRING(AR_ENV_SEARCH_REGEX_FORMAT));  
     if (!state) {
-        std::cerr << "Failed to call ResolverContext.LoadOrRefreshData in " << DEFINE_STRING(AR_PYTHONRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME) << ".py.";
+        std::cerr << "Failed to call ResolverContext.LoadOrRefreshData in " << DEFINE_STRING(AR_PYTHONRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME) << ".py. ";
         std::cerr << "Please verify that the python code is valid!" << std::endl;
     }
     TF_DEBUG(PYTHONRESOLVER_RESOLVER_CONTEXT).Msg("ResolverContext::LoadOrRefreshData('%s') - Loaded data '%s'\n", this->GetMappingFilePath().c_str(), pythonResult.c_str());
