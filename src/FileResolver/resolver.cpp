@@ -153,7 +153,7 @@ FileResolver::_Resolve(
                         mappedPath = map_find->second;
                     }
                     for (const auto& searchPath : ctx->GetSearchPaths()) {
-                        resolvedPath = _ResolveAnchored(searchPath, mappedPath);
+                        ArResolvedPath resolvedPath = _ResolveAnchored(searchPath, mappedPath);
                         if (resolvedPath) {
                             return resolvedPath;
                         }

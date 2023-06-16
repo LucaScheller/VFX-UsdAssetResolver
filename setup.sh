@@ -1,6 +1,6 @@
 # Source repo
 export REPO_ROOT=${PROJECT}/UsdAssetResolver
-export RESOLVER_NAME=pythonResolver
+export RESOLVER_NAME=fileResolver
 export RESOLVER_NAME_UPPERCASE=$(echo ${RESOLVER_NAME} | tr '[:lower:]' '[:upper:]')
 # Source env
 export PATH=${REPO_ROOT}/dist/${RESOLVER_NAME}/bin:${PATH}
@@ -17,4 +17,4 @@ export AR_SEARCH_PATHS=${REPO_ROOT}/files
 export AR_SEARCH_REGEX_EXPRESSION="(bo)"
 export AR_SEARCH_REGEX_FORMAT="Bo"
 # Debug
-export TF_DEBUG=${RESOLVER_NAME_UPPERCASE}_RESOLVER_CONTEXT
+export TF_DEBUG=${RESOLVER_NAME_UPPERCASE}_RESOLVER
