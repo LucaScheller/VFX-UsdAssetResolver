@@ -44,7 +44,7 @@ def _IsRelativePath(path):
 
 
 def _IsFileRelativePath(path):
-    return path.startswith("./") == 0 or path.startswith("../")
+    return path.startswith("./") or path.startswith("../")
 
 
 def _IsSearchPath(path):
@@ -71,16 +71,25 @@ def _ResolveAnchored(anchorPath, path):
 
 
 def _GetMappingPairsFromUsdFile(mappingFilePath):
-    print("heeeeeee", mappingFilePath)
+    """Lookup mapping pairs from the given mapping .usd file.
+    Args:
+        mappingFilePath(str): The mapping .usd file path
+    Returns:
+        mappingPairs(dict): A dict of mapping pairs
+    """
     if not os.path.isfile(mappingFilePath) or not mappingFilePath.endswith((".usd", ".usdc", ".usda")):
         return {}
     layer = Sdf.Layer.FindOrOpen(mappingFilePath)
     if not layer:
         return {}
     layerMetaData = layer.customLayerData
-    print("heeeeeee", layerMetaData)
-    if not layerMetaData.get(PythonResolver.Tokens.mappingPairs):
+    mappingPairs = layerMetaData.get(PythonResolver.Tokens.mappingPairs)
+    if not mappingPairs:
         return {}
+    if len(mappingPairs) % 2 != 0:
+        return {}
+    mappingPairs = dict(zip(mappingPairs[::2], mappingPairs[1::2]))
+    return mappingPairs
 
 
 class Resolver:
@@ -130,7 +139,7 @@ class Resolver:
 
     @staticmethod
     @log_function_args
-    def _Resolve(assetPath, contextSerialized, fallbackContextSerialized):
+    def _Resolve(assetPath, serializedContext, serializedFallbackContext):
         """Return the resolved path for the given assetPath or an empty
         ArResolvedPath if no asset exists at that path.
         Args:
@@ -141,11 +150,15 @@ class Resolver:
         if not assetPath:
             return Ar.ResolvedPath()
         if _IsRelativePath(assetPath):
+            print(">>>>>>>>", assetPath, Resolver._IsContextDependentPath(assetPath))
             if Resolver._IsContextDependentPath(assetPath):
-                for ctx in [contextSerialized, fallbackContextSerialized]:
-                    if not ctx:
+                for data in [serializedContext, serializedFallbackContext]:
+                    if not data:
                         continue
-                    ctx = json.loads(ctx)
+                    try:
+                        ctx = json.loads(data)
+                    except:
+                        print("Failed to extract context, data is not serialized json data: {data}".format(data=data))
                     mappedPath = assetPath
                     if ctx.get(PythonResolver.Tokens.mappingRegexExpression, ""):
                         mappedPath = re.sub(ctx[PythonResolver.Tokens.mappingRegexExpression],
@@ -200,11 +213,21 @@ class Resolver:
 class ResolverContext:
     @staticmethod
     @log_function_args
-    def LoadOrRefreshData(mappingFilePath):
-        
-        raise Exception
+    def LoadOrRefreshData(mappingFilePath, searchPathsEnv):
+        """Load or refresh the mapping pairs from file and the search paths from the
+        search paths environment variable.
+        Args:
+            mappingFilePath(str): The mapping .usd file path
+            searchPathsEnv(str): The search paths environment variable
+        Returns:
+            str: A serialized json dict that can be used as a context.
+        """
         ctx = {}
-        _GetMappingPairsFromUsdFile(mappingFilePath)
-
-        print(mappingFilePath)
+        # Search Paths
+        searchPaths = os.environ.get(searchPathsEnv, "").split(os.path.pathsep)
+        searchPaths = [os.path.normpath(path) for path in searchPaths]
+        ctx[PythonResolver.Tokens.searchPaths] = searchPaths
+        # Mapping Pairs
+        mappingPairs = _GetMappingPairsFromUsdFile(mappingFilePath)
+        ctx[PythonResolver.Tokens.mappingPairs] = mappingPairs
         return json.dumps(ctx)

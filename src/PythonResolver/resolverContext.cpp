@@ -4,8 +4,6 @@
 #include <iostream>
 
 #include "pxr/pxr.h"
-#include "pxr/base/tf/error.h"
-#include "pxr/base/tf/errorMark.h"
 #include "pxr/base/tf/pathUtils.h"
 #include "pxr/base/tf/pyInvoke.h"
 
@@ -56,20 +54,15 @@ size_t hash_value(const PythonResolverContext& ctx)
 
 
 void PythonResolverContext::LoadOrRefreshData(){
-    TF_DEBUG(PYTHONRESOLVER_RESOLVER_CONTEXT).Msg("ResolverContext::LoadOrRefreshData('%s')\n", this->GetMappingFilePath().c_str());
-    std::string pythonResult;
-    
-    TfErrorMark errorMark;
-    errorMark.SetMark();           
+    TF_DEBUG(PYTHONRESOLVER_RESOLVER_CONTEXT).Msg("ResolverContext::LoadOrRefreshData('%s') - Loading data\n", this->GetMappingFilePath().c_str());
+    std::string pythonResult;    
     int state = TfPyInvokeAndExtract(DEFINE_STRING(AR_PYTHONRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME),
                                      "ResolverContext.LoadOrRefreshData",
-                                     &pythonResult, this->GetMappingFilePath());
-    errorMark.SetMark();  
+                                     &pythonResult, this->GetMappingFilePath(), DEFINE_STRING(AR_ENV_SEARCH_PATHS));  
     if (!state) {
-        for(TfError err: errorMark){
-            std::cout << err.GetErrorCodeAsString() << std::endl;
-        }
+        std::cerr << "Failed to call ResolverContext.LoadOrRefreshData in " << DEFINE_STRING(AR_PYTHONRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME) << ".py.";
+        std::cerr << "Please verify that the python code is valid!" << std::endl;
     }
-    std::cout << state << std::endl;
+    TF_DEBUG(PYTHONRESOLVER_RESOLVER_CONTEXT).Msg("ResolverContext::LoadOrRefreshData('%s') - Loaded data '%s'\n", this->GetMappingFilePath().c_str(), pythonResult.c_str());
     this->SetData(pythonResult);
 }

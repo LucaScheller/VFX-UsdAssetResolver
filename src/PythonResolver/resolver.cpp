@@ -35,16 +35,21 @@ PythonResolver::_CreateIdentifier(
     const std::string& assetPath,
     const ArResolvedPath& anchorAssetPath) const
 {
-    TF_DEBUG(PYTHONRESOLVER_RESOLVER).Msg("Resolver::_CreateIdentifier('%s', '%s')\n",
-                                          assetPath.c_str(), anchorAssetPath.GetPathString().c_str());
     const PythonResolverContext* contexts[2] = {this->_GetCurrentContextPtr(), &_fallbackContext};
     std::string serializedContext = "";
     std::string serializedFallbackContext = _fallbackContext.GetData(); 
     if (contexts[0] != nullptr){serializedContext=this->_GetCurrentContextPtr()->GetData();}
+    TF_DEBUG(PYTHONRESOLVER_RESOLVER).Msg("Resolver::_CreateIdentifier('%s', '%s', '%s', '%s')\n",
+                                          assetPath.c_str(), anchorAssetPath.GetPathString().c_str(),
+                                          serializedContext.c_str(), serializedFallbackContext.c_str());
     std::string pythonResult;
-    TfPyInvokeAndExtract(DEFINE_STRING(AR_PYTHONRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME),
-                         "Resolver._CreateIdentifier",
-                         &pythonResult, assetPath, anchorAssetPath, serializedContext, serializedFallbackContext);
+    int state = TfPyInvokeAndExtract(DEFINE_STRING(AR_PYTHONRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME),
+                                     "Resolver._CreateIdentifier",
+                                     &pythonResult, assetPath, anchorAssetPath, serializedContext, serializedFallbackContext);
+    if (!state) {
+        std::cerr << "Failed to call Resolver._CreateIdentifier in " << DEFINE_STRING(AR_PYTHONRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME) << ".py.";
+        std::cerr << "Please verify that the python code is valid!" << std::endl;
+    }
     return pythonResult;
 }
 
@@ -57,9 +62,13 @@ PythonResolver::_CreateIdentifierForNewAsset(
         "Resolver::_CreateIdentifierForNewAsset ('%s', '%s')\n",
         assetPath.c_str(), anchorAssetPath.GetPathString().c_str());
     std::string pythonResult;
-    TfPyInvokeAndExtract(DEFINE_STRING(AR_PYTHONRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME),
-                         "Resolver._CreateIdentifierForNewAsset",
-                         &pythonResult, assetPath, anchorAssetPath);
+    int state = TfPyInvokeAndExtract(DEFINE_STRING(AR_PYTHONRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME),
+                                     "Resolver._CreateIdentifierForNewAsset",
+                                     &pythonResult, assetPath, anchorAssetPath);
+    if (!state) {
+        std::cerr << "Failed to call Resolver._CreateIdentifierForNewAsset in " << DEFINE_STRING(AR_PYTHONRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME) << ".py.";
+        std::cerr << "Please verify that the python code is valid!" << std::endl;
+    }
     return pythonResult;
 }
 
@@ -71,10 +80,16 @@ PythonResolver::_Resolve(
     std::string serializedContext = "";
     std::string serializedFallbackContext = _fallbackContext.GetData(); 
     if (contexts[0] != nullptr){serializedContext=this->_GetCurrentContextPtr()->GetData();}
+    TF_DEBUG(PYTHONRESOLVER_RESOLVER).Msg("Resolver::_Resolve('%s', '%s', '%s')\n", assetPath.c_str(),
+                                          serializedContext.c_str(), serializedFallbackContext.c_str());
     ArResolvedPath pythonResult;
-    TfPyInvokeAndExtract(DEFINE_STRING(AR_PYTHONRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME),
-                         "Resolver._Resolve",
-                         &pythonResult, assetPath, serializedContext, serializedFallbackContext);
+    int state = TfPyInvokeAndExtract(DEFINE_STRING(AR_PYTHONRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME),
+                                     "Resolver._Resolve",
+                                     &pythonResult, assetPath, serializedContext, serializedFallbackContext);
+    if (!state) {
+        std::cerr << "Failed to call Resolver._Resolve in " << DEFINE_STRING(AR_PYTHONRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME) << ".py.";
+        std::cerr << "Please verify that the python code is valid!" << std::endl;
+    }
     return pythonResult;
 }
 
@@ -84,9 +99,13 @@ PythonResolver::_ResolveForNewAsset(
 {
     TF_DEBUG(PYTHONRESOLVER_RESOLVER).Msg("Resolver::_ResolveForNewAsset('%s')\n", assetPath.c_str());
     ArResolvedPath pythonResult;
-    TfPyInvokeAndExtract(DEFINE_STRING(AR_PYTHONRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME),
-                         "Resolver._ResolveForNewAsset",
-                         &pythonResult, assetPath);
+    int state = TfPyInvokeAndExtract(DEFINE_STRING(AR_PYTHONRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME),
+                                     "Resolver._ResolveForNewAsset",
+                                     &pythonResult, assetPath);
+    if (!state) {
+        std::cerr << "Failed to call Resolver._ResolveForNewAsset in " << DEFINE_STRING(AR_PYTHONRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME) << ".py.";
+        std::cerr << "Please verify that the python code is valid!" << std::endl;
+    }
     return pythonResult;
 }
 
@@ -149,9 +168,13 @@ PythonResolver::_IsContextDependentPath(
 {
     TF_DEBUG(PYTHONRESOLVER_RESOLVER_CONTEXT).Msg("Resolver::_IsContextDependentPath()\n");
     bool pythonResult;
-    TfPyInvokeAndExtract(DEFINE_STRING(AR_PYTHONRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME),
-                         "Resolver._IsContextDependentPath",
-                         &pythonResult, assetPath);
+    int state = TfPyInvokeAndExtract(DEFINE_STRING(AR_PYTHONRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME),
+                                     "Resolver._IsContextDependentPath",
+                                     &pythonResult, assetPath);
+    if (!state) {
+        std::cerr << "Failed to call Resolver._IsContextDependentPath in " << DEFINE_STRING(AR_PYTHONRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME) << ".py.";
+        std::cerr << "Please verify that the python code is valid!" << std::endl;
+    }
     return pythonResult;
 }
 
@@ -176,9 +199,13 @@ PythonResolver::_GetModificationTimestamp(
         "Resolver::GetModificationTimestamp('%s', '%s')\n",
         assetPath.c_str(), resolvedPath.GetPathString().c_str());
     ArTimestamp pythonResult;
-    TfPyInvokeAndExtract(DEFINE_STRING(AR_PYTHONRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME),
-                         "Resolver._GetModificationTimestamp",
-                         &pythonResult, assetPath, resolvedPath);
+    int state = TfPyInvokeAndExtract(DEFINE_STRING(AR_PYTHONRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME),
+                                     "Resolver._GetModificationTimestamp",
+                                     &pythonResult, assetPath, resolvedPath);
+    if (!state) {
+        std::cerr << "Failed to call Resolver._GetModificationTimestamp in " << DEFINE_STRING(AR_PYTHONRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME) << ".py.";
+        std::cerr << "Please verify that the python code is valid!" << std::endl;
+    }
     return pythonResult;
 }
 
