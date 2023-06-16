@@ -35,7 +35,7 @@ PythonResolver::_CreateIdentifier(
     const std::string& assetPath,
     const ArResolvedPath& anchorAssetPath) const
 {
-    TF_DEBUG(PYTHONRESOLVER_RESOLVER).Msg("::_CreateIdentifier('%s', '%s')\n",
+    TF_DEBUG(PYTHONRESOLVER_RESOLVER).Msg("Resolver::_CreateIdentifier('%s', '%s')\n",
                                           assetPath.c_str(), anchorAssetPath.GetPathString().c_str());
     const PythonResolverContext* contexts[2] = {this->_GetCurrentContextPtr(), &_fallbackContext};
     std::string serializedContext = "";
@@ -54,7 +54,7 @@ PythonResolver::_CreateIdentifierForNewAsset(
     const ArResolvedPath& anchorAssetPath) const
 {
     TF_DEBUG(PYTHONRESOLVER_RESOLVER).Msg(
-        "::_CreateIdentifierForNewAsset ('%s', '%s')\n",
+        "Resolver::_CreateIdentifierForNewAsset ('%s', '%s')\n",
         assetPath.c_str(), anchorAssetPath.GetPathString().c_str());
     std::string pythonResult;
     TfPyInvokeAndExtract(DEFINE_STRING(AR_PYTHONRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME),
@@ -82,7 +82,7 @@ ArResolvedPath
 PythonResolver::_ResolveForNewAsset(
     const std::string& assetPath) const
 {
-    TF_DEBUG(PYTHONRESOLVER_RESOLVER).Msg("::_ResolveForNewAsset('%s')\n", assetPath.c_str());
+    TF_DEBUG(PYTHONRESOLVER_RESOLVER).Msg("Resolver::_ResolveForNewAsset('%s')\n", assetPath.c_str());
     ArResolvedPath pythonResult;
     TfPyInvokeAndExtract(DEFINE_STRING(AR_PYTHONRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME),
                          "Resolver._ResolveForNewAsset",
@@ -93,7 +93,7 @@ PythonResolver::_ResolveForNewAsset(
 ArResolverContext
 PythonResolver::_CreateDefaultContext() const
 {
-    TF_DEBUG(PYTHONRESOLVER_RESOLVER_CONTEXT).Msg("::_CreateDefaultContext()\n");
+    TF_DEBUG(PYTHONRESOLVER_RESOLVER_CONTEXT).Msg("Resolver::_CreateDefaultContext()\n");
     return _fallbackContext;
 }
 
@@ -107,7 +107,7 @@ PythonResolver::_CreateDefaultContextForAsset(
     // a PythonResolverContext, thats why we just use the fallback context.
     // See for more info: https://openusd.org/release/api/class_ar_resolver_context.html
     // > Note that an ArResolverContext may not hold multiple context objects with the same type.
-    TF_DEBUG(PYTHONRESOLVER_RESOLVER_CONTEXT).Msg("::_CreateDefaultContextForAsset('%s')\n", assetPath.c_str());
+    TF_DEBUG(PYTHONRESOLVER_RESOLVER_CONTEXT).Msg("Resolver::_CreateDefaultContextForAsset('%s')\n", assetPath.c_str());
     // Fallback to existing context
     if (assetPath.empty()){
         return ArResolverContext(_fallbackContext);
@@ -118,23 +118,23 @@ PythonResolver::_CreateDefaultContextForAsset(
     }
     std::string resolvedPathStr = resolvedPath.GetPathString();
     if(this->_GetCurrentContextObject<PythonResolverContext>() != nullptr){
-        TF_DEBUG(PYTHONRESOLVER_RESOLVER_CONTEXT).Msg("::_CreateDefaultContextForAsset('%s') - Skipping on same stage\n", assetPath.c_str());
+        TF_DEBUG(PYTHONRESOLVER_RESOLVER_CONTEXT).Msg("Resolver::_CreateDefaultContextForAsset('%s') - Skipping on same stage\n", assetPath.c_str());
         return ArResolverContext(_fallbackContext);
     }
     auto map_iter = _sharedContexts.find(resolvedPath);
     if(map_iter != _sharedContexts.end()){
         if (map_iter->second.timestamp.GetTime() == this->_GetModificationTimestamp(assetPath, resolvedPath).GetTime())
         {
-            TF_DEBUG(PYTHONRESOLVER_RESOLVER_CONTEXT).Msg("::_CreateDefaultContextForAsset('%s') - Reusing context on different stage\n", assetPath.c_str());
+            TF_DEBUG(PYTHONRESOLVER_RESOLVER_CONTEXT).Msg("Resolver::_CreateDefaultContextForAsset('%s') - Reusing context on different stage\n", assetPath.c_str());
             return ArResolverContext(map_iter->second.ctx);
         }else{
-            TF_DEBUG(PYTHONRESOLVER_RESOLVER_CONTEXT).Msg("::_CreateDefaultContextForAsset('%s') - Reusing context on different stage, reloading due to changed timestamp\n", assetPath.c_str());
+            TF_DEBUG(PYTHONRESOLVER_RESOLVER_CONTEXT).Msg("Resolver::_CreateDefaultContextForAsset('%s') - Reusing context on different stage, reloading due to changed timestamp\n", assetPath.c_str());
             map_iter->second.ctx.LoadOrRefreshData();
             return ArResolverContext(map_iter->second.ctx);
         }
     }
     // Create new context
-    TF_DEBUG(PYTHONRESOLVER_RESOLVER_CONTEXT).Msg("::_CreateDefaultContextForAsset('%s') - Constructing new context\n", assetPath.c_str());
+    TF_DEBUG(PYTHONRESOLVER_RESOLVER_CONTEXT).Msg("Resolver::_CreateDefaultContextForAsset('%s') - Constructing new context\n", assetPath.c_str());
     std::string assetDir = TfGetPathName(TfAbsPath(resolvedPathStr));
     struct PythonResolverContextRecord record;
     record.timestamp = this->_GetModificationTimestamp(assetPath, resolvedPath);
@@ -147,7 +147,7 @@ bool
 PythonResolver::_IsContextDependentPath(
     const std::string& assetPath) const
 {
-    TF_DEBUG(PYTHONRESOLVER_RESOLVER_CONTEXT).Msg("::_IsContextDependentPath()\n");
+    TF_DEBUG(PYTHONRESOLVER_RESOLVER_CONTEXT).Msg("Resolver::_IsContextDependentPath()\n");
     bool pythonResult;
     TfPyInvokeAndExtract(DEFINE_STRING(AR_PYTHONRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME),
                          "Resolver._IsContextDependentPath",
@@ -159,7 +159,7 @@ void
 PythonResolver::_RefreshContext(
     const ArResolverContext& context)
 {
-    TF_DEBUG(PYTHONRESOLVER_RESOLVER_CONTEXT).Msg("::_RefreshContext()\n");
+    TF_DEBUG(PYTHONRESOLVER_RESOLVER_CONTEXT).Msg("Resolver::_RefreshContext()\n");
     const PythonResolverContext* ctx = this->_GetCurrentContextPtr();
     if (!ctx) {
         return;
@@ -173,7 +173,7 @@ PythonResolver::_GetModificationTimestamp(
     const ArResolvedPath& resolvedPath) const
 {
     TF_DEBUG(PYTHONRESOLVER_RESOLVER).Msg(
-        "::GetModificationTimestamp('%s', '%s')\n",
+        "Resolver::GetModificationTimestamp('%s', '%s')\n",
         assetPath.c_str(), resolvedPath.GetPathString().c_str());
     ArTimestamp pythonResult;
     TfPyInvokeAndExtract(DEFINE_STRING(AR_PYTHONRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME),
@@ -187,7 +187,7 @@ PythonResolver::_OpenAsset(
     const ArResolvedPath& resolvedPath) const
 {
     TF_DEBUG(PYTHONRESOLVER_RESOLVER).Msg(
-        "::OpenAsset('%s')\n",
+        "Resolver::OpenAsset('%s')\n",
         resolvedPath.GetPathString().c_str());
     return ArFilesystemAsset::Open(resolvedPath);
 }
@@ -198,7 +198,7 @@ PythonResolver::_OpenAssetForWrite(
     WriteMode writeMode) const
 {
     TF_DEBUG(PYTHONRESOLVER_RESOLVER).Msg(
-        "::_OpenAssetForWrite('%s', %d)\n",
+        "Resolver::_OpenAssetForWrite('%s', %d)\n",
         resolvedPath.GetPathString().c_str(),
         static_cast<int>(writeMode));
     return ArFilesystemWritableAsset::Create(resolvedPath, writeMode);

@@ -6,7 +6,7 @@ import os
 import sys
 from functools import wraps
 
-from pxr import Ar
+from pxr import Ar, Sdf
 from usdAssetResolver import PythonResolver
 
 # Init logger
@@ -25,6 +25,7 @@ def log_function_args(func):
     def wrapper(*args, **kwargs):
         func_args = inspect.signature(func).bind(*args, **kwargs).arguments
         func_args_str = ", ".join(map("{0[0]} = {0[1]!r}".format, func_args.items()))
+        # To enable logging on all methods, re-enable this.
         # LOG.info(f"{func.__module__}.{func.__qualname__} ({func_args_str})")
         return func(*args, **kwargs)
 
@@ -69,6 +70,19 @@ def _ResolveAnchored(anchorPath, path):
     return Ar.ResolvedPath(os.path.normpath(resolvedPath)) if os.path.isfile(resolvedPath) else Ar.ResolvedPath()
 
 
+def _GetMappingPairsFromUsdFile(mappingFilePath):
+    print("heeeeeee", mappingFilePath)
+    if not os.path.isfile(mappingFilePath) or not mappingFilePath.endswith((".usd", ".usdc", ".usda")):
+        return {}
+    layer = Sdf.Layer.FindOrOpen(mappingFilePath)
+    if not layer:
+        return {}
+    layerMetaData = layer.customLayerData
+    print("heeeeeee", layerMetaData)
+    if not layerMetaData.get(PythonResolver.Tokens.mappingPairs):
+        return {}
+
+
 class Resolver:
     @staticmethod
     @log_function_args
@@ -79,6 +93,8 @@ class Resolver:
         Args:
             assetPath (str): An unresolved asset path.
             anchorAssetPath (Ar.ResolvedPath): An resolved anchor path.
+            serializedContext (str): The serialized context.
+            serializedFallbackContext (str): The serialized fallback context.
         Returns:
             str: The identifier.
         """
@@ -185,5 +201,10 @@ class ResolverContext:
     @staticmethod
     @log_function_args
     def LoadOrRefreshData(mappingFilePath):
+        
+        raise Exception
+        ctx = {}
+        _GetMappingPairsFromUsdFile(mappingFilePath)
+
         print(mappingFilePath)
-        return "haha"
+        return json.dumps(ctx)

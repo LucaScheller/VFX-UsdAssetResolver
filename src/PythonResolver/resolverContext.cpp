@@ -4,10 +4,10 @@
 #include <iostream>
 
 #include "pxr/pxr.h"
-#include "pxr/base/tf/getenv.h"
+#include "pxr/base/tf/error.h"
+#include "pxr/base/tf/errorMark.h"
 #include "pxr/base/tf/pathUtils.h"
 #include "pxr/base/tf/pyInvoke.h"
-#include <pxr/usd/sdf/layer.h>
 
 #include "resolverContext.h"
 #include "resolverTokens.h"
@@ -20,7 +20,7 @@ PythonResolverContext::PythonResolverContext(const PythonResolverContext& ctx) =
 
 PythonResolverContext::PythonResolverContext(const std::string& mappingFilePath)
 {
-    TF_DEBUG(PYTHONRESOLVER_RESOLVER_CONTEXT).Msg("::ResolverContext('%s') - Creating new context\n", mappingFilePath.c_str());
+    TF_DEBUG(PYTHONRESOLVER_RESOLVER_CONTEXT).Msg("ResolverContext::ResolverContext('%s') - Creating new context\n", mappingFilePath.c_str());
     // Init
     this->SetMappingFilePath(TfAbsPath(mappingFilePath));
     this->LoadOrRefreshData();
@@ -56,11 +56,20 @@ size_t hash_value(const PythonResolverContext& ctx)
 
 
 void PythonResolverContext::LoadOrRefreshData(){
-    TF_DEBUG(PYTHONRESOLVER_RESOLVER_CONTEXT).Msg("::LoadOrRefreshData('%s')\n", this->GetMappingFilePath().c_str());
-    return;
+    TF_DEBUG(PYTHONRESOLVER_RESOLVER_CONTEXT).Msg("ResolverContext::LoadOrRefreshData('%s')\n", this->GetMappingFilePath().c_str());
     std::string pythonResult;
-    TfPyInvokeAndExtract(DEFINE_STRING(AR_PYTHONRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME),
-                         "ResolverContext.LoadOrRefreshData",
-                         &pythonResult, this->GetMappingFilePath());
+    
+    TfErrorMark errorMark;
+    errorMark.SetMark();           
+    int state = TfPyInvokeAndExtract(DEFINE_STRING(AR_PYTHONRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME),
+                                     "ResolverContext.LoadOrRefreshData",
+                                     &pythonResult, this->GetMappingFilePath());
+    errorMark.SetMark();  
+    if (!state) {
+        for(TfError err: errorMark){
+            std::cout << err.GetErrorCodeAsString() << std::endl;
+        }
+    }
+    std::cout << state << std::endl;
     this->SetData(pythonResult);
 }
