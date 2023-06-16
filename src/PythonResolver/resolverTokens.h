@@ -15,6 +15,9 @@ struct PythonResolverTokensType
     AR_PYTHONRESOLVER_API PythonResolverTokensType();
 
     const TfToken mappingPairs;
+    const TfToken mappingRegexExpression;
+    const TfToken mappingRegexFormat;
+    const TfToken searchPaths;
     const std::vector<TfToken> allTokens;
 };
 

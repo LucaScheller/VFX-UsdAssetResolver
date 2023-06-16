@@ -130,10 +130,6 @@ FileResolver::_Resolve(
         return ArResolvedPath();
     }
     if (_IsRelativePath(assetPath)) {
-        ArResolvedPath resolvedPath = _ResolveAnchored(ArchGetCwd(), assetPath);
-        if (resolvedPath) {
-            return resolvedPath;
-        }
         if (this->_IsContextDependentPath(assetPath)) {
             const FileResolverContext* contexts[2] = {this->_GetCurrentContextPtr(), &_fallbackContext};
             for (const FileResolverContext* ctx : contexts) {
@@ -152,7 +148,7 @@ FileResolver::_Resolve(
                                                                      ctx->GetMappingRegexFormat().c_str());
                     }
                     auto &mappingPairs = ctx->GetMappingPairs();
-                    auto map_find = mappingPairs.find(resolvedPath);
+                    auto map_find = mappingPairs.find(mappedPath);
                     if(map_find != mappingPairs.end()){
                         mappedPath = map_find->second;
                     }
@@ -243,11 +239,11 @@ void
 FileResolver::_RefreshContext(
     const ArResolverContext& context)
 {
+    TF_DEBUG(FILERESOLVER_RESOLVER_CONTEXT).Msg("::_RefreshContext()\n");
     const FileResolverContext* ctx = this->_GetCurrentContextPtr();
     if (!ctx) {
         return;
     }
-    TF_DEBUG(FILERESOLVER_RESOLVER_CONTEXT).Msg("::_RefreshContext()\n");
     ArNotice::ResolverChanged(*ctx).Send();
 }
 

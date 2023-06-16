@@ -37,10 +37,14 @@ PythonResolver::_CreateIdentifier(
 {
     TF_DEBUG(PYTHONRESOLVER_RESOLVER).Msg("::_CreateIdentifier('%s', '%s')\n",
                                           assetPath.c_str(), anchorAssetPath.GetPathString().c_str());
+    const PythonResolverContext* contexts[2] = {this->_GetCurrentContextPtr(), &_fallbackContext};
+    std::string serializedContext = "";
+    std::string serializedFallbackContext = _fallbackContext.GetData(); 
+    if (contexts[0] != nullptr){serializedContext=this->_GetCurrentContextPtr()->GetData();}
     std::string pythonResult;
     TfPyInvokeAndExtract(DEFINE_STRING(AR_PYTHONRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME),
                          "Resolver._CreateIdentifier",
-                         &pythonResult, assetPath, anchorAssetPath);
+                         &pythonResult, assetPath, anchorAssetPath, serializedContext, serializedFallbackContext);
     return pythonResult;
 }
 
@@ -63,13 +67,14 @@ ArResolvedPath
 PythonResolver::_Resolve(
     const std::string& assetPath) const
 {
-    const FileResolverContext* contexts[2] = {this->_GetCurrentContextPtr(), &_fallbackContext};
-    const std::string &serializedContext = ;
-    const std::string &serializedFallbackContext = ; 
+    const PythonResolverContext* contexts[2] = {this->_GetCurrentContextPtr(), &_fallbackContext};
+    std::string serializedContext = "";
+    std::string serializedFallbackContext = _fallbackContext.GetData(); 
+    if (contexts[0] != nullptr){serializedContext=this->_GetCurrentContextPtr()->GetData();}
     ArResolvedPath pythonResult;
     TfPyInvokeAndExtract(DEFINE_STRING(AR_PYTHONRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME),
                          "Resolver._Resolve",
-                         &pythonResult, assetPath, this->_GetCurrentContextPtr());
+                         &pythonResult, assetPath, serializedContext, serializedFallbackContext);
     return pythonResult;
 }
 
@@ -124,7 +129,7 @@ PythonResolver::_CreateDefaultContextForAsset(
             return ArResolverContext(map_iter->second.ctx);
         }else{
             TF_DEBUG(PYTHONRESOLVER_RESOLVER_CONTEXT).Msg("::_CreateDefaultContextForAsset('%s') - Reusing context on different stage, reloading due to changed timestamp\n", assetPath.c_str());
-            map_iter->second.ctx.RefreshFromMappingFilePath();
+            map_iter->second.ctx.LoadOrRefreshData();
             return ArResolverContext(map_iter->second.ctx);
         }
     }
@@ -133,7 +138,7 @@ PythonResolver::_CreateDefaultContextForAsset(
     std::string assetDir = TfGetPathName(TfAbsPath(resolvedPathStr));
     struct PythonResolverContextRecord record;
     record.timestamp = this->_GetModificationTimestamp(assetPath, resolvedPath);
-    record.ctx = PythonResolverContext(resolvedPath, std::vector<std::string>(1, assetDir));;
+    record.ctx = PythonResolverContext(resolvedPath);;
     _sharedContexts.insert(std::pair<std::string, PythonResolverContextRecord>(resolvedPath, record));
     return ArResolverContext(record.ctx);
 }
@@ -154,11 +159,11 @@ void
 PythonResolver::_RefreshContext(
     const ArResolverContext& context)
 {
+    TF_DEBUG(PYTHONRESOLVER_RESOLVER_CONTEXT).Msg("::_RefreshContext()\n");
     const PythonResolverContext* ctx = this->_GetCurrentContextPtr();
     if (!ctx) {
         return;
     }
-    TF_DEBUG(PYTHONRESOLVER_RESOLVER_CONTEXT).Msg("::_RefreshContext()\n");
     ArNotice::ResolverChanged(*ctx).Send();
 }
 

@@ -35,4 +35,7 @@ void wrapResolverTokens()
     class_<PythonResolverTokensType, AR_BOOST_NAMESPACE::noncopyable>
         cls("Tokens", no_init);
     _AddToken(cls, "mappingPairs", PythonResolverTokens->mappingPairs);
+    _AddToken(cls, "mappingRegexExpression", PythonResolverTokens->mappingRegexExpression);
+    _AddToken(cls, "mappingRegexFormat", PythonResolverTokens->mappingRegexFormat);
+    _AddToken(cls, "searchPaths", PythonResolverTokens->searchPaths);
 }

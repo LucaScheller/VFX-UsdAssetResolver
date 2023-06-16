@@ -20,17 +20,6 @@ instead of passing thru the pointer. This way we can send
 notifications to the stages.
 > See for more info: https://groups.google.com/g/usd-interest/c/9JrXGGbzBnQ/m/_f3oaqBdAwAJ
 */
-struct PythonResolverContextInternalData
-{
-    std::vector<std::string> searchPaths;
-    std::vector<std::string> envSearchPaths;
-    std::vector<std::string> customSearchPaths;
-    std::string mappingFilePath;
-    std::map<std::string, std::string> mappingPairs;
-    std::regex mappingRegexExpression;
-    std::string mappingRegexExpressionStr;
-    std::string mappingRegexFormat;
-};
 
 class PythonResolverContext
 {
@@ -54,17 +43,19 @@ public:
 
     // Methods
     AR_PYTHONRESOLVER_API
-    const std::string& GetMappingFilePath() const { return data->mappingFilePath;}
+    const std::string& GetMappingFilePath() const { return *_mappingFilePath;}
     AR_PYTHONRESOLVER_API
-    void SetMappingFilePath(std::string mappingFilePath) { data->mappingFilePath = mappingFilePath; }
+    void SetMappingFilePath(std::string mappingFilePath) { *_mappingFilePath = mappingFilePath; }
     AR_PYTHONRESOLVER_API
-    void RefreshFromMappingFilePath();
+    void LoadOrRefreshData();
     AR_PYTHONRESOLVER_API
-    const std::map<std::string, std::string>& GetMappingPairs() const { return data->mappingPairs; }
-
+    const std::string GetData() const { return *_data; }
+    AR_PYTHONRESOLVER_API
+    void SetData(std::string &data) { *_data = data; }
 private:
     // Vars
-    std::shared_ptr<std::string> data = std::make_shared<std::string>();
+    std::shared_ptr<std::string> _mappingFilePath = std::make_shared<std::string>();
+    std::shared_ptr<std::string> _data = std::make_shared<std::string>();
 };
 
 PXR_NAMESPACE_OPEN_SCOPE

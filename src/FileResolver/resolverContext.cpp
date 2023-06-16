@@ -48,39 +48,39 @@ FileResolverContext::FileResolverContext(const FileResolverContext& ctx) = defau
 
 FileResolverContext::FileResolverContext(const std::string& mappingFilePath)
 {
+    TF_DEBUG(FILERESOLVER_RESOLVER_CONTEXT).Msg("::ResolverContext('%s') - Creating new context\n", mappingFilePath.c_str());
     // Init
     this->_LoadEnvMappingRegex();
     this->RefreshSearchPaths();
     this->SetMappingFilePath(TfAbsPath(mappingFilePath));
     this->_GetMappingPairsFromUsdFile(this->GetMappingFilePath());
-    TF_DEBUG(FILERESOLVER_RESOLVER_CONTEXT).Msg("::ResolverContext('%s') -  Creating new context\n", mappingFilePath.c_str());
 }
 
 FileResolverContext::FileResolverContext(const std::vector<std::string>& searchPaths)
 {
+    TF_DEBUG(FILERESOLVER_RESOLVER_CONTEXT).Msg("::ResolverContext() - Creating new context with custom search paths\n");
     // Init
     this->_LoadEnvMappingRegex();
     this->SetCustomSearchPaths(searchPaths);
     this->RefreshSearchPaths();
-    TF_DEBUG(FILERESOLVER_RESOLVER_CONTEXT).Msg("::ResolverContext() -  Creating new context with custom search paths\n");
 }
 
 FileResolverContext::FileResolverContext(const std::string& mappingFilePath, const std::vector<std::string>& searchPaths)
 {
+    TF_DEBUG(FILERESOLVER_RESOLVER_CONTEXT).Msg("::ResolverContext('%s') - Creating new context with custom search paths\n", mappingFilePath.c_str());
     // Init
     this->_LoadEnvMappingRegex();
     this->SetCustomSearchPaths(searchPaths);
     this->RefreshSearchPaths();
     this->SetMappingFilePath(TfAbsPath(mappingFilePath));
     this->_GetMappingPairsFromUsdFile(this->GetMappingFilePath());
-    TF_DEBUG(FILERESOLVER_RESOLVER_CONTEXT).Msg("::ResolverContext('%s') -  Creating new context with custom search paths\n", mappingFilePath.c_str());
 }
 
 bool
 FileResolverContext::operator<(
     const FileResolverContext& ctx) const
 {
-    // This is a no-op as a < compare can't be implemented.
+    // This is a no-op for now, as it doesn't get used for now.
     return true;
 }
 
