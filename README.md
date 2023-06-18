@@ -5,7 +5,7 @@ This repository holds reference implementations for [Usd](https://openusd.org/re
 1. [Features](#features)
 2. [Installation](#installation)
 3. [Resolvers](#resolvers)
-4. [Example stage and mapping pair files](#example)
+4. [Example stage and mapping pair files](#example-stage-and-mapping-pair-files)
 # Features
 
 All resolvers share these common feautures:
