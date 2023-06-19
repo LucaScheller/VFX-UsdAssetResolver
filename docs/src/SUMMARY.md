@@ -1,9 +1,8 @@
 # Summary
 
-# Installation
-- [Building](./Installation.md)
----
-# Resolvers
+- [Installation]()
+    - [Requirements](./installation/prerequisites.md)
+    - [Building](./installation/building.md)
 - [Resolvers]()
-    - [File Resolver](./FileResolver.md)
-    - [Python Resolver](./PythonResolver.md)
+    - [File Resolver](./resolvers/FileResolver/FileResolver.md)
+    - [Python Resolver](./resolvers/PythonResolver/PythonResolver.md)
