@@ -1,19 +1,20 @@
-export REPO_SOURCED=1
-
 # Source repo
-export REPO_ROOT=${PROJECT}/UsdAssetResolver
+export REPO_SOURCED=1
+export REPO_ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")" &> /dev/null && (pwd -W 2> /dev/null || pwd))
 export RESOLVER_NAME=fileResolver
 export RESOLVER_NAME_UPPERCASE=$(echo ${RESOLVER_NAME} | tr '[:lower:]' '[:upper:]')
-# Source env
-export PATH=${REPO_ROOT}/dist/${RESOLVER_NAME}/bin:${PATH}
-export PYTHONPATH=${REPO_ROOT}/dist/${RESOLVER_NAME}/lib/python:/opt/hfs19.5/python/lib/python3.9/site-packages:$PYTHONPATH
-export PXR_PLUGINPATH_NAME=${REPO_ROOT}/dist/${RESOLVER_NAME}/resources
-export LD_LIBRARY_PATH=${REPO_ROOT}/dist/${RESOLVER_NAME}/lib
+
 # Source Houdini
 pushd /opt/hfs19.5 > /dev/null
 source houdini_setup
 popd > /dev/null
 export HOUDINI_LMINFO_VERBOSE=1
+# Source env
+export PATH=${REPO_ROOT}/dist/${RESOLVER_NAME}/bin:${PATH}
+export PYTHONPATH=${REPO_ROOT}/dist/${RESOLVER_NAME}/lib/python:${HFS}/python/lib/python3.9/site-packages:$PYTHONPATH
+export PXR_PLUGINPATH_NAME=${REPO_ROOT}/dist/${RESOLVER_NAME}/resources
+export LD_LIBRARY_PATH=${REPO_ROOT}/dist/${RESOLVER_NAME}/lib
+
 # Configure resolver
 export AR_SEARCH_PATHS=${REPO_ROOT}/files
 export AR_SEARCH_REGEX_EXPRESSION="(bo)"
