@@ -14,7 +14,7 @@ create-missing = false
 default-theme = "ayu"
 git-repository-url = "https://github.com/LucaScheller/VFX-UsdAssetResolver"
 git-repository-icon = "fa-github"
-edit-url-template = "https://github.com/LucaScheller/VFX-UsdAssetResolver/edit/main/{path}"
+edit-url-template = "https://github.com/LucaScheller/VFX-UsdAssetResolver/edit/main/docs/{path}"
 
 [output.html.fold]
 enable = true
