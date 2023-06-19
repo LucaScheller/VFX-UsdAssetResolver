@@ -1,3 +1,5 @@
+export REPO_SOURCED=1
+
 # Source repo
 export REPO_ROOT=${PROJECT}/UsdAssetResolver
 export RESOLVER_NAME=fileResolver

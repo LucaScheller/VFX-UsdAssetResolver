@@ -4,3 +4,21 @@ language = "en"
 multilingual = false
 src = "src"
 title = "Usd Asset Resolver"
+description = "This repository holds reference implementations for Usd asset resolvers."
+
+[build]
+build-dir = "book"
+create-missing = false
+
+[output.html]
+default-theme = "ayu"
+git-repository-url = "https://github.com/LucaScheller/VFX-UsdAssetResolver"
+git-repository-icon = "fa-github"
+edit-url-template = "https://github.com/LucaScheller/VFX-UsdAssetResolver/edit/main/{path}"
+
+[output.html.fold]
+enable = true
+level = 10
+
+[output.html.playground]
+line-numbers = true
