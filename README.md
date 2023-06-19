@@ -5,12 +5,7 @@ This repository holds reference implementations for [Usd](https://openusd.org/re
 
 
 
-# Table of Contents
-1. [Features](#features)
-2. [Installation](#installation)
-3. [Resolvers](#resolvers)
-4. [Example stage and mapping pair files](#example-stage-and-mapping-pair-files)
-# Features
+# Feature Overview
 
 All resolvers share these common feautures:
 - The search path environment variable by default is ```AR_SEARCH_PATHS```. It can be customized in the [CMakeLists.txt](CMakeLists.txt) file.
@@ -25,6 +20,7 @@ Asset resolvers that can be compiled via this repository:
 - **Python Resolver** - Python based implemention of the file resolver:
     - This resolver has feature parity to the file resolver, but the implementation is slightly different. The goal of this resolver is to enable easier RnD by running all resolver and resolver context related methods in Python. It can be used to quickly inspect resolve calls and to setup prototypes of resolvers that can then later be re-written in C++ as it is easier to code database related pipelines in Python.
     - Running in Python does not allow proper multithreading due to Python's [Global Interpreter Lock](https://wiki.python.org/moin/GlobalInterpreterLock), so this resolver should not be used in (large scale) productions. 
+
 
 # Installation
 Follow the instructions in the [install.md](install.md) file. We use [CMake](https://cmake.org) as a build system in conjunction with any Houdini version greater than 19.5 for compilation.
