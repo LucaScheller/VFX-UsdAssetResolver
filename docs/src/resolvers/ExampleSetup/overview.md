@@ -1,5 +1,5 @@
 # Example Usd files and mapping pair files
-To explain the above resolver setups, we assume the following scene setup:
+An example scene setup might looks as follows:
 - The following files on disk:
     - `/workspace/shots/shotA/shotA.usd`
     - `/workspace/shots/shotA/shotA_mapping.usd`
