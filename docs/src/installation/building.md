@@ -7,7 +7,7 @@ This can be done by running the following from the source directory:
 source setup.sh
 ```
 
-In the [setup.sh](../../../setup.sh) file you can define what resolver to compile by setting the `RESOLVER_NAME` variable to one of the resolvers listed in [resolvers](../resolvers/overview.md) in camelCase syntax (for example `fileResolver` or `pythonResolver`).
+In the [setup.sh](https://github.com/LucaScheller/VFX-UsdAssetResolver/blob/main/setup.sh) file you can define what resolver to compile by setting the `RESOLVER_NAME` variable to one of the resolvers listed in [resolvers](../resolvers/overview.md) in camelCase syntax (for example `fileResolver` or `pythonResolver`).
 
 ```admonish important
 Here you'll also have to define what Houdini version to compile against.
@@ -24,7 +24,7 @@ To run the build, run:
 
 By default it also sets the `TF_DEBUG` env var to `<ResolverName>_RESOLVER` so that you'll get debug logs of what the resolver is doing. Check out the debug codes section of the resolvers for more information.
 
-If you want to further configure the build, you can head into the [CMakeLists.txt](../../../CMakeLists.txt) in the root of this repo. In the first section of the file, you can configure various things, like the environment variables that the resolvers use, Python module namespaces and what resolvers to compile.
+If you want to further configure the build, you can head into the [CMakeLists.txt](https://github.com/LucaScheller/VFX-UsdAssetResolver/blob/main/CMakeLists.txt) in the root of this repo. In the first section of the file, you can configure various things, like the environment variables that the resolvers use, Python module namespaces and what resolvers to compile.
 This is a standard `CMakeLists.txt` file that you can also configure via [CMake-GUI](https://cmake.org/cmake/help/latest/manual/cmake-gui.1.html). If you don't want to use the `build.sh` bash script, you can also configure and compile this project like any other C++ project via the this file.
 
 If you want to change the resolver names, you'll have to additionally edit the `CMakeLists.txt` files in the corresponding resolver folder by un-commenting the following line in the beginning of the file:
@@ -45,3 +45,10 @@ curl -L https://github.com/rust-lang/mdBook/releases/download/v$MDBOOK_VERSION/m
 curl -L https://github.com/tommilligan/mdbook-admonish/releases/download/v$MDBOOK_ADMONISH_VERSION/mdbook-admonish-v$MDBOOK_ADMONISH_VERSION-x86_64-unknown-linux-gnu.tar.gz | tar xz -C ${REPO_ROOT}/tools
 export PATH=${REPO_ROOT}/tools:$PATH
 ```
+
+You then can just run the following to build the documentation in html format:
+```bash
+./docs.sh
+```
+
+The documentation will then be built in docs/book.
