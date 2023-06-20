@@ -4,10 +4,10 @@ A file system based resolver similar to the default resolver with support for cu
 - It implements the features listed in the [resolvers overview section](../overview.md).
 - A simple mapping pair look up in a provided mapping pair Usd file. The mapping data has to stored in the Usd layer metadata in an key called ```mappingPairs``` as an array with the syntax ```["sourcePathA.usd", "targetPathA.usd", "sourcePathB.usd", "targetPathB.usd"]```. (This is quite similar to Rodeo's asset resolver that can be found [here](https://github.com/rodeofx/rdo_replace_resolver) using the AR 1.0 specification.)
 - You can use the ```AR_ENV_SEARCH_REGEX_EXPRESSION```/```AR_ENV_SEARCH_REGEX_FORMAT``` environment variables to preformat any asset paths before they looked up in the ```mappingPairs```. The regex match found by the ```AR_ENV_SEARCH_REGEX_EXPRESSION``` environment variable will be replaced by the content of the  ```AR_ENV_SEARCH_REGEX_FORMAT``` environment variable. The environment variable names can be customized in the [CMakeLists.txt](https://github.com/LucaScheller/VFX-UsdAssetResolver/blob/main/CMakeLists.txt) file.
-- You can adjust the resolver context content during runtime via exposed Python methods (More info below). Refreshing the stage is also supported, although it might be required to trigger additional reloads in certain DCCs.
+- You can adjust the resolver context content during runtime via exposed Python methods (More info [here](./PythonAPI.md)). Refreshing the stage is also supported, although it might be required to trigger additional reloads in certain DCCs.
 
 ## Debug Codes
-Adding following tokens to the *TF_DEBUG* env variable will log resolver information about resolution/the context respectively.
+Adding following tokens to the `TF_DEBUG` env variable will log resolver information about resolution/the context respectively.
 * `FILERESOLVER_RESOLVER`
 * `FILERESOLVER_RESOLVER_CONTEXT`
 

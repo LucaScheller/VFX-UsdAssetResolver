@@ -7,3 +7,40 @@ All resolvers share these common features:
 # Resolvers
 - [File Resolver](./FileResolver/overview.md)
 - [Python Resolver](./PythonResolver/overview.md)
+
+# Debugging
+
+## Using the `TF_DEBUG` environment variable
+To check what resolver has been loaded, you can set the `TF_DEBUG` env variable to `AR_RESOLVER_INIT`:
+```bash
+export TF_DEBUG=AR_RESOLVER_INIT
+```
+For example this will yield the following when run with the Python Resolver:
+```python
+ArGetResolver(): Found primary asset resolver types: [PythonResolver, ArDefaultResolver]
+ArGetResolver(): Using asset resolver PythonResolver from plugin ${REPO_ROOT}/dist/pythonResolver/lib/pythonResolver.so for primary resolver
+ArGetResolver(): Found URI resolver ArDefaultResolver
+ArGetResolver(): Found URI resolver FS_ArResolver
+ArGetResolver(): Using FS_ArResolver for URI scheme(s) ["op", "opdef", "oplib", "opdatablock"]
+ArGetResolver(): Found URI resolver PythonResolver
+ArGetResolver(): Found package resolver USD_NcPackageResolver
+ArGetResolver(): Using package resolver USD_NcPackageResolver for usdlc from plugin usdNc
+ArGetResolver(): Using package resolver USD_NcPackageResolver for usdnc from plugin usdNc
+ArGetResolver(): Found package resolver Usd_UsdzResolver
+ArGetResolver(): Using package resolver Usd_UsdzResolver for usdz from plugin usd
+```
+
+## Loading the Python Module
+When importing the Python module, be sure to first import the Ar module, otherwise you might run into errors, as the resolver is not properly initialized:
+```bash
+# Start python via the aliased `usdpython`
+# Our sourced setup.sh aliases Houdini's standalone python to usdpython
+# as well as sources extra libs like Usd
+usdpython
+```
+
+```python
+# First import Ar, so that the resolver is initialized
+from pxr import Ar
+from usdAssetResolver import FileResolver
+```

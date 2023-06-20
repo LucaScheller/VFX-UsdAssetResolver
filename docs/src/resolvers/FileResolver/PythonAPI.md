@@ -44,11 +44,11 @@ stage.RefreshContext(ctx_collection)
 ### Search Paths
 The search paths get read from the `AR_SEARCH_PATHS` env var by default. You can inspect and tweak the search paths at runtime by using the following methods:
 ```python
-ctx.GetSearchPaths()                        # Returns all search paths (env and custom). 
-ctx.RefreshSearchPaths()                    # Reloads env search paths and re-populates the search paths that the resolver uses. This must be called after changing the env var value or the custom search paths. 
-ctx.GetEnvSearchPaths()                     # Returns all env search paths 
-ctx.GetCustomSearchPaths()                  # Returns all custom search paths 
-ctx.SetCustomSearchPaths(searchPaths: list) # Set custom search paths 
+ctx.GetSearchPaths()                        # Return all search paths (env and custom)
+ctx.RefreshSearchPaths()                    # Reload env search paths and re-populates the search paths that the resolver uses. This must be called after changing the env var value or the custom search paths. 
+ctx.GetEnvSearchPaths()                     # Return all env search paths 
+ctx.GetCustomSearchPaths()                  # Return all custom search paths
+ctx.SetCustomSearchPaths(searchPaths: list) # Set custom search paths
 ```
 
 ### Mapping Pairs
@@ -79,6 +79,6 @@ To change the asset path formatting before it is looked up in the mapping pairs,
 ```python
 ctx.GetMappingRegexExpression()               # Get the regex expression
 ctx.SetMappingRegexExpression(regex_str: str) # Set the regex expression
-ctx.GetMappingRegexFormat()                   # Get the regex expression match formatting
-ctx.SetMappingRegexFormat()                   # Set the regex expression match formatting
+ctx.GetMappingRegexFormat()                   # Get the regex expression substitution formatting
+ctx.SetMappingRegexFormat()                   # Set the regex expression substitution formatting
 ```

@@ -9,11 +9,11 @@ VFX DCC vendors try to keep in sync with the versions specified in the [VFX Refe
 
 ## Linux
 ```admonish success title=""
-| Software        | Website                           | Min (Not Tested)     | Max (Tested)  |
-|-----------------|-----------------------------------|----------------------|---------------|
-| gcc             | https://gcc.gnu.org/              | 11.2.1               | 13.1.1        |
-| cmake           | https://cmake.org/                | 3.26.4               | 3.26.4        |
-| SideFX Houdini  | https://www.sidefx.com            |  19.5                | 19.5          |
+| Software        | Website                                          | Min (Not Tested)     | Max (Tested)  |
+|-----------------|--------------------------------------------------|----------------------|---------------|
+| gcc             | [https://gcc.gnu.org](https://gcc.gnu.org/)      | 11.2.1               | 13.1.1        |
+| cmake           | [https://cmake.org](https://cmake.org/)          | 3.26.4               | 3.26.4        |
+| SideFX Houdini  | [https://www.sidefx.com](https://www.sidefx.com) |  19.5                | 19.5          |
 ```
 
 ```admonish warning

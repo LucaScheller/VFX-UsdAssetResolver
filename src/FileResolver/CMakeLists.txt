@@ -7,7 +7,7 @@ SET(CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}/dist/${AR_FILERESOLVER_USD_PLUGIN_
 # add_compile_definitions(FileResolver=${AR_FILERESOLVER_USD_CXX_CLASS_NAME})
 
 ### Targets ###
-## Target library > PYTHONRESOLVER ##
+## Target library > FILERESOLVER ##
 add_library(${AR_FILERESOLVER_TARGET_LIB}
     SHARED
         debugCodes.cpp
@@ -21,9 +21,9 @@ target_link_libraries(${AR_FILERESOLVER_TARGET_LIB}
     ${AR_PXR_LIB_PREFIX}arch
     ${AR_PXR_LIB_PREFIX}tf
     ${AR_PXR_LIB_PREFIX}gf
-    ${AR_PXR_LIB_PREFIX}js
     ${AR_PXR_LIB_PREFIX}vt
     ${AR_PXR_LIB_PREFIX}ar
+    ${AR_PXR_LIB_PREFIX}sdf
 )
 # Headers
 target_include_directories(${AR_FILERESOLVER_TARGET_LIB}
@@ -49,7 +49,7 @@ configure_file(plugInfo.json.in plugInfo.json)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/plugInfo.json DESTINATION resources)
 install(TARGETS ${AR_FILERESOLVER_TARGET_LIB} RUNTIME DESTINATION lib)
 
-## Target library > PYTHONRESOLVER Python ##
+## Target library > FILERESOLVER Python ##
 add_library(${AR_FILERESOLVER_TARGET_PYTHON}
     SHARED
         wrapResolver.cpp
@@ -103,7 +103,6 @@ target_link_libraries(testResolve
     ${AR_PXR_LIB_PREFIX}arch
     ${AR_PXR_LIB_PREFIX}tf
     ${AR_PXR_LIB_PREFIX}gf
-    ${AR_PXR_LIB_PREFIX}js
     ${AR_PXR_LIB_PREFIX}vt
     ${AR_PXR_LIB_PREFIX}ar
     ${AR_PXR_LIB_PREFIX}sdf

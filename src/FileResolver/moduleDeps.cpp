@@ -14,8 +14,10 @@ TF_REGISTRY_FUNCTION(TfScriptModuleLoader) {
     const std::vector<TfToken> reqs = {
         TfToken("ar"),
         TfToken("arch"),
+        TfToken("gf"),
+        TfToken("sdf"),
         TfToken("tf"),
-        TfToken("vt")
+        TfToken("vt"),
     };
     
     TfScriptModuleLoader::GetInstance().RegisterLibrary(TfToken(DEFINE_STRING(AR_FILERESOLVER_USD_PLUGIN_NAME)), 

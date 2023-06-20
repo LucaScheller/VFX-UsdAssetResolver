@@ -6,5 +6,5 @@
 - [Resolvers](./resolvers/overview.md)
     - [File Resolver](./resolvers/FileResolver/overview.md)
         - [Python API](./resolvers/FileResolver/PythonAPI.md)
-    - [Python Resolver](./resolvers/PythonResolver/PythonResolver.md)
+    - [Python Resolver](./resolvers/PythonResolver/overview.md)
     - [Example Setup](./resolvers/ExampleSetup/overview.md)

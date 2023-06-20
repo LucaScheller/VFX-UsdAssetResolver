@@ -14,7 +14,7 @@ Here you'll also have to define what Houdini version to compile against.
 ```
 
 
-It will then automatically set the `PATH`, `PYTHONPATH`, `PXR_PLUGINPATH_NAME` and `LD_LIBRARY_PATH` environment variables to the correct paths so that after your run the compile, the resolver will be loaded correctly (If you launch Houdini, it will load everything correctly). The build process also logs this information again.
+It will then automatically set the `PATH`, `PYTHONPATH`, `PXR_PLUGINPATH_NAME` and `LD_LIBRARY_PATH` environment variables to the correct paths so that after your run the compile, the resolver will be loaded correctly (e.g. if you launch Houdini via `houdinifx`, it will load everything correctly). The build process also logs this information again.
 
 To run the build, run:
 
@@ -25,7 +25,7 @@ To run the build, run:
 By default it also sets the `TF_DEBUG` env var to `<ResolverName>_RESOLVER` so that you'll get debug logs of what the resolver is doing. Check out the debug codes section of the resolvers for more information.
 
 If you want to further configure the build, you can head into the [CMakeLists.txt](https://github.com/LucaScheller/VFX-UsdAssetResolver/blob/main/CMakeLists.txt) in the root of this repo. In the first section of the file, you can configure various things, like the environment variables that the resolvers use, Python module namespaces and what resolvers to compile.
-This is a standard `CMakeLists.txt` file that you can also configure via [CMake-GUI](https://cmake.org/cmake/help/latest/manual/cmake-gui.1.html). If you don't want to use the `build.sh` bash script, you can also configure and compile this project like any other C++ project via the this file.
+This is a standard `CMakeLists.txt` file that you can also configure via [CMake-GUI](https://cmake.org/cmake/help/latest/manual/cmake-gui.1.html). If you don't want to use the `build.sh` bash script, you can also configure and compile this project like any other C++ project via this file.
 
 If you want to change the resolver names, you'll have to additionally edit the `CMakeLists.txt` files in the corresponding resolver folder by un-commenting the following line in the beginning of the file:
 ```cmake
