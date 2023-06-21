@@ -15,3 +15,19 @@ Asset resolvers that can be compiled via this repository:
 - **Python Resolver** - Python based implementation of the file resolver. The goal of this resolver is to enable easier RnD by running all resolver and resolver context related methods in Python. It can be used to quickly inspect resolve calls and to setup prototypes of resolvers that can then later be re-written in C++ as it is easier to code database interactions in Python for initial research.
 
 For more information check out the [building guide](https://lucascheller.github.io/VFX-UsdAssetResolver/installation/building.html) as well as the [individual resolvers](https://lucascheller.github.io/VFX-UsdAssetResolver/resolvers/overview.html) to see their full functionality.
+
+## Contributing and Acknowledgements
+
+Special thanks to [Jonas Sorgenfrei](https://github.com/jonassorgenfrei) for helping bring this project to life as well as all the contributors on the Usd-Interest forum, particularly
+Mark Tucker, ColinE, Jake Richards, Pawel Olas, Joshua Miller US, Simon Boorer. 
+
+Post of relevance in the Usd-Interest Forum to this repo:
+- [usdResolverExample AR 2.0 for Houdini 19.5](https://groups.google.com/g/usd-interest/c/82GxMaAG1eo/m/ePk2tYptAAAJ)
+- [USD Asset Resolver Python](https://groups.google.com/g/usd-interest/c/60e5aQgW_gg/m/DfCcN_1oAwAJ)
+- [AR 2.0: CreateDefaultContextForAsset replacement?
+](https://groups.google.com/g/usd-interest/c/7Aqv3k-V_DU/m/HPz7dSZLBQAJ)
+
+Please consider contributing back to the Usd project in the  official [Usd Repository](https://github.com/PixarAnimationStudios/USD) and via the [Usd User groups](https://wiki.aswf.io/display/WGUSD/USD+Working+Group).
+
+Feel free to fork this repository and share improvements or further resolvers.
+If you run into issues, please flag them by [submitting a ticket](https://github.com/LucaScheller/VFX-UsdAssetResolver/issues/new).
