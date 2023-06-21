@@ -22,7 +22,7 @@ edit-url-template = "https://github.com/LucaScheller/VFX-UsdAssetResolver/edit/m
 additional-css = ["src/css/custom.css", "src/css/mdbook-admonish.css"]
 
 [output.html.fold]
-enable = true
+enable = false
 level = 10
 
 [output.html.playground]
