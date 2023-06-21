@@ -134,20 +134,22 @@ FileResolver::_Resolve(
             const FileResolverContext* contexts[2] = {this->_GetCurrentContextPtr(), &_fallbackContext};
             for (const FileResolverContext* ctx : contexts) {
                 if (ctx) {
-                    std::string mappedPath = assetPath;
-                    if (!ctx->GetMappingRegexExpressionStr().empty())
-                    {
-                        mappedPath = std::regex_replace(mappedPath,
-                                                        ctx->GetMappingRegexExpression(),
-                                                        ctx->GetMappingRegexFormat());
-                         TF_DEBUG(FILERESOLVER_RESOLVER_CONTEXT).Msg("Resolver::_CreateDefaultContextForAsset('%s')"
-                                                                     " - Mapped to '%s' via regex expression '%s' with formatting '%s'\n", 
-                                                                     assetPath.c_str(),
-                                                                     mappedPath.c_str(),
-                                                                     ctx->GetMappingRegexExpressionStr().c_str(),
-                                                                     ctx->GetMappingRegexFormat().c_str());
-                    }
                     auto &mappingPairs = ctx->GetMappingPairs();
+                    std::string mappedPath = assetPath;
+                    if (!mappingPairs.empty()){
+                        if (!ctx->GetMappingRegexExpressionStr().empty())
+                        {
+                            mappedPath = std::regex_replace(mappedPath,
+                                                            ctx->GetMappingRegexExpression(),
+                                                            ctx->GetMappingRegexFormat());
+                            TF_DEBUG(FILERESOLVER_RESOLVER_CONTEXT).Msg("Resolver::_CreateDefaultContextForAsset('%s')"
+                                                                        " - Mapped to '%s' via regex expression '%s' with formatting '%s'\n", 
+                                                                        assetPath.c_str(),
+                                                                        mappedPath.c_str(),
+                                                                        ctx->GetMappingRegexExpressionStr().c_str(),
+                                                                        ctx->GetMappingRegexFormat().c_str());
+                        }
+                    }
                     auto map_find = mappingPairs.find(mappedPath);
                     if(map_find != mappingPairs.end()){
                         mappedPath = map_find->second;

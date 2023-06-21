@@ -1,8 +1,8 @@
 # Python API
 ## Overview
-You can important the Python module as follows:
+You can import the Python module as follows:
 ```python
-from pxr import Ar, Vt
+from pxr import Ar
 from usdAssetResolver import FileResolver
 ```
 
@@ -16,9 +16,12 @@ FileResolver.Tokens.mappingPairs
 You can manipulate the resolver context (the object that holds the configuration the resolver uses to resolve paths) via Python in the following ways:
 
 ```python
-stage = pxr.Usd.Stage.Open("/some/stage.usd")
-ctx_collection = pxr.Usd.Stage.GetPathResolverContext()
-ctx = ctx_collection[0]
+from pxr import Ar, Usd
+from usdAssetResolver import FileResolver
+
+stage = Usd.Stage.Open("/some/stage.usd")
+context_collection = stage.GetPathResolverContext()
+fileResolver_context = context_collection.Get()[0]
 
 # To print a full list of exposed methods:
 for attr in dir(FileResolver.ResolverContext):
@@ -32,13 +35,14 @@ If you make changes to the context at runtime, you'll need to refresh it!
 You can reload it as follows, that way the active stage gets the change notification.
 
 ```python
+from pxr import Ar
 resolver = Ar.GetResolver()
-ctx_collection = stage.GetPathResolverContext()
-ctx = ctx_collection[0]
+context_collection = stage.GetPathResolverContext()
+fileResolver_context = context_collection.Get()[0]
 # Make edits as described below to the context.
-ctx.AddMappingPair("source.usd", "destination.usd")
+fileResolver_context.AddMappingPair("source.usd", "destination.usd")
 # Trigger Refresh (Some DCCs, like Houdini, additionally require node re-cooks.)
-stage.RefreshContext(ctx_collection)
+resolver.RefreshContext(context_collection)
 ```
 
 ### Search Paths
@@ -65,10 +69,12 @@ ctx.RemoveMappingByValue(dst: str)            # Remove a mapping pair by value
 ```
 To generate a mapping .usd file, you can do the following:
 ```python
-stage = Usd.Stage.Open('/some/path/mappingPairs.usda')
+from pxr import Ar, Usd, Vt
+from usdAssetResolver import FileResolver
+stage = Usd.Stage.CreateNew('/some/path/mappingPairs.usda')
 mapping_pairs = {'assets/assetA/assetA.usd':'assets/assetA/assetA_v005.usd', 'shots/shotA/shotA_v000.usd':'shots/shotA/shotA_v003.usd'}
 mapping_array = []
-for source_path, target_path in mapping_pairs:
+for source_path, target_path in mapping_pairs.items():
     mapping_array.extend([source_path, target_path])
 stage.SetMetadata('customLayerData', {FileResolver.Tokens.mappingPairs: Vt.StringArray(mapping_array)})
 stage.Save()

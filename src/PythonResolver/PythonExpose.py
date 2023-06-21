@@ -153,7 +153,7 @@ class Resolver:
         if not anchorAssetPath:
             return os.path.normpath(assetPath)
         anchoredAssetPath = _AnchorRelativePath(anchorAssetPath.GetPathString(), assetPath)
-        if (_IsSearchPath(assetPath) and not Resolver._Resolve(anchorAssetPath.GetPathString(),serializedContext, serializedFallbackContext)):
+        if (_IsSearchPath(assetPath) and not Resolver._Resolve(anchoredAssetPath,serializedContext, serializedFallbackContext)):
             return os.path.normpath(assetPath)
         return os.path.normpath(anchoredAssetPath)
 
@@ -197,14 +197,16 @@ class Resolver:
                         continue
                     try:
                         ctx = json.loads(data)
-                    except:
+                    except Exception:
                         print("Failed to extract context, data is not serialized json data: {data}".format(data=data))
-                    mappedPath = assetPath
-                    if ctx.get(Tokens.mappingRegexExpression, ""):
-                        mappedPath = re.sub(ctx[Tokens.mappingRegexExpression],
-                                            ctx.get(Tokens.mappingRegexFormat, ""),
-                                            mappedPath)
+                        continue
                     mappingPairs = ctx.get(Tokens.mappingPairs, {})
+                    mappedPath = assetPath
+                    if mappingPairs:
+                        if ctx.get(Tokens.mappingRegexExpression, ""):
+                            mappedPath = re.sub(ctx[Tokens.mappingRegexExpression],
+                                                ctx.get(Tokens.mappingRegexFormat, ""),
+                                                mappedPath)
                     mappedPath = mappingPairs.get(mappedPath, mappedPath)
                     for searchPath in ctx.get(Tokens.searchPaths, []):
                         resolvedPath = _ResolveAnchored(searchPath, mappedPath)

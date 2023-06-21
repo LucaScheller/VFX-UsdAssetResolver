@@ -1,7 +1,7 @@
 
 
 ## Overview
-You can important the Python module as follows:
+You can import the Python module as follows:
 ```python
 from pxr import Ar
 from usdAssetResolver import PythonResolver
@@ -20,9 +20,11 @@ PythonResolver.Tokens.searchPaths
 You can manipulate the resolver context (the object that holds the configuration the resolver uses to resolve paths) via Python in the following ways:
 
 ```python
-stage = pxr.Usd.Stage.Open("/some/stage.usd")
-ctx_collection = pxr.Usd.Stage.GetPathResolverContext()
-ctx = ctx_collection[0]
+from pxr import Ar, Usd
+from usdAssetResolver import PythonResolver
+stage = Usd.Stage.Open("/some/stage.usd")
+context_collection = pxr.Usd.Stage.GetPathResolverContext()
+pythonResolver_context = context_collection.Get()[0]
 
 # To print a full list of exposed methods:
 for attr in dir(PythonResolver.ResolverContext):
@@ -36,13 +38,15 @@ If you make changes to the context at runtime, you'll need to refresh it!
 You can reload it as follows, that way the active stage gets the change notification.
 
 ```python
+from pxr import Ar
+from usdAssetResolver import PythonResolver
 resolver = Ar.GetResolver()
-ctx_collection = stage.GetPathResolverContext()
-ctx = ctx_collection[0]
+context_collection = pxr.Usd.Stage.GetPathResolverContext()
+pythonResolver_context = context_collection.Get()[0]
 # Make edits as described below to the context.
-ctx.SetData("{'mappingPairs': {'source.usd': 'destination.usd'}, 'searchPaths': ['/path/A']}")
+pythonResolver_context.SetData("{'mappingPairs': {'source.usd': 'destination.usd'}, 'searchPaths': ['/path/A']}")
 # Trigger Refresh (Some DCCs, like Houdini, additionally require node re-cooks.)
-stage.RefreshContext(ctx_collection)
+stage.RefreshContext(context_collection)
 ```
 
 ### Editing the Resolver Context
@@ -52,16 +56,16 @@ It can be retrieved/edited/set as follows:
 ```python
 import json
 stage = pxr.Usd.Stage.Open("/some/stage.usd")
-ctx_collection = pxr.Usd.Stage.GetPathResolverContext()
-ctx = ctx_collection[0]
+context_collection = pxr.Usd.Stage.GetPathResolverContext()
+pythonResolver_context = context_collection.Get()[0]
 # Load context
-data = json.loads(ctx.GetData())
+data = json.loads(pythonResolver_context.GetData())
 # Manipulate data
 data[PythonResolver.Tokens.mappingPairs]["sourceAdd.usd"] = "targetAdd.usd"
 # Set context
-ctx.SetData(json.dumps(data))
+pythonResolver_context.SetData(json.dumps(data))
 # Trigger Refresh (Some DCCs, like Houdini, additionally require node re-cooks.)
-stage.RefreshContext(ctx_collection)
+stage.RefreshContext(context_collection)
 ```
 
 When the context is initialized for the first time, it runs the `ResolverContext.LoadOrRefreshData` method as described below. After that is is just a serialized .json dict with at minimum the `PythonResolver.Tokens.mappingPairs`and `PythonResolver.Tokens.searchPaths` tokens being set.
@@ -83,6 +87,17 @@ Since the code just looks for the `PythonExpose.py` file anywhere in the `sys.pa
 Below we show the Python exposed methods, note that we use static methods, as we just call into the module and don't create the actual object. (This module could just as easily been made up of pure functions, we just create the classes here to make it match the C++ API.)
 
 The method signatures match the C++ signatures, except how the context is injected, as this is necessary due to how the Python exposing works.
+
+To enable a similiar logging as the `TF_DEBUG` env var does, you can uncomment the following in the `log_function_args` function.
+
+```python
+...code...
+def log_function_args(func):
+    ...code...
+    # To enable logging on all methods, re-enable this.
+    # LOG.info(f"{func.__module__}.{func.__qualname__} ({func_args_str})")
+...code...
+```
 
 #### Resolver
 

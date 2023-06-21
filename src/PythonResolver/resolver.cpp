@@ -47,7 +47,7 @@ PythonResolver::_CreateIdentifier(
                                      "Resolver._CreateIdentifier",
                                      &pythonResult, assetPath, anchorAssetPath, serializedContext, serializedFallbackContext);
     if (!state) {
-        std::cerr << "Failed to call Resolver._CreateIdentifier in " << DEFINE_STRING(AR_PYTHONRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME) << ".py.";
+        std::cerr << "Failed to call Resolver._CreateIdentifier in " << DEFINE_STRING(AR_PYTHONRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME) << ".py. ";
         std::cerr << "Please verify that the python code is valid!" << std::endl;
     }
     return pythonResult;
@@ -66,7 +66,7 @@ PythonResolver::_CreateIdentifierForNewAsset(
                                      "Resolver._CreateIdentifierForNewAsset",
                                      &pythonResult, assetPath, anchorAssetPath);
     if (!state) {
-        std::cerr << "Failed to call Resolver._CreateIdentifierForNewAsset in " << DEFINE_STRING(AR_PYTHONRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME) << ".py.";
+        std::cerr << "Failed to call Resolver._CreateIdentifierForNewAsset in " << DEFINE_STRING(AR_PYTHONRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME) << ".py. ";
         std::cerr << "Please verify that the python code is valid!" << std::endl;
     }
     return pythonResult;
@@ -87,7 +87,7 @@ PythonResolver::_Resolve(
                                      "Resolver._Resolve",
                                      &pythonResult, assetPath, serializedContext, serializedFallbackContext);
     if (!state) {
-        std::cerr << "Failed to call Resolver._Resolve in " << DEFINE_STRING(AR_PYTHONRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME) << ".py.";
+        std::cerr << "Failed to call Resolver._Resolve in " << DEFINE_STRING(AR_PYTHONRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME) << ".py. ";
         std::cerr << "Please verify that the python code is valid!" << std::endl;
     }
     return pythonResult;
@@ -103,7 +103,7 @@ PythonResolver::_ResolveForNewAsset(
                                      "Resolver._ResolveForNewAsset",
                                      &pythonResult, assetPath);
     if (!state) {
-        std::cerr << "Failed to call Resolver._ResolveForNewAsset in " << DEFINE_STRING(AR_PYTHONRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME) << ".py.";
+        std::cerr << "Failed to call Resolver._ResolveForNewAsset in " << DEFINE_STRING(AR_PYTHONRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME) << ".py. ";
         std::cerr << "Please verify that the python code is valid!" << std::endl;
     }
     return pythonResult;
@@ -172,7 +172,7 @@ PythonResolver::_IsContextDependentPath(
                                      "Resolver._IsContextDependentPath",
                                      &pythonResult, assetPath);
     if (!state) {
-        std::cerr << "Failed to call Resolver._IsContextDependentPath in " << DEFINE_STRING(AR_PYTHONRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME) << ".py.";
+        std::cerr << "Failed to call Resolver._IsContextDependentPath in " << DEFINE_STRING(AR_PYTHONRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME) << ".py. ";
         std::cerr << "Please verify that the python code is valid!" << std::endl;
     }
     return pythonResult;
@@ -203,7 +203,7 @@ PythonResolver::_GetModificationTimestamp(
                                      "Resolver._GetModificationTimestamp",
                                      &pythonResult, assetPath, resolvedPath);
     if (!state) {
-        std::cerr << "Failed to call Resolver._GetModificationTimestamp in " << DEFINE_STRING(AR_PYTHONRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME) << ".py.";
+        std::cerr << "Failed to call Resolver._GetModificationTimestamp in " << DEFINE_STRING(AR_PYTHONRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME) << ".py. ";
         std::cerr << "Please verify that the python code is valid!" << std::endl;
     }
     return pythonResult;

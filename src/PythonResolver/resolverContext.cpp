@@ -12,7 +12,10 @@
 
 PXR_NAMESPACE_USING_DIRECTIVE
 
-PythonResolverContext::PythonResolverContext() = default;
+PythonResolverContext::PythonResolverContext() {
+    // Init
+    this->LoadOrRefreshData();
+}
 
 PythonResolverContext::PythonResolverContext(const PythonResolverContext& ctx) = default;
 

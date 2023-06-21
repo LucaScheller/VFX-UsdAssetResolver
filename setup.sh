@@ -1,7 +1,9 @@
 # Source repo
 export REPO_SOURCED=1
 export REPO_ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")" &> /dev/null && (pwd -W 2> /dev/null || pwd))
-export RESOLVER_NAME=pythonResolver # Has to be one of 'fileResolver'/'pythonResolver'
+
+# Define Resolver > Has to be one of 'fileResolver'/'pythonResolver'
+export RESOLVER_NAME=pythonResolver
 export RESOLVER_NAME_UPPERCASE=$(echo ${RESOLVER_NAME} | tr '[:lower:]' '[:upper:]')
 
 # Source Houdini (This defines what Houdini version to compile against)
@@ -11,8 +13,8 @@ popd > /dev/null
 export HOUDINI_LMINFO_VERBOSE=1
 # Source env
 export PATH=${REPO_ROOT}/dist/${RESOLVER_NAME}/bin:${PATH}
-export PYTHONPATH=${REPO_ROOT}/dist/${RESOLVER_NAME}/lib/python:${HFS}/python/lib/python3.9/site-packages-forced:${HFS}/python/lib/python3.9/site-packages:$PYTHONPATH
-export PXR_PLUGINPATH_NAME=${REPO_ROOT}/dist/${RESOLVER_NAME}/resources
+export PYTHONPATH=${REPO_ROOT}/dist/${RESOLVER_NAME}/lib/python:${HFS}/python/lib/python3.9/site-packages:$PYTHONPATH
+export PXR_PLUGINPATH_NAME=${REPO_ROOT}/dist/${RESOLVER_NAME}/resources:${PXR_PLUGINPATH_NAME}
 export LD_LIBRARY_PATH=${REPO_ROOT}/dist/${RESOLVER_NAME}/lib:${HFS}/python/lib:${HFS}/dsolib
 alias  usdpython="$HFS/python/bin/python $@"
 # Configure resolver
