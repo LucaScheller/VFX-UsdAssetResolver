@@ -8,7 +8,7 @@ from usdAssetResolver import FileResolver
 
 
 ## Tokens
-Tokens can be found in FileResolver.Tokens, for example:
+Tokens can be found in FileResolver.Tokens:
 ```python
 FileResolver.Tokens.mappingPairs
 ```
