@@ -113,18 +113,3 @@ target_include_directories(testResolve PUBLIC ${AR_PYTHON_INCLUDE_DIR} ${AR_PXR_
 set_target_properties(testResolve PROPERTIES PREFIX "")
 # Install
 install(TARGETS testResolve DESTINATION bin)
-
-### Status ###
-message(STATUS "--- Usd Hybrid Resolver Instructions Start ---")
-message(NOTICE "To use the compiled files, set the following environment variables:")
-message(NOTICE "export PATH=${REPO_ROOT}/dist/${RESOLVER_NAME}/bin:/opt/hfs19.5/python/bin:${PATH}")
-message(NOTICE "export PYTHONPATH=${CMAKE_INSTALL_PREFIX}/lib/python:${AR_PYTHON_LIB_SITEPACKAGES}:$PYTHONPATH")
-message(NOTICE "export PXR_PLUGINPATH_NAME=${CMAKE_INSTALL_PREFIX}/resources:${PXR_PLUGINPATH_NAME}")
-message(NOTICE "export LD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:${HFS}/python/lib:${HFS}/dsolib:$LD_LIBRARY_PATH")
-message(NOTICE "To test if it worked, run:\nexport ${AR_SEARCH_PATHS}=/some/search/pathA:/some/search/pathB\n${CMAKE_INSTALL_PREFIX}/bin/testResolve")
-message(STATUS "--- Usd Python Resolver Instructions End ---\n")
-
-
-
-
-

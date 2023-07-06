@@ -103,15 +103,3 @@ install(
 )
 
 ### Status ###
-message(STATUS "--- Usd Python Resolver Instructions Start ---")
-message(NOTICE "To use the compiled files, set the following environment variables:")
-message(NOTICE "export PATH={AR_HOUDINI_ROOT}/python/bin:${PATH}")
-message(NOTICE "export PYTHONPATH=${CMAKE_INSTALL_PREFIX}/lib/python:${AR_PYTHON_LIB_SITEPACKAGES}:$PYTHONPATH")
-message(NOTICE "export PXR_PLUGINPATH_NAME=${CMAKE_INSTALL_PREFIX}/resources:$PXR_PLUGINPATH_NAME")
-message(NOTICE "export LD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:$LD_LIBRARY_PATH")
-message(STATUS "--- Usd Python Resolver Instructions End ---\n")
-
-
-
-
-

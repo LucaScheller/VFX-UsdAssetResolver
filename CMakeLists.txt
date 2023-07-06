@@ -34,7 +34,7 @@ set(AR_PYTHONRESOLVER_TARGET_PYTHON _${AR_PYTHONRESOLVER_TARGET_LIB})
 set(AR_PYTHONRESOLVER_INSTALL_PREFIX ${AR_PROJECT_NAME}/${AR_PYTHONRESOLVER_USD_PLUGIN_NAME})
 # Hybrid Resolver
 option(AR_PYTHONRESOLVER_BUILD "Build the HybridResolver" OFF)
-if($ENV{RESOLVER_NAME} STREQUAL "hybridResolver")
+if($ENV{RESOLVER_NAME} STREQUAL "HybridResolver")
     set(AR_PYTHONRESOLVER_BUILD ON)
 endif()
 set(AR_PYTHONRESOLVER_USD_PLUGIN_NAME hybridResolver)
@@ -101,3 +101,18 @@ endif()
 if(${AR_PYTHONRESOLVER_BUILD})
     add_subdirectory("src/PythonResolver")
 endif()
+# HybridResolver
+if(${AR_HYBRIDRESOLVER_BUILD})
+    add_subdirectory("src/HybridResolver")
+endif()
+
+# Status
+message(STATUS "--- Usd Resolver Instructions Start ---")
+message(NOTICE "To use the compiled files, set the following environment variables:")
+message(NOTICE "export PATH=${REPO_ROOT}/dist/${RESOLVER_NAME}/bin:${HFS}/python/bin:${PATH}")
+message(NOTICE "export PYTHONPATH=${CMAKE_INSTALL_PREFIX}/lib/python:${AR_PYTHON_LIB_SITEPACKAGES}:$PYTHONPATH")
+message(NOTICE "export PXR_PLUGINPATH_NAME=${CMAKE_INSTALL_PREFIX}/resources:${PXR_PLUGINPATH_NAME}")
+message(NOTICE "export LD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:${HFS}/python/lib:${HFS}/dsolib:$LD_LIBRARY_PATH")
+message(NOTICE "To test if it worked (Only supported for the 'FileResolver'), run:\nexport ${AR_SEARCH_PATHS}=/some/search/pathA:/some/search/pathB\n${CMAKE_INSTALL_PREFIX}/bin/testResolve")
+message(STATUS "--- Usd Resolver Instructions End ---\n")
+
