@@ -157,7 +157,7 @@ PythonResolver::_CreateDefaultContextForAsset(
     std::string assetDir = TfGetPathName(TfAbsPath(resolvedPathStr));
     struct PythonResolverContextRecord record;
     record.timestamp = this->_GetModificationTimestamp(assetPath, resolvedPath);
-    record.ctx = PythonResolverContext(resolvedPath);;
+    record.ctx = PythonResolverContext(resolvedPath);
     _sharedContexts.insert(std::pair<std::string, PythonResolverContextRecord>(resolvedPath, record));
     return ArResolverContext(record.ctx);
 }
