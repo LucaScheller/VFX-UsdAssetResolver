@@ -14,22 +14,22 @@
 
 PXR_NAMESPACE_OPEN_SCOPE
 
-struct FileResolverContextRecord
+struct HybridResolverContextRecord
 {
     ArTimestamp timestamp;
-    FileResolverContext ctx;
+    HybridResolverContext ctx;
 };
 
-static std::map<std::string, FileResolverContextRecord> _sharedContexts;
+static std::map<std::string, HybridResolverContextRecord> _sharedContexts;
 
-class FileResolver final : public ArResolver
+class HybridResolver final : public ArResolver
 {
 public:
     AR_HYBRIDRESOLVER_API
-    FileResolver();
+    HybridResolver();
 
     AR_HYBRIDRESOLVER_API
-    virtual ~FileResolver();
+    virtual ~HybridResolver();
 
 protected:
     AR_HYBRIDRESOLVER_API
@@ -80,8 +80,8 @@ protected:
         WriteMode writeMode) const final;
     
 private:
-    const FileResolverContext* _GetCurrentContextPtr() const;
-    FileResolverContext _fallbackContext;
+    const HybridResolverContext* _GetCurrentContextPtr() const;
+    HybridResolverContext _fallbackContext;
 };
 
 PXR_NAMESPACE_CLOSE_SCOPE
