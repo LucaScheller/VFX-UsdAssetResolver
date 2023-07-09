@@ -39,8 +39,8 @@ If you want to locally build this documentation, you'll have to download [mdBook
 
 You can do this via bash (after running `source setup.sh`):
 ```bash
-export MDBOOK_VERSION=0.4.28
-export MDBOOK_ADMONISH_VERSION=1.9.0
+export MDBOOK_VERSION="0.4.28"
+export MDBOOK_ADMONISH_VERSION="1.9.0"
 curl -L https://github.com/rust-lang/mdBook/releases/download/v$MDBOOK_VERSION/mdbook-v$MDBOOK_VERSION-x86_64-unknown-linux-gnu.tar.gz | tar xz -C ${REPO_ROOT}/tools
 curl -L https://github.com/tommilligan/mdbook-admonish/releases/download/v$MDBOOK_ADMONISH_VERSION/mdbook-admonish-v$MDBOOK_ADMONISH_VERSION-x86_64-unknown-linux-gnu.tar.gz | tar xz -C ${REPO_ROOT}/tools
 export PATH=${REPO_ROOT}/tools:$PATH
