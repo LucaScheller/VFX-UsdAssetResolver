@@ -5,7 +5,7 @@ then
     export REPO_SOURCED=1
     export REPO_ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")" &> /dev/null && (pwd -W 2> /dev/null || pwd))
     # Define Resolver > Has to be one of 'fileResolver'/'pythonResolver'/'hybridResolver'
-    export RESOLVER_NAME=FileResolver
+    export RESOLVER_NAME=fileResolver
     export RESOLVER_NAME_UPPERCASE=$(echo ${RESOLVER_NAME} | tr '[:lower:]' '[:upper:]')
     # Source Houdini (This defines what Houdini version to compile against)
     pushd /opt/hfs19.5 > /dev/null
