@@ -1,5 +1,5 @@
 # SUMMARY
-[USD Asset Resolver](./overview.md)
+[USD Asset Resolver]()
 
 
 ----------------------
