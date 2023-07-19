@@ -30,11 +30,18 @@ jobs:
           curl -L https://github.com/rust-lang/mdBook/releases/download/v$MDBOOK_VERSION/mdbook-v$MDBOOK_VERSION-x86_64-unknown-linux-gnu.tar.gz | tar xz -C ~/tools
           curl -L https://github.com/tommilligan/mdbook-admonish/releases/download/v$MDBOOK_ADMONISH_VERSION/mdbook-admonish-v$MDBOOK_ADMONISH_VERSION-x86_64-unknown-linux-gnu.tar.gz | tar xz -C ~/tools
           echo ~/tools >> $GITHUB_PATH
+      - name: Install static-sitemap-cli
+        run: npm install static-sitemap-cli
       - name: Setup Pages
         id: pages
         uses: actions/configure-pages@v3
       - name: Build with mdBook
         run: mdbook build -d book docs
+      - name: Generate sitemap
+        run: |
+          cd docs/book
+          npx sscli --no-clean --base https://lucascheller.github.io/VFX-UsdAssetResolver
+          cd ../..
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
         with:
