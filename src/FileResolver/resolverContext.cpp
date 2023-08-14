@@ -28,7 +28,7 @@ bool getStringEndswithString(const std::string &value, const std::string &compar
 
 bool getStringEndswithStrings(const std::string &value, const std::vector<std::string> array)
 {
-    for (int i; i < array.size(); i++)
+    for (int i=0; i < array.size(); i++)
     {
         if (getStringEndswithString(value, array[i]))
         {
