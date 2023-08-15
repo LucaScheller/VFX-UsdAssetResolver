@@ -13,8 +13,10 @@ then
     popd > /dev/null
     export HOUDINI_LMINFO_VERBOSE=1
     # Source env
+    export HOU_PYTHON_VERSION="$(cut -d ' ' -f 2 <<< `hython --version`)"
+    export HOU_PYTHON_SHORTVERSION=${HOU_PYTHON_VERSION%.*}
     export PATH=${REPO_ROOT}/dist/${RESOLVER_NAME}/bin:${PATH}
-    export PYTHONPATH=${REPO_ROOT}/dist/${RESOLVER_NAME}/lib/python:${HFS}/python/lib/python3.9/site-packages:$PYTHONPATH
+    export PYTHONPATH=${REPO_ROOT}/dist/${RESOLVER_NAME}/lib/python:${HFS}/python/lib/python${HOU_PYTHON_SHORTVERSION}/site-packages:$PYTHONPATH
     export PXR_PLUGINPATH_NAME=${REPO_ROOT}/dist/${RESOLVER_NAME}/resources:${PXR_PLUGINPATH_NAME}
     export LD_LIBRARY_PATH=${REPO_ROOT}/dist/${RESOLVER_NAME}/lib:${HFS}/python/lib:${HFS}/dsolib
     alias  usdpython="$HFS/python/bin/python $@"
