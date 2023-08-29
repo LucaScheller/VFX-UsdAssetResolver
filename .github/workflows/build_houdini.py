@@ -104,7 +104,6 @@ def install_sidefx_houdini():
     # Install latest production release
     hfs_dir_path = ""
     if sidefx_platform == "linux":
-        houdini_installer_dir_path = "/root/Downloads/houdini-19.5.716-linux_x86_64_gcc9.3"
         cmd = [os.path.join(houdini_installer_dir_path, "houdini.install"),
                "--auto-install", "--accept-EULA", "2021-10-13",
                "--install-houdini", "--no-install-license", "--no-install-avahi",
