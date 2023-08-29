@@ -137,3 +137,4 @@ if __name__ == "__main__":
         install_sidefx_houdini(houdini_json_file_path)
     elif args.resolver_build:
         # Build resolvers
+        pass
