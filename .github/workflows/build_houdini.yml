@@ -39,6 +39,9 @@ jobs:
           export REPO_SOURCED=1
       - name: Build USD File Resolver
         run: |
+          pushd /opt/hfs19.5 > /dev/null
+          source houdini_setup
+          popd > /dev/null
           export RESOLVER_NAME=fileResolver
           cmake . -B build
           cmake --build build --clean-first
@@ -49,6 +52,6 @@ jobs:
           cmake . -B build
           cmake --build build --clean-first              # make clean all
           cmake --install build
-      - name: Build USD Python Resolver
+      - name: Print Result
         run: |
             echo dist/*
