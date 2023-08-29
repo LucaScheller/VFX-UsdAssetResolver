@@ -8,8 +8,8 @@ import argparse
 import requests
 import sidefx
 
-SIDEFX_CLIENT_ID = os.getenv('SIDEFX_CLIENT_ID')
-SIDEFX_CLIENT_SECRET_KEY = os.getenv('SIDEFX_CLIENT_SECRET_KEY')
+SIDEFX_CLIENT_ID = os.environ['SIDEFX_CLIENT_ID']
+SIDEFX_CLIENT_SECRET_KEY = os.environ['SIDEFX_CLIENT_SECRET_KEY']
 
 
 def create_sidefx_service(client_id, client_secret_key):
@@ -105,7 +105,7 @@ def install_sidefx_houdini(tmp_dir_path):
     hfs_dir_path = ""
     if sidefx_platform == "linux":
         houdini_installer_dir_path = "/root/Downloads/houdini-19.5.716-linux_x86_64_gcc9.3"
-        cmd = [os.path.join(houdini_installer_dir_path, "houdini.install"),
+        cmd = ["sudo", os.path.join(houdini_installer_dir_path, "houdini.install"),
                "--auto-install", "--accept-EULA", "2021-10-13",
                "--install-houdini", "--no-install-license", "--no-install-avahi",
                "--no-install-hqueue-server", "--no-install-hqueue-client", 
@@ -134,7 +134,7 @@ if __name__ == "__main__":
     # Execute
     if args.houdini_install:
         # Install Houdini
-        install_sidefx_houdini(houdini_json_file_path)
+        install_sidefx_houdini()
     elif args.resolver_build:
         # Build resolvers
         pass
