@@ -80,7 +80,7 @@ def download_sidefx_product_release(dir_path, release):
     return os.path.join(dir_path, product_release_folder_name)
 
 
-def install_sidefx_houdini(tmp_dir_path):
+def install_sidefx_houdini():
     """Install the latest production release of Houdini"""
     # Connect to SideFX API
     sidefx_service = create_sidefx_service(SIDEFX_CLIENT_ID, SIDEFX_CLIENT_SECRET_KEY)
@@ -105,7 +105,7 @@ def install_sidefx_houdini(tmp_dir_path):
     hfs_dir_path = ""
     if sidefx_platform == "linux":
         houdini_installer_dir_path = "/root/Downloads/houdini-19.5.716-linux_x86_64_gcc9.3"
-        cmd = ["sudo", os.path.join(houdini_installer_dir_path, "houdini.install"),
+        cmd = [os.path.join(houdini_installer_dir_path, "houdini.install"),
                "--auto-install", "--accept-EULA", "2021-10-13",
                "--install-houdini", "--no-install-license", "--no-install-avahi",
                "--no-install-hqueue-server", "--no-install-hqueue-client", 
@@ -130,7 +130,6 @@ if __name__ == "__main__":
     parser.add_argument('--houdini_install', action='store_true', help='Install Houdini')
     parser.add_argument('--resolver_build', action='store_true', help='Build USD Asset Resolvers')
     args = parser.parse_args()
-    print("here custom", SIDEFX_CLIENT_ID)
     # Execute
     if args.houdini_install:
         # Install Houdini
