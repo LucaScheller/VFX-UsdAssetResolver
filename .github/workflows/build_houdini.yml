@@ -31,26 +31,17 @@ jobs:
           SIDEFX_CLIENT_SECRET_KEY: '${{ secrets.SIDEFX_CLIENT_SECRET_KEY }}'
         run: |
           sudo --preserve-env python3 .github/workflows/build_houdini.py --houdini_install
-      - name: Source environment
-        run: | 
-          pushd /opt/hfs19.5 > /dev/null
-          source houdini_setup
-          popd > /dev/null
-          export REPO_SOURCED=1
       - name: Build USD File Resolver
         run: |
-          pushd /opt/hfs19.5 > /dev/null
-          source houdini_setup
-          popd > /dev/null
+          pushd /opt/hfs > /dev/null && source houdini_setup && popd > /dev/null
           export RESOLVER_NAME=fileResolver
-          cmake . -B build
-          cmake --build build --clean-first
+          cmake . -B build && cmake --build build --clean-first
           cmake --install build   
       - name: Build USD Python Resolver
         run: |
+          pushd /opt/hfs > /dev/null && source houdini_setup && popd > /dev/null
           export RESOLVER_NAME=pythonResolver
-          cmake . -B build
-          cmake --build build --clean-first              # make clean all
+          cmake . -B build && cmake --build build --clean-first              # make clean all
           cmake --install build
       - name: Print Result
         run: |
