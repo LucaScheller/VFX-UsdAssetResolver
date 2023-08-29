@@ -40,8 +40,15 @@ jobs:
       - name: Build USD File Resolver
         run: |
           export RESOLVER_NAME=fileResolver
-          cmake . -B build --build build --clean-first --install build 
+          cmake . -B build
+          cmake --build build --clean-first
+          cmake --install build   
       - name: Build USD Python Resolver
         run: |
           export RESOLVER_NAME=pythonResolver
-          cmake . -B build --build build --clean-first --install build 
+          cmake . -B build
+          cmake --build build --clean-first              # make clean all
+          cmake --install build
+      - name: Build USD Python Resolver
+        run: |
+            echo dist/*
