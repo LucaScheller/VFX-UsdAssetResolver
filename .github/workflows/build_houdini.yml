@@ -41,8 +41,18 @@ jobs:
         run: |
           pushd /opt/hfs > /dev/null && source houdini_setup && popd > /dev/null
           export RESOLVER_NAME=pythonResolver
-          cmake . -B build && cmake --build build --clean-first              # make clean all
+          cmake . -B build && cmake --build build --clean-first
           cmake --install build
-      - name: Print Result
+      - name: Create single .zip archive
         run: |
-            echo dist/*
+          pushd /opt/hfs > /dev/null && source houdini_setup && popd > /dev/null
+          zip dist/UsdAssetResolver_houdini-${HOUDINI_MAJOR_RELEASE}.${HOUDINI_MINOR_RELEASE}.${HOUDINI_BUILD_VERSION}-linux.zip dist/*
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: UsdAssetResolver
+          path: dist/*.zip
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
