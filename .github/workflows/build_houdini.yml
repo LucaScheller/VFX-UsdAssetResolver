@@ -1,0 +1,47 @@
+name: Build USD Asset Resolvers against Houdini
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: "build"
+  cancel-in-progress: false
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    environment: houdini
+    env:
+      SIDEFX_CLIENT_ID: '${{ secrets.SIDEFX_CLIENT_ID }}'
+      SIDEFX_CLIENT_SECRET_KEY: '${{ secrets.SIDEFX_CLIENT_SECRET_KEY }}'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Install system packages
+        run: |
+          apt-get update
+          apt-get install -y build-essential cmake
+          apt-get install -y python3 python3-pip
+          pip3 install requests
+      - name: Install Houdini
+        run: |
+          python3 .github/workflows/build_houdini.py --houdini_install
+      - name: Source environment
+        run: | 
+          pushd /opt/hfs19.5 > /dev/null
+          source houdini_setup
+          popd > /dev/null
+          export REPO_SOURCED=1
+      - name: Build USD File Resolver
+        run: |
+          export RESOLVER_NAME=fileResolver
+          cmake . -B build --build build --clean-first --install build 
+      - name: Build USD Python Resolver
+        run: |
+          export RESOLVER_NAME=pythonResolver
+          cmake . -B build --build build --clean-first --install build 

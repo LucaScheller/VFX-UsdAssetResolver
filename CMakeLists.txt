@@ -66,8 +66,8 @@ set(AR_PYTHON_LIB_SITEPACKAGES ${AR_PYTHON_LIB_DIR}/${AR_PYTHON_LIB}/site-packag
 set(AR_PYTHON_INCLUDE_DIR ${AR_HOUDINI_INCLUDE_DIR}/${AR_PYTHON_LIB})
 # Boost
 set(AR_BOOST_NAMESPACE hboost)
-set(AR_BOOST_INCLUDE_DIR "${AR_HOUDINI_INCLUDE_DIR}/${AR_BOOST_NAMESPACE}")
 set(AR_BOOST_PYTHON_LIB ${AR_BOOST_NAMESPACE}_${AR_PYTHON_LIB_NUMBER})
+set(AR_BOOST_INCLUDE_DIR ${AR_HOUDINI_INCLUDE_DIR}/${AR_BOOST_NAMESPACE})
 
 ### Init ###
 cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
@@ -92,7 +92,7 @@ link_directories(${AR_HOUDINI_LIB_DIR})
 # Usd (Already provided via Houdini)
 link_directories(${AR_PXR_LIB_DIR})
 # Python (Already provided via Houdini)
-#link_directories(${AR_PYTHON_LIB_DIR})
+link_directories(${AR_PYTHON_LIB_DIR})
 
 ### Targets ###
 # FileResolver
