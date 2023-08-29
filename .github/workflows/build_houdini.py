@@ -1,5 +1,4 @@
 import hashlib
-import json
 import os
 import platform
 import shutil
@@ -9,8 +8,8 @@ import argparse
 import requests
 import sidefx
 
-SIDEFX_CLIENT_ID = os.environ['SIDEFX_CLIENT_ID']
-SIDEFX_CLIENT_SECRET_KEY = os.environ['SIDEFX_CLIENT_SECRET_KEY']
+SIDEFX_CLIENT_ID = os.getenv('SIDEFX_CLIENT_ID')
+SIDEFX_CLIENT_SECRET_KEY = os.getenv('SIDEFX_CLIENT_SECRET_KEY')
 
 
 def create_sidefx_service(client_id, client_secret_key):
@@ -131,6 +130,7 @@ if __name__ == "__main__":
     parser.add_argument('--houdini_install', action='store_true', help='Install Houdini')
     parser.add_argument('--resolver_build', action='store_true', help='Build USD Asset Resolvers')
     args = parser.parse_args()
+    print("here custom", SIDEFX_CLIENT_ID)
     # Execute
     if args.houdini_install:
         # Install Houdini
