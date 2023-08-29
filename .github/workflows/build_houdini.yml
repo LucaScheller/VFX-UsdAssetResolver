@@ -30,6 +30,7 @@ jobs:
           SIDEFX_CLIENT_ID: '${{ secrets.SIDEFX_CLIENT_ID }}'
           SIDEFX_CLIENT_SECRET_KEY: '${{ secrets.SIDEFX_CLIENT_SECRET_KEY }}'
         run: |
+          echo $SIDEFX_CLIENT_ID
           sudo python3 .github/workflows/build_houdini.py --houdini_install
       - name: Source environment
         run: | 
