@@ -1,9 +1,10 @@
 name: Build USD Asset Resolvers against Houdini
 
 on:
-  push:
-    tags:
-      - v*
+  release:
+    types: [released]
+  schedule:
+      - cron: '0 12 * * *'
   workflow_dispatch:
 
 concurrency:
