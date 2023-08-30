@@ -1,11 +1,10 @@
 name: Build USD Asset Resolvers against Houdini
 
 on:
+  push:
+    tags:
+      - v*
   workflow_dispatch:
-
-permissions:
-  contents: read
-  id-token: write
 
 concurrency:
   group: "build"
@@ -56,3 +55,15 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs: build
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: UsdAssetResolver
+      - name: Upload artifact as release asset
+        run: |
+          gh release upload v0.1.01 *.zip --clobber
+        env:
+          GITHUB_TOKEN: ${{ github.TOKEN }}
+
+        
