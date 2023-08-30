@@ -55,7 +55,8 @@ jobs:
 
   deploy:
     runs-on: ubuntu-latest
-    permissions: write-all
+    permissions: 
+      contents: write
     needs: build
     steps:
       - name: Checkout repository

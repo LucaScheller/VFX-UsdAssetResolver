@@ -1,14 +1,10 @@
 name: Deploy Documentation to GitHub Pages
 
 on:
-  release:
-    types: [published]
+  push:
+    branches:
+      - main
   workflow_dispatch:
-
-permissions:
-  contents: read
-  pages: write
-  id-token: write
 
 concurrency:
   group: "pages"
@@ -48,10 +44,12 @@ jobs:
           path: docs/book
 
   deploy:
+    runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
+    permissions:
+      pages: write
     needs: build
     steps:
       - name: Deploy to GitHub Pages
