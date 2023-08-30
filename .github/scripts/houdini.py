@@ -126,14 +126,9 @@ def install_sidefx_houdini():
 if __name__ == "__main__":
     # Parse args
     parser = argparse.ArgumentParser()
-    parser.add_argument('--houdini_install', action='store_true', help='Install Houdini')
-    parser.add_argument('--resolver_build', action='store_true', help='Build USD Asset Resolvers')
+    parser.add_argument('--install', action='store_true', help='Install Houdini')
     args = parser.parse_args()
     # Execute
-    if args.houdini_install:
+    if args.install:
         # Install Houdini
         install_sidefx_houdini()
-    elif args.resolver_build:
-        # Build resolvers
-        
-        pass

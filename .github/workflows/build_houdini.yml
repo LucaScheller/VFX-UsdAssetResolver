@@ -21,6 +21,7 @@ jobs:
       - name: Install system packages
         run: |
           sudo apt-get update
+          sudo apt-get install -y zip
           sudo apt-get install -y build-essential cmake
           sudo apt-get install -y python3 python3-pip
           sudo pip3 install requests
@@ -29,28 +30,24 @@ jobs:
           SIDEFX_CLIENT_ID: '${{ secrets.SIDEFX_CLIENT_ID }}'
           SIDEFX_CLIENT_SECRET_KEY: '${{ secrets.SIDEFX_CLIENT_SECRET_KEY }}'
         run: |
-          sudo --preserve-env python3 .github/workflows/build_houdini.py --houdini_install
+          sudo --preserve-env python3 .github/scripts/houdini.py --install
       - name: Build USD File Resolver
         run: |
-          pushd /opt/hfs > /dev/null && source houdini_setup && popd > /dev/null
-          export RESOLVER_NAME=fileResolver
-          cmake . -B build && cmake --build build --clean-first
-          cmake --install build   
+          .github/scripts/houdini_build.sh fileResolver
       - name: Build USD Python Resolver
         run: |
-          pushd /opt/hfs > /dev/null && source houdini_setup && popd > /dev/null
-          export RESOLVER_NAME=pythonResolver
-          cmake . -B build && cmake --build build --clean-first
-          cmake --install build
+          .github/scripts/houdini_build.sh pythonResolver
       - name: Create single .zip archive
         run: |
           pushd /opt/hfs > /dev/null && source houdini_setup && popd > /dev/null
-          zip dist/UsdAssetResolver_houdini-${HOUDINI_MAJOR_RELEASE}.${HOUDINI_MINOR_RELEASE}.${HOUDINI_BUILD_VERSION}-linux.zip dist/*
+          ARTIFACT_FILE_NAME=UsdAssetResolver_houdini-${HOUDINI_MAJOR_RELEASE}.${HOUDINI_MINOR_RELEASE}.${HOUDINI_BUILD_VERSION}-linux.zip
+          cd dist && zip -r $ARTIFACT_FILE_NAME * && cd ..
+          mkdir artifacts && mv dist/$ARTIFACT_FILE_NAME artifacts/$ARTIFACT_FILE_NAME
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
           name: UsdAssetResolver
-          path: dist/*.zip
+          path: artifacts/*.zip
 
   deploy:
     runs-on: ubuntu-latest
