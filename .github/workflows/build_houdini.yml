@@ -18,6 +18,10 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+      - name: Switch to latest release tag
+        run: |
+          latest_release_tag=$(git tag -l --sort=-version:refname  v* | head -1)
+          git checkout tags/$latest_release_tag
       - name: Install system packages
         run: |
           sudo apt-get update
@@ -63,7 +67,8 @@ jobs:
           path: artifacts
       - name: Upload artifact as release asset
         run: |
-          gh release upload v0.1.01 artifacts/*.zip --clobber
+          latest_release_tag=$(git tag -l --sort=-version:refname  v* | head -1)
+          gh release upload $latest_release_tag artifacts/*.zip --clobber
         env:
           GITHUB_TOKEN: ${{ github.TOKEN }}
 
