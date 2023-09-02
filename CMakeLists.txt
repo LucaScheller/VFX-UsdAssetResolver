@@ -91,7 +91,7 @@ include_directories(${CMAKE_SOURCE_DIR}/src/utils)
 link_directories(${AR_HOUDINI_LIB_DIR})
 # Usd (Already provided via Houdini)
 link_directories(${AR_PXR_LIB_DIR})
-# Python (Already provided via Houdini)
+# Python
 link_directories(${AR_PYTHON_LIB_DIR})
 
 ### Targets ###
