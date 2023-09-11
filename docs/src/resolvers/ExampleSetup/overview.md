@@ -56,7 +56,7 @@ Content of the USD file located at `/workspace/shots/shotA/shotA_mapping.usd`
 )
 ```
 
-Content of the USD files located at `/workspace/assets/assetA/assetA.usd` and `/workspace/assets/assetA/assetA_v002.usd`
+Content of the USD file located at `/workspace/assets/assetA/assetA_v002.usd`
 ```python
 #usda 1.0
 def Cube "box" ()
