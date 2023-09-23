@@ -40,6 +40,9 @@ jobs:
         run: |
           .\.github\scripts\houdini_build.bat pythonResolver
       - name: Create single .zip archive
+        env:
+          SIDEFX_CLIENT_ID: '${{ secrets.SIDEFX_CLIENT_ID }}'
+          SIDEFX_CLIENT_SECRET_KEY: '${{ secrets.SIDEFX_CLIENT_SECRET_KEY }}'
         run: |
           & python $pwd\.github\scripts\houdini.py --artifact --artifact_src=$pwd\dist --artifact_dst=$pwd\artifacts --artifact_prefix=UsdAssetResolver
       - name: Upload artifact
