@@ -106,7 +106,7 @@ def install_sidefx_houdini():
             tar_file.extractall(downloads_dir_path)
         os.remove(houdini_installer_file_path)
         # Get folder name
-        houdini_installer_dir_name = houdini_installer_dir_name['filename']
+        houdini_installer_dir_name = latest_production_release_download['filename']
         houdini_installer_dir_name = houdini_installer_dir_name.replace(".tar", "")
         houdini_installer_dir_name = houdini_installer_dir_name.replace(".gz", "")
         houdini_installer_dir_path = os.path.join(downloads_dir_path, houdini_installer_dir_name)
