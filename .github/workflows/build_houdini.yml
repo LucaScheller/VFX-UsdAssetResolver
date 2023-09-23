@@ -33,3 +33,6 @@ jobs:
           SIDEFX_CLIENT_SECRET_KEY: '${{ secrets.SIDEFX_CLIENT_SECRET_KEY }}'
         run: |
           python3 .github/scripts/houdini.py --install
+      - name: Build USD File Resolver
+        run: |
+          .\.github\scripts\houdini_build.bat fileResolver

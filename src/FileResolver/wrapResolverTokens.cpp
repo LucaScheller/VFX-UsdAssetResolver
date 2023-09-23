@@ -1,3 +1,4 @@
+#include <string>
 #include "boost_include_wrapper.h"
 #include BOOST_INCLUDE(python/class.hpp)
 

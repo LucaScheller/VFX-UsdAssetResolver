@@ -2,6 +2,7 @@
 #define DEFINE_STRING(string) CONVERT_STRING(string)
 
 #include <iostream>
+#include <vector>
 
 #include "pxr/pxr.h"
 #include "pxr/base/tf/getenv.h"

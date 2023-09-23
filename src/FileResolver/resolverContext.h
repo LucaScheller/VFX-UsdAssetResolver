@@ -4,6 +4,7 @@
 #include <memory>
 #include <regex>
 #include <string>
+#include <map>
 
 #include "pxr/pxr.h"
 #include "pxr/usd/ar/defineResolverContext.h"
@@ -36,6 +37,7 @@ class FileResolverContext
 {
 public:
     // Constructors
+    AR_FILERESOLVER_API
     FileResolverContext();
     AR_FILERESOLVER_API
     FileResolverContext(const FileResolverContext& ctx);
