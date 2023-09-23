@@ -77,7 +77,7 @@ jobs:
         id: cache-houdini-windows
         uses: actions/cache@v3
         with:
-          path: "C:\Program Files\Side Effects Software"
+          path: "C:\\Program Files\\Side Effects Software"
           key: ${{ runner.os }}-houdini
       - name: Install Houdini
         if: steps.cache-houdini-windows.outputs.cache-hit != 'true'
