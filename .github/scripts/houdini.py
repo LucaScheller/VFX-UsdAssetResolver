@@ -138,8 +138,8 @@ def install_sidefx_houdini():
                "/MainApp", "/LicenseServer=No", "/StartMenu=No",
                "/HQueueServer=No", "/HQueueClient=No", 
                "/EngineMaya=No", "/Engine3dsMax", "/EngineUnity", "/EngineUnreal=No", "/SideFXLabs=No"]
-        status = 0 #status = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        if status:#status.returncode != 0:
+        status = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        if status.returncode != 0:
             raise Exception("Failed to install Houdini, ran into the following error:\n {error}".format(error=status.stderr))
         hfs_dir_path = os.path.join("C:\Program Files\Side Effects Software", "Houdini {}.{}".format(latest_production_release["version"], latest_production_release["build"]))
         hfs_versionless_dir_path = os.path.join(os.path.dirname(hfs_dir_path), "Houdini")
@@ -148,10 +148,8 @@ def install_sidefx_houdini():
                         "supported!".format(platform=platform))    
     # Create version-less symlink
     logging.info('Creating symlink Houdini build {src} -> {dst}'.format(src=hfs_dir_path, dst=hfs_versionless_dir_path))
-    os.makedirs(hfs_dir_path)
     os.symlink(hfs_dir_path, hfs_versionless_dir_path)
 
-    raise Exception(pathlib.Path(hfs_versionless_dir_path).resolve())
 
 def create_sidefx_houdini_artifact(artifact_src, artifact_dst, artifact_prefix):
     """Create a .zip artifact based on the source directory content.
@@ -173,8 +171,6 @@ def create_sidefx_houdini_artifact(artifact_src, artifact_dst, artifact_prefix):
     else:
         raise Exception("Platform {platform} is currently not"
                         "supported!".format(platform=platform))   
-    err = [(p, os.path.realpath(err)) for p in ["C:\Program Files\Side Effects Software\Houdini", "C:\\Program Files\\Side Effects Software\\houdini"]]
-    raise Exception(" ".join(err))
     hfs_build_name = re_digitdot.sub("", hfs_build_name)
     artifact_file_path = os.path.join(artifact_dst, f"{artifact_prefix}_houdini-{hfs_build_name}-{sidefx_platform}")
     artifact_dir_path = os.path.dirname(artifact_file_path)
