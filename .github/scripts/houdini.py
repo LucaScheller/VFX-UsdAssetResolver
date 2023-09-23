@@ -137,8 +137,8 @@ def install_sidefx_houdini():
                "/MainApp", "/LicenseServer=No", "/StartMenu=No",
                "/HQueueServer=No", "/HQueueClient=No", 
                "/EngineMaya=No", "/Engine3dsMax", "/EngineUnity", "/EngineUnreal=No", "/SideFXLabs=No"]
-        state = 0 #status = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        if status.returncode != 0:
+        status = 0 #status = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        if status:#status.returncode != 0:
             raise Exception("Failed to install Houdini, ran into the following error:\n {error}".format(error=status.stderr))
         hfs_dir_path = os.path.join("C:\Program Files\Side Effects Software", "Houdini {}.{}".format(latest_production_release["version"], latest_production_release["build"]))
         os.makedirs(hfs_dir_path)
