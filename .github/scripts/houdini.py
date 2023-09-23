@@ -10,8 +10,8 @@ import subprocess
 import tarfile
 
 
-SIDEFX_CLIENT_ID = os.environ['SIDEFX_CLIENT_ID']
-SIDEFX_CLIENT_SECRET_KEY = os.environ['SIDEFX_CLIENT_SECRET_KEY']
+SIDEFX_CLIENT_ID = os.environ.get('SIDEFX_CLIENT_ID', "")
+SIDEFX_CLIENT_SECRET_KEY = os.environ.get('SIDEFX_CLIENT_SECRET_KEY', "")
 
 
 def create_sidefx_service(client_id, client_secret_key):
@@ -156,7 +156,7 @@ def create_sidefx_houdini_artifact(artifact_src, artifact_dst, artifact_prefix):
     if sidefx_platform == "linux":
         hfs_build_name = os.path.basename(os.path.realpath("/opt/hfs"))
     elif sidefx_platform == "win64":
-        hfs_build_name = os.path.basename(os.path.realpath("C:\Program Files\Side Effects Software\houdini"))
+        hfs_build_name = os.path.basename(os.path.realpath("C:\Program Files\Side Effects Software\Houdini"))
     hfs_build_name = re_digitdot.sub("", hfs_build_name)
     artifact_file_path = os.path.join(artifact_dst, f"{artifact_prefix}_houdini-{hfs_build_name}-{sidefx_platform}")
     artifact_dir_path = os.path.dirname(artifact_file_path)
