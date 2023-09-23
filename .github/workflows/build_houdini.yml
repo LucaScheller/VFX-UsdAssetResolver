@@ -13,8 +13,8 @@ concurrency:
 
 jobs:
 
-  build:
-    runs-on: ubuntu-latest
+  build_windows:
+    runs-on: windows-2019
     environment: houdini
     steps:
       - name: Checkout repository
@@ -26,54 +26,10 @@ jobs:
           git checkout tags/$latest_release_tag
       - name: Install system packages
         run: |
-          sudo apt-get update
-          sudo apt-get install -y zip
-          sudo apt-get install -y build-essential cmake
-          sudo apt-get install -y python3 python3-pip
-          sudo pip3 install requests
+          pip3 install requests
       - name: Install Houdini
         env:
           SIDEFX_CLIENT_ID: '${{ secrets.SIDEFX_CLIENT_ID }}'
           SIDEFX_CLIENT_SECRET_KEY: '${{ secrets.SIDEFX_CLIENT_SECRET_KEY }}'
         run: |
-          sudo --preserve-env python3 .github/scripts/houdini.py --install
-      - name: Build USD File Resolver
-        run: |
-          .github/scripts/houdini_build.sh fileResolver
-      - name: Build USD Python Resolver
-        run: |
-          .github/scripts/houdini_build.sh pythonResolver
-      - name: Create single .zip archive
-        run: |
-          pushd /opt/hfs > /dev/null && source houdini_setup && popd > /dev/null
-          ARTIFACT_FILE_NAME=UsdAssetResolver_houdini-${HOUDINI_MAJOR_RELEASE}.${HOUDINI_MINOR_RELEASE}.${HOUDINI_BUILD_VERSION}-linux.zip
-          cd dist && zip -r $ARTIFACT_FILE_NAME * && cd ..
-          mkdir artifacts && mv dist/$ARTIFACT_FILE_NAME artifacts/$ARTIFACT_FILE_NAME
-      - name: Upload artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: UsdAssetResolver
-          path: artifacts/*.zip
-
-  deploy:
-    runs-on: ubuntu-latest
-    permissions: 
-      contents: write
-    needs: build
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-      - name: Download artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: UsdAssetResolver
-          path: artifacts
-      - name: Upload artifact as release asset
-        run: |
-          git fetch --all --tags 
-          latest_release_tag=$(git tag -l --sort=-version:refname  v* | head -1)
-          gh release upload $latest_release_tag artifacts/*.zip --clobber
-        env:
-          GITHUB_TOKEN: ${{ github.TOKEN }}
-
-        
+          python3 .github/scripts/houdini.py --install

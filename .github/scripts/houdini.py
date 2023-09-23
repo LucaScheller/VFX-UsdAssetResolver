@@ -31,7 +31,7 @@ def create_sidefx_service(client_id, client_secret_key):
 def get_sidefx_platform():
     """Get the active platform usable for SideFX platform API calls
     Returns:
-        string: The active platform
+        str: The active platform
     """
     current_platform = platform.system()
     if current_platform == 'Windows' or current_platform.startswith('CYGWIN'):
@@ -50,34 +50,26 @@ def download_sidefx_product_release(dir_path, release):
         dir_path (str): The target directory
         release (dict): The download build release dict
     Returns:
-        folder_dir_path: The folder dir path of the unpacked tar file
+        str: The file path of the downloaded file
     """
-    # Download tar file
-    tar_file_name = release['filename']
-    tar_file_path = os.path.join(dir_path, tar_file_name)
+    # Download file
+    download_file_name = release['filename']
+    download_file_path = os.path.join(dir_path, download_file_name)
     request = requests.get(release['download_url'], stream=True)
     if request.status_code == 200:
-        with open(tar_file_path, 'wb') as tar_file:
+        with open(download_file_path, 'wb') as download_file:
             request.raw.decode_content = True
-            shutil.copyfileobj(request.raw, tar_file)
+            shutil.copyfileobj(request.raw, download_file)
     else:
         raise Exception('Error downloading file!')
-    # Verify tar file checksum
-    tar_file_hash = hashlib.md5()
-    with open(tar_file_path, 'rb') as tar_file:
-        for chunk in iter(lambda: tar_file.read(4096), b''):
-            tar_file_hash.update(chunk)
-    if tar_file_hash.hexdigest() != release['hash']:
+    # Verify file checksum
+    download_file_hash = hashlib.md5()
+    with open(download_file_path, 'rb') as download_file:
+        for chunk in iter(lambda: download_file.read(4096), b''):
+            download_file_hash.update(chunk)
+    if download_file_hash.hexdigest() != release['hash']:
         raise Exception('Checksum does not match!')
-    # Unpack tar file
-    with tarfile.open(tar_file_path) as tar_file:
-        tar_file.extractall(dir_path)
-    os.remove(tar_file_path)
-    # Get folder name
-    product_release_folder_name = tar_file_name
-    product_release_folder_name = product_release_folder_name.replace(".tar", "")
-    product_release_folder_name = product_release_folder_name.replace(".gz", "")
-    return os.path.join(dir_path, product_release_folder_name)
+    return download_file_path
 
 
 def install_sidefx_houdini():
@@ -86,6 +78,7 @@ def install_sidefx_houdini():
     sidefx_service = create_sidefx_service(SIDEFX_CLIENT_ID, SIDEFX_CLIENT_SECRET_KEY)
     sidefx_platform = get_sidefx_platform()
     sidefx_product = "houdini"
+    print(sidefx_platform)
     # Get release data
     releases_list = sidefx_service.download.get_daily_builds_list(product=sidefx_product,
                                                                   platform=sidefx_platform,
@@ -95,15 +88,26 @@ def install_sidefx_houdini():
                                                                                           version=latest_production_release["version"],
                                                                                           build=latest_production_release["build"],
                                                                                           platform=sidefx_platform)
+
+
     # Download latest production release
     downloads_dir_path = os.path.join(os.path.expanduser("~"), "Downloads")
     if not os.path.isdir(downloads_dir_path):
         os.makedirs(downloads_dir_path)
-    houdini_installer_dir_path = download_sidefx_product_release(downloads_dir_path,
-                                                                 latest_production_release_download)
+    houdini_installer_file_path = download_sidefx_product_release(downloads_dir_path,
+                                                                  latest_production_release_download)
     # Install latest production release
     hfs_dir_path = ""
     if sidefx_platform == "linux":
+        # Unpack tar file
+        with tarfile.open(houdini_installer_file_path) as tar_file:
+            tar_file.extractall(downloads_dir_path)
+        os.remove(houdini_installer_file_path)
+        # Get folder name
+        houdini_installer_dir_name = houdini_installer_dir_name['filename']
+        houdini_installer_dir_name = houdini_installer_dir_name.replace(".tar", "")
+        houdini_installer_dir_name = houdini_installer_dir_name.replace(".gz", "")
+        houdini_installer_dir_path = os.path.join(downloads_dir_path, houdini_installer_dir_name)
         cmd = [os.path.join(houdini_installer_dir_path, "houdini.install"),
                "--auto-install", "--accept-EULA", "2021-10-13",
                "--install-houdini", "--no-install-license", "--no-install-avahi",
@@ -115,11 +119,22 @@ def install_sidefx_houdini():
             raise Exception("Failed to install Houdini, ran into the following error:\n {error}".format(error=status.stderr))
         hfs_dir_path = os.path.join("/opt", "hfs{}.{}".format(latest_production_release["version"],
                                                               latest_production_release["build"]))
+        hfs_versionless_dir_path = os.path.join(os.path.dirname(hfs_dir_path), "hfs")
+    elif sidefx_platform == "win64":
+        cmd = [houdini_installer_file_path,
+               "/S", "/AcceptEULA=2021-10-13",
+               "/MainApp", "/LicenseServer=No", "/StartMenu=No",
+               "/HQueueServer=No", "/HQueueClient=No", 
+               "/EngineMaya=No", "/Engine3dsMax", "/EngineUnity", "/EngineUnreal=No", "/SideFXLabs=No"]
+        status = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        if status.returncode != 0:
+            raise Exception("Failed to install Houdini, ran into the following error:\n {error}".format(error=status.stderr))
+        hfs_dir_path = os.path.join("C:\Program Files\Side Effects Software", "Houdini {}.{}".format(latest_production_release["version"], latest_production_release["build"]))
+        hfs_versionless_dir_path = os.path.join(os.path.dirname(hfs_dir_path), "Houdini")
     else:
         raise Exception("Platform {platform} is currently not"
                         "supported!".format(platform=platform))    
     # Create version-less symlink
-    hfs_version_less_dir_path = os.path.join(os.path.dirname(hfs_dir_path), "hfs")
     os.symlink(hfs_dir_path, hfs_version_less_dir_path)
 
 
