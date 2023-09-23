@@ -91,7 +91,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions: 
       contents: write
-    needs: build_windows
+    needs: [build_linux, build_windows]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
