@@ -22,8 +22,8 @@ jobs:
       - name: Switch to latest release tag
         run: |
           git fetch --all --tags
-          for /f "usebackq delims==" %v in (`git tag -l --sort=-version:refname v*`) do set latest_release_tag=%v
-          git checkout tags/%latest_release_tag%
+          $latest_release_tag=git tag -l --sort=-version:refname v*
+          git checkout tags/$latest_release_tag
       - name: Install system packages
         run: |
           pip3 install requests
