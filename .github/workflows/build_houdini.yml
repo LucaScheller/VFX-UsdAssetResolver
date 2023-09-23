@@ -31,7 +31,14 @@ jobs:
           sudo apt-get install -y build-essential cmake
           sudo apt-get install -y python3 python3-pip
           sudo pip3 install requests
+      - name: Cache Houdini
+        id: cache-houdini-linux
+        uses: actions/cache@v3
+        with:
+          path: "/opt/hfs*"
+          key: ${{ runner.os }}-houdini
       - name: Install Houdini
+        if: steps.cache-houdini-linux.outputs.cache-hit != 'true'
         env:
           SIDEFX_CLIENT_ID: '${{ secrets.SIDEFX_CLIENT_ID }}'
           SIDEFX_CLIENT_SECRET_KEY: '${{ secrets.SIDEFX_CLIENT_SECRET_KEY }}'
@@ -66,7 +73,14 @@ jobs:
       - name: Install system packages
         run: |
           pip3 install requests
+      - name: Cache Houdini
+        id: cache-houdini-windows
+        uses: actions/cache@v3
+        with:
+          path: "C:\Program Files\Side Effects Software"
+          key: ${{ runner.os }}-houdini
       - name: Install Houdini
+        if: steps.cache-houdini-windows.outputs.cache-hit != 'true'
         env:
           SIDEFX_CLIENT_ID: '${{ secrets.SIDEFX_CLIENT_ID }}'
           SIDEFX_CLIENT_SECRET_KEY: '${{ secrets.SIDEFX_CLIENT_SECRET_KEY }}'
