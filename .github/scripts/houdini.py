@@ -1,5 +1,6 @@
 import argparse
 import hashlib
+import logging
 import os
 import platform
 import re
@@ -12,6 +13,9 @@ import tarfile
 
 SIDEFX_CLIENT_ID = os.environ.get('SIDEFX_CLIENT_ID', "")
 SIDEFX_CLIENT_SECRET_KEY = os.environ.get('SIDEFX_CLIENT_SECRET_KEY', "")
+
+
+logging.basicConfig(format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
 
 
 def create_sidefx_service(client_id, client_secret_key):
@@ -77,6 +81,7 @@ def download_sidefx_product_release(dir_path, release):
 def install_sidefx_houdini():
     """Install the latest production release of Houdini"""
     # Connect to SideFX API
+    logging.info('Connecting to SideFX API')
     sidefx_service = create_sidefx_service(SIDEFX_CLIENT_ID, SIDEFX_CLIENT_SECRET_KEY)
     sidefx_platform = get_sidefx_platform()
     sidefx_product = "houdini"
@@ -93,12 +98,16 @@ def install_sidefx_houdini():
 
 
     # Download latest production release
+    logging.info('Downloading Houdini build {version}.{build}'.format(version=latest_production_release["version"], 
+                                                                      build=latest_production_release["build"]))
     downloads_dir_path = os.path.join(os.path.expanduser("~"), "Downloads")
     if not os.path.isdir(downloads_dir_path):
         os.makedirs(downloads_dir_path)
     houdini_installer_file_path = download_sidefx_product_release(downloads_dir_path,
                                                                   latest_production_release_download)
     # Install latest production release
+    logging.info('Installing Houdini build {version}.{build}'.format(version=latest_production_release["version"], 
+                                                                     build=latest_production_release["build"]))
     hfs_dir_path = ""
     if sidefx_platform == "linux":
         # Unpack tar file
@@ -137,6 +146,7 @@ def install_sidefx_houdini():
         raise Exception("Platform {platform} is currently not"
                         "supported!".format(platform=platform))    
     # Create version-less symlink
+    logging.info('Creating symlink Houdini build {src} -> {dst}'.format(src=hfs_dir_path, dst=hfs_versionless_dir_path))
     os.symlink(hfs_dir_path, hfs_versionless_dir_path)
 
 
@@ -157,6 +167,9 @@ def create_sidefx_houdini_artifact(artifact_src, artifact_dst, artifact_prefix):
         hfs_build_name = os.path.basename(os.path.realpath("/opt/hfs"))
     elif sidefx_platform == "win64":
         hfs_build_name = os.path.basename(os.path.realpath("C:\Program Files\Side Effects Software\Houdini"))
+    else:
+        raise Exception("Platform {platform} is currently not"
+                        "supported!".format(platform=platform))   
     hfs_build_name = re_digitdot.sub("", hfs_build_name)
     artifact_file_path = os.path.join(artifact_dst, f"{artifact_prefix}_houdini-{hfs_build_name}-{sidefx_platform}")
     artifact_dir_path = os.path.dirname(artifact_file_path)
