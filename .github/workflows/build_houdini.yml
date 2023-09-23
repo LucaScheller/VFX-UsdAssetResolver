@@ -52,7 +52,8 @@ jobs:
           .github/scripts/houdini_build.sh pythonResolver
       - name: Create single .zip archive
         run: |
-          python pwd\.github\scripts\houdini.py --artifact --artifact_src=pwd\dist --artifact_dst=pwd\artifacts --artifact_prefix=UsdAssetResolver
+          repo_root=$(cd .; pwd)
+          python3 .github/scripts/houdini.py --artifact --artifact_src=$repo_root/dist --artifact_dst=$repo_root/artifacts --artifact_prefix=UsdAssetResolver
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
