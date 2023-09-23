@@ -36,3 +36,35 @@ jobs:
       - name: Build USD File Resolver
         run: |
           .\.github\scripts\houdini_build.bat fileResolver
+      - name: Build USD Python Resolver
+        run: |
+          .\.github\scripts\houdini_build.bat pythonResolver
+      - name: Create single .zip archive
+        run: |
+          & python $pwd\.github\scripts\houdini.py --artifact --artifact_src=$pwd\dist --artifact_dst=$pwd\artifacts --artifact_prefix=UsdAssetResolver
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: UsdAssetResolver-Windows
+          path: artifacts/*.zip
+
+  deploy:
+    runs-on: ubuntu-latest
+    permissions: 
+      contents: write
+    needs: build_windows
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Download artifacts Windows
+        uses: actions/download-artifact@v3
+        with:
+          name: UsdAssetResolver-Windows
+          path: artifacts
+      - name: Upload artifact as release asset
+        run: |
+          git fetch --all --tags 
+          latest_release_tag=$(git tag -l --sort=-version:refname  v* | head -1)
+          gh release upload $latest_release_tag artifacts/*.zip --clobber
+        env:
+          GITHUB_TOKEN: ${{ github.TOKEN }}

@@ -1,12 +1,14 @@
+import argparse
 import hashlib
 import os
 import platform
+import re
+import requests
 import shutil
+import sidefx
 import subprocess
 import tarfile
-import argparse
-import requests
-import sidefx
+
 
 SIDEFX_CLIENT_ID = os.environ['SIDEFX_CLIENT_ID']
 SIDEFX_CLIENT_SECRET_KEY = os.environ['SIDEFX_CLIENT_SECRET_KEY']
@@ -138,12 +140,44 @@ def install_sidefx_houdini():
     os.symlink(hfs_dir_path, hfs_versionless_dir_path)
 
 
+def create_sidefx_houdini_artifact(artifact_src, artifact_dst, artifact_prefix):
+    """Create a .zip artifact based on the source directory content.
+    The output name will have will end in the houdini build name.
+
+    Args:
+        artifact_src (str): The source directory
+        artifact_dst (str): The target directory
+        artifact_prefix (str): The file name prefix, the suffix will be the Houdini build name
+    Returns:
+        str: The artifact file path
+    """
+    re_digitdot = re.compile("[^0-9.]")
+    sidefx_platform = get_sidefx_platform()
+    if sidefx_platform == "linux":
+        hfs_build_name = os.path.basename(os.path.realpath("/opt/hfs"))
+    elif sidefx_platform == "win64":
+        hfs_build_name = os.path.basename(os.path.realpath("C:\Program Files\Side Effects Software\houdini"))
+    hfs_build_name = re_digitdot.sub("", hfs_build_name)
+    artifact_file_path = os.path.join(artifact_dst, f"{artifact_prefix}_houdini-{hfs_build_name}-{sidefx_platform}")
+    artifact_dir_path = os.path.dirname(artifact_file_path)
+    if not os.path.exists(artifact_dir_path):
+        os.makedirs(artifact_dir_path)
+    shutil.make_archive(artifact_file_path, 'zip', artifact_src)
+
+
 if __name__ == "__main__":
     # Parse args
     parser = argparse.ArgumentParser()
     parser.add_argument('--install', action='store_true', help='Install Houdini')
+    parser.add_argument('--artifact', action='store_true', help='Create artifact')
+    parser.add_argument('--artifact_src', help='Artifact source directory')
+    parser.add_argument('--artifact_dst', help='Artifact target directory')
+    parser.add_argument('--artifact_prefix', help='Artifact name prefix')
     args = parser.parse_args()
     # Execute
+    # Install Houdini
     if args.install:
-        # Install Houdini
         install_sidefx_houdini()
+    # Create artifact tagged with Houdini build name (expects Houdini to be installed via the above install command)
+    if args.artifact:
+        create_sidefx_houdini_artifact(args.artifact_src, args.artifact_dst, args.artifact_prefix)
