@@ -19,11 +19,11 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-      - name: Switch to latest release tag
-        run: |
-          git fetch --all --tags
-          $latest_release_tag=git tag -l --sort=-version:refname v*
-          git checkout tags/$latest_release_tag
+      #- name: Switch to latest release tag
+      #  run: |
+      #    git fetch --all --tags
+      #    $latest_release_tag=git tag -l --sort=-version:refname v*
+      #    git checkout tags/$latest_release_tag
       - name: Install system packages
         run: |
           pip3 install requests

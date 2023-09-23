@@ -78,7 +78,7 @@ def install_sidefx_houdini():
     sidefx_service = create_sidefx_service(SIDEFX_CLIENT_ID, SIDEFX_CLIENT_SECRET_KEY)
     sidefx_platform = get_sidefx_platform()
     sidefx_product = "houdini"
-    print(sidefx_platform)
+
     # Get release data
     releases_list = sidefx_service.download.get_daily_builds_list(product=sidefx_product,
                                                                   platform=sidefx_platform,
@@ -135,7 +135,7 @@ def install_sidefx_houdini():
         raise Exception("Platform {platform} is currently not"
                         "supported!".format(platform=platform))    
     # Create version-less symlink
-    os.symlink(hfs_dir_path, hfs_version_less_dir_path)
+    os.symlink(hfs_dir_path, hfs_versionless_dir_path)
 
 
 if __name__ == "__main__":
