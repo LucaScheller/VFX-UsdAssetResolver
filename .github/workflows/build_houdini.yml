@@ -69,7 +69,7 @@ jobs:
       - name: Switch to latest release tag
         run: |
           git fetch --all --tags
-          $latest_release_tag=git tag -l --sort=-version:refname v* | select -last 1
+          $latest_release_tag=git tag -l --sort=-version:refname v* | select -first 1
           git checkout tags/$latest_release_tag
       - name: Install system packages
         run: |
