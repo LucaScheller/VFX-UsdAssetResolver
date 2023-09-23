@@ -2,6 +2,7 @@ import argparse
 import hashlib
 import logging
 import os
+import pathlib
 import platform
 import re
 import requests
@@ -150,7 +151,7 @@ def install_sidefx_houdini():
     os.makedirs(hfs_dir_path)
     os.symlink(hfs_dir_path, hfs_versionless_dir_path)
 
-    raise Exception(os.path.realpath(hfs_versionless_dir_path))
+    raise Exception(pathlib.Path(hfs_versionless_dir_path).resolve())
 
 def create_sidefx_houdini_artifact(artifact_src, artifact_dst, artifact_prefix):
     """Create a .zip artifact based on the source directory content.
