@@ -165,9 +165,9 @@ def create_sidefx_houdini_artifact(artifact_src, artifact_dst, artifact_prefix):
     re_digitdot = re.compile("[^0-9.]")
     sidefx_platform = get_sidefx_platform()
     if sidefx_platform == "linux":
-        hfs_build_name = os.path.basename(os.path.realpath("/opt/hfs"))
+        hfs_build_name = os.path.basename(pathlib.Path("/opt/hfs").resolve())
     elif sidefx_platform == "win64":
-        hfs_build_name = os.path.basename(os.path.realpath("C:\Program Files\Side Effects Software\Houdini"))
+        hfs_build_name = os.path.basename(pathlib.Path("C:\Program Files\Side Effects Software\Houdini").resolve())
     else:
         raise Exception("Platform {platform} is currently not"
                         "supported!".format(platform=platform))   
