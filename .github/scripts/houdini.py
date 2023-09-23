@@ -141,16 +141,16 @@ def install_sidefx_houdini():
         if status:#status.returncode != 0:
             raise Exception("Failed to install Houdini, ran into the following error:\n {error}".format(error=status.stderr))
         hfs_dir_path = os.path.join("C:\Program Files\Side Effects Software", "Houdini {}.{}".format(latest_production_release["version"], latest_production_release["build"]))
-        os.makedirs(hfs_dir_path)
         hfs_versionless_dir_path = os.path.join(os.path.dirname(hfs_dir_path), "Houdini")
-        raise Exception(os.path.realpath(hfs_versionless_dir_path))
     else:
         raise Exception("Platform {platform} is currently not"
                         "supported!".format(platform=platform))    
     # Create version-less symlink
     logging.info('Creating symlink Houdini build {src} -> {dst}'.format(src=hfs_dir_path, dst=hfs_versionless_dir_path))
+    os.makedirs(hfs_dir_path)
     os.symlink(hfs_dir_path, hfs_versionless_dir_path)
 
+    raise Exception(os.path.realpath(hfs_versionless_dir_path))
 
 def create_sidefx_houdini_artifact(artifact_src, artifact_dst, artifact_prefix):
     """Create a .zip artifact based on the source directory content.
