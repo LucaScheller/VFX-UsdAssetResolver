@@ -56,6 +56,7 @@ export AR_SEARCH_REGEX_EXPRESSION="(v\d\d\d)"
 export AR_SEARCH_REGEX_FORMAT="v000"
 ```
 ~~~
+
 # Debugging
 
 ## Using the `TF_DEBUG` environment variable
