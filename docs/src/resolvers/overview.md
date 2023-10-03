@@ -18,16 +18,26 @@ Run this in your terminal before running your USD capable app. If your are using
 ~~~admonish info title=""
 ```bash
 # Linux
+export REPO_ROOT=<InsertPathToRootFolder>
 export RESOLVER_NAME=<InsertResolverName> # E.g. fileResolver
 export PYTHONPATH=${REPO_ROOT}/dist/${RESOLVER_NAME}/lib/python:${PYTHONPATH}
 export PXR_PLUGINPATH_NAME=${REPO_ROOT}/dist/${RESOLVER_NAME}/resources:${PXR_PLUGINPATH_NAME}
 export LD_LIBRARY_PATH=${REPO_ROOT}/dist/${RESOLVER_NAME}/lib
+export TF_DEBUG=AR_RESOLVER_INIT # Debug Logs
 # Windows
+set REPO_ROOT=<InsertPathToRootFolder>
 set RESOLVER_NAME=<InsertResolverName> # E.g. fileResolver
 set PYTHONPATH=%REPO_ROOT%/dist/%RESOLVER_NAME%/lib/python:%PYTHONPATH%
 set PXR_PLUGINPATH_NAME=%REPO_ROOT%/dist/%RESOLVER_NAME%/resources:%PXR_PLUGINPATH_NAME%
 set PATH=%REPO_ROOT%/dist/%RESOLVER_NAME%/lib:%PATH%
+set TF_DEBUG=AR_RESOLVER_INIT # Debug Logs
 ```
+~~~
+
+If it loads correctly, you'll see something like this in the terminal output:
+~~~admonish info title=""
+```bash
+ArGetResolver(): Found primary asset resolver types: [FileResolver, ArDefaultResolver]
 ~~~
 
 ## Resolver Configuration
