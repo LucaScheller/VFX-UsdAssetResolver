@@ -38,6 +38,7 @@ If it loads correctly, you'll see something like this in the terminal output:
 ~~~admonish info title=""
 ```bash
 ArGetResolver(): Found primary asset resolver types: [FileResolver, ArDefaultResolver]
+```
 ~~~
 
 ## Resolver Configuration
