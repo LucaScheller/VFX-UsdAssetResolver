@@ -4,7 +4,7 @@ table {
 
 :root {
     --sidebar-width: 485px;
-    --content-max-width: 1300px;
+    --content-max-width: 1250px;
 }
 
 .chapter li {

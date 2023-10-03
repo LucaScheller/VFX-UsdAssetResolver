@@ -82,6 +82,7 @@ ArGetResolver(): Found package resolver Usd_UsdzResolver
 ArGetResolver(): Using package resolver Usd_UsdzResolver for usdz from plugin usd
 ```
 ~~~
+
 ## Loading the Python Module
 When importing the Python module, be sure to first import the Ar module, otherwise you might run into errors, as the resolver is not properly initialized:
 ~~~admonish info title=""
