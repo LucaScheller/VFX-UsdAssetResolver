@@ -1,29 +1,48 @@
 # Building
+Currently we support building against Houdini on Linux and Windows. If you don't want to self-compile, you can also download pre-compiled builds on our [release page](https://github.com/LucaScheller/VFX-UsdAssetResolver/releases). To load the resolver, you must specify a few environment variables, see our [Resolvers > Environment Variables](../resolvers/overview.md#environment-variables) section for more details. 
 
-After installing the [requirements](./requirements.md), we need to first source our development environment.
+## Setting up our build environment
+After installing the [requirements](./requirements.md), we first need to set a couple of environment variables that our cmake file depends on.
 
+### Using our convenience setup script
+On Linux we provide a bash script that you can source that sets up our development environment. This sets a few environment variables needed to build the resolver as well as for Houdini to load it.
 This can be done by running the following from the source directory:
 ```bash
 source setup.sh
 ```
 
-In the [setup.sh](https://github.com/LucaScheller/VFX-UsdAssetResolver/blob/main/setup.sh) file you can define what resolver to compile by setting the `RESOLVER_NAME` variable to one of the resolvers listed in [resolvers](../resolvers/overview.md) in camelCase syntax (for example `fileResolver` or `pythonResolver`).
-
-```admonish important
-Here you'll also have to define what Houdini version to compile against.
-```
-
+In the [setup.sh](https://github.com/LucaScheller/VFX-UsdAssetResolver/blob/main/setup.sh) file you can define what resolver to compile by setting the `RESOLVER_NAME` variable to one of the resolvers listed in [resolvers](../resolvers/overview.md) in camelCase syntax (for example `fileResolver` or `pythonResolver`). Here you'll also have to define what Houdini version to compile against.
 
 It will then automatically set the `PATH`, `PYTHONPATH`, `PXR_PLUGINPATH_NAME` and `LD_LIBRARY_PATH` environment variables to the correct paths so that after your run the compile, the resolver will be loaded correctly (e.g. if you launch Houdini via `houdinifx`, it will load everything correctly). The build process also logs this information again.
 
+By default it also sets the `TF_DEBUG` env var to `<ResolverName>_RESOLVER` so that you'll get debug logs of what the resolver is doing. Check out the debug codes section of the resolvers for more information.
+
+### Manually setting up the environment
+If you don't want to use our convenience script, you can also setup the environment manually.
+
+```bash
+# Linux
+export HFS=<PathToHoudiniRoot> # For example "/opt/hfs<HoudiniVersion>"
+export RESOLVER_NAME=fileResolver
+# Windows
+set HFS=<PathToHoudiniRoot> # For example "C:\Program Files\Side Effects Software\<HoudiniVersion>"
+set RESOLVER_NAME=fileResolver
+```
+
+## Running the build
 To run the build, run:
 
 ```bash
+# Linux
 ./build.sh
+# Windows
+build.bat
 ```
 
-By default it also sets the `TF_DEBUG` env var to `<ResolverName>_RESOLVER` so that you'll get debug logs of what the resolver is doing. Check out the debug codes section of the resolvers for more information.
+The `build.sh/.bat` files also contain (commented out) the environment definition part above, so alternatively just comment out the lines and you are good to go.
 
+
+## Customize build
 If you want to further configure the build, you can head into the [CMakeLists.txt](https://github.com/LucaScheller/VFX-UsdAssetResolver/blob/main/CMakeLists.txt) in the root of this repo. In the first section of the file, you can configure various things, like the environment variables that the resolvers use, Python module namespaces and what resolvers to compile.
 This is a standard `CMakeLists.txt` file that you can also configure via [CMake-GUI](https://cmake.org/cmake/help/latest/manual/cmake-gui.1.html). If you don't want to use the `build.sh` bash script, you can also configure and compile this project like any other C++ project via this file.
 
