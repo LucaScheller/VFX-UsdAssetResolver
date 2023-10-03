@@ -19,7 +19,7 @@ default-theme = "ayu"
 git-repository-url = "https://github.com/LucaScheller/VFX-UsdAssetResolver"
 git-repository-icon = "fa-github"
 edit-url-template = "https://github.com/LucaScheller/VFX-UsdAssetResolver/edit/main/docs/{path}"
-additional-css = ["theme/ext/custom.css", "theme/ext/mdbook-admonish.css"]
+additional-css = ["theme/ext/css/custom.css", "theme/ext/css/mdbook-admonish.css"]
 line-numbers = true
 
 [output.html.fold]
