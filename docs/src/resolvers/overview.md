@@ -12,26 +12,50 @@ All resolvers share these common features:
 
 # Environment Variables
 
+## USD Plugin Configuration
+In order for our plugin to be found by USD, we have to specify a few environment variables.
+Run this in your terminal before running your USD capable app. If your are using a pre-compiled release build, redirect the paths accordingly.
+~~~admonish info title=""
+```bash
+# Linux
+export RESOLVER_NAME=<InsertResolverName> # E.g. fileResolver
+export PYTHONPATH=${REPO_ROOT}/dist/${RESOLVER_NAME}/lib/python:${PYTHONPATH}
+export PXR_PLUGINPATH_NAME=${REPO_ROOT}/dist/${RESOLVER_NAME}/resources:${PXR_PLUGINPATH_NAME}
+export LD_LIBRARY_PATH=${REPO_ROOT}/dist/${RESOLVER_NAME}/lib
+# Windows
+set RESOLVER_NAME=<InsertResolverName> # E.g. fileResolver
+set PYTHONPATH=%REPO_ROOT%/dist/%RESOLVER_NAME%/lib/python:%PYTHONPATH%
+set PXR_PLUGINPATH_NAME=%REPO_ROOT%/dist/%RESOLVER_NAME%/resources:%PXR_PLUGINPATH_NAME%
+set PATH=%REPO_ROOT%/dist/%RESOLVER_NAME%/lib:%PATH%
+```
+~~~
+
+## Resolver Configuration
+
 - `AR_SEARCH_PATHS`: The search path for non absolute asset paths.
 - `AR_SEARCH_REGEX_EXPRESSION`: The regex to preformat asset paths before mapping them via the mapping pairs.
 - `AR_SEARCH_REGEX_FORMAT`: The string to replace with what was found by the regex expression.
 
 The resolver uses these env vars to resolve non absolute asset paths relative to the directories specified by `AR_SEARCH_PATHS`. For example the following substitutes any occurrence of `v<3digits>` with `v000` and then looks up that asset path in the mapping pairs.
 
+~~~admonish info title=""
 ```bash
 export AR_SEARCH_PATHS="/workspace/shots:/workspace/assets"
 export AR_SEARCH_REGEX_EXPRESSION="(v\d\d\d)"
 export AR_SEARCH_REGEX_FORMAT="v000"
 ```
-
+~~~
 # Debugging
 
 ## Using the `TF_DEBUG` environment variable
 To check what resolver has been loaded, you can set the `TF_DEBUG` env variable to `AR_RESOLVER_INIT`:
+~~~admonish info title=""
 ```bash
 export TF_DEBUG=AR_RESOLVER_INIT
 ```
+~~~
 For example this will yield the following when run with the Python Resolver:
+~~~admonish info title=""
 ```python
 ArGetResolver(): Found primary asset resolver types: [PythonResolver, ArDefaultResolver]
 ArGetResolver(): Using asset resolver PythonResolver from plugin ${REPO_ROOT}/dist/pythonResolver/lib/pythonResolver.so for primary resolver
@@ -45,18 +69,21 @@ ArGetResolver(): Using package resolver USD_NcPackageResolver for usdnc from plu
 ArGetResolver(): Found package resolver Usd_UsdzResolver
 ArGetResolver(): Using package resolver Usd_UsdzResolver for usdz from plugin usd
 ```
-
+~~~
 ## Loading the Python Module
 When importing the Python module, be sure to first import the Ar module, otherwise you might run into errors, as the resolver is not properly initialized:
+~~~admonish info title=""
 ```bash
 # Start python via the aliased `usdpython`
 # Our sourced setup.sh aliases Houdini's standalone python to usdpython
 # as well as sources extra libs like Usd
 usdpython
 ```
-
+~~~
+~~~admonish info title=""
 ```python
 # First import Ar, so that the resolver is initialized
 from pxr import Ar
 from usdAssetResolver import FileResolver
 ```
+~~~

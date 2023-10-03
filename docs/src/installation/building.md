@@ -7,9 +7,11 @@ After installing the [requirements](./requirements.md), we first need to set a c
 ### Using our convenience setup script
 On Linux we provide a bash script that you can source that sets up our development environment. This sets a few environment variables needed to build the resolver as well as for Houdini to load it.
 This can be done by running the following from the source directory:
+~~~admonish info title=""
 ```bash
 source setup.sh
 ```
+~~~
 
 In the [setup.sh](https://github.com/LucaScheller/VFX-UsdAssetResolver/blob/main/setup.sh) file you can define what resolver to compile by setting the `RESOLVER_NAME` variable to one of the resolvers listed in [resolvers](../resolvers/overview.md) in camelCase syntax (for example `fileResolver` or `pythonResolver`). Here you'll also have to define what Houdini version to compile against.
 
@@ -20,6 +22,7 @@ By default it also sets the `TF_DEBUG` env var to `<ResolverName>_RESOLVER` so t
 ### Manually setting up the environment
 If you don't want to use our convenience script, you can also setup the environment manually.
 
+~~~admonish info title=""
 ```bash
 # Linux
 export HFS=<PathToHoudiniRoot> # For example "/opt/hfs<HoudiniVersion>"
@@ -28,35 +31,47 @@ export RESOLVER_NAME=fileResolver
 set HFS=<PathToHoudiniRoot> # For example "C:\Program Files\Side Effects Software\<HoudiniVersion>"
 set RESOLVER_NAME=fileResolver
 ```
+~~~
 
 ## Running the build
 To run the build, run:
 
+~~~admonish info title=""
 ```bash
 # Linux
 ./build.sh
 # Windows
 build.bat
 ```
+~~~
 
 The `build.sh/.bat` files also contain (commented out) the environment definition part above, so alternatively just comment out the lines and you are good to go.
 
+## Testing the build
+Currently we don't include tests as part of the build process yet, so to test if everything worked, you'll have to run Houdini.
+If you didn't use our convenience script as noted above, you'll have to specify a few environment variables, so that our plugin is correctly detected by USD.
+
+Head over to our [Resolvers > Environment Variables](../resolvers/overview.md#environment-variables) section on how to do this.
+
+After that everything should run smoothly, you can try loading the examples in the "files" directory or work through our [example setup](../resolvers/ExampleSetup/overview.md) section for a simple production example.
 
 ## Customize build
 If you want to further configure the build, you can head into the [CMakeLists.txt](https://github.com/LucaScheller/VFX-UsdAssetResolver/blob/main/CMakeLists.txt) in the root of this repo. In the first section of the file, you can configure various things, like the environment variables that the resolvers use, Python module namespaces and what resolvers to compile.
 This is a standard `CMakeLists.txt` file that you can also configure via [CMake-GUI](https://cmake.org/cmake/help/latest/manual/cmake-gui.1.html). If you don't want to use the `build.sh` bash script, you can also configure and compile this project like any other C++ project via this file.
 
 If you want to change the resolver names, you'll have to additionally edit the `CMakeLists.txt` files in the corresponding resolver folder by un-commenting the following line in the beginning of the file:
+~~~admonish info title=""
 ```cmake
 add_compile_definitions(<ResolverName>=${AR_<RESOLVERNAME>_USD_CXX_CLASS_NAME})
 ```
+~~~
 This is considered experimental and is not guaranteed to work. It is easier to just rename all Python/C++ class via a quick search & replace.
 
 # Documentation
-
 If you want to locally build this documentation, you'll have to download [mdBook](https://github.com/rust-lang/mdBook) and [mdBook-admonish](https://github.com/tommilligan/mdbook-admonish) and add their parent directories to the `PATH`env variable so that the executables are found.
 
 You can do this via bash (after running `source setup.sh`):
+~~~admonish info title=""
 ```bash
 export MDBOOK_VERSION="0.4.28"
 export MDBOOK_ADMONISH_VERSION="1.9.0"
@@ -64,10 +79,13 @@ curl -L https://github.com/rust-lang/mdBook/releases/download/v$MDBOOK_VERSION/m
 curl -L https://github.com/tommilligan/mdbook-admonish/releases/download/v$MDBOOK_ADMONISH_VERSION/mdbook-admonish-v$MDBOOK_ADMONISH_VERSION-x86_64-unknown-linux-gnu.tar.gz | tar xz -C ${REPO_ROOT}/tools
 export PATH=${REPO_ROOT}/tools:$PATH
 ```
+~~~
 
 You then can just run the following to build the documentation in html format:
+~~~admonish info title=""
 ```bash
 ./docs.sh
 ```
+~~~
 
 The documentation will then be built in docs/book.

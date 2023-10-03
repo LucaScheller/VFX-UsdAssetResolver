@@ -1,7 +1,7 @@
 # Clear current session log 
 clear
 # Source environment (Uncomment lines starting with "export" if you current env does not have these defined.)
-# export HFS=C:\Program Files\Side Effects Software\<InsertHoudiniVersion>
+# export HFS=/opt/<InsertHoudiniVersion>
 # Define Resolver > Has to be one of 'fileResolver'/'pythonResolver'/'hybridResolver'
 # export RESOLVER_NAME=fileResolver
 # Clear existing build data and invoke cmake
