@@ -6,7 +6,7 @@ This repository holds reference implementations for [Usd](https://openusd.org/re
 ## Installation
 To build the various resolvers, follow the instructions in the [install guide](https://lucascheller.github.io/VFX-UsdAssetResolver/installation/requirements.html). 
 
-> :info: This guide currently covers compiling against Houdini on Linux and Windows. Alternatively you can also download a pre-compiled builds on our [release page](https://github.com/LucaScheller/VFX-UsdAssetResolver/releases). To load the resolver, you must specify a few environment variables, see our [environment variables](https://lucascheller.github.io/VFX-UsdAssetResolver/resolvers/overview.html#environment-variables) section for more details. Alternatively you can also source the setup.sh file in the root of this repo when working in Linux to get a pre-configured environment.
+> [!IMPORTANT] This guide currently covers compiling against Houdini on Linux and Windows. Alternatively you can also download a pre-compiled builds on our [release page](https://github.com/LucaScheller/VFX-UsdAssetResolver/releases). To load the resolver, you must specify a few environment variables, see our [environment variables](https://lucascheller.github.io/VFX-UsdAssetResolver/resolvers/overview.html#environment-variables) section for more details. Alternatively you can also source the setup.sh file in the root of this repo when working in Linux to get a pre-configured environment.
 
 ## Feature Overview
 

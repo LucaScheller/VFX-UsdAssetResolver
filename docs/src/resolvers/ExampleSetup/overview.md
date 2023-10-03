@@ -40,7 +40,7 @@ Content of a USD file located at `/workspace/shots/shotA/shotA.usd`
 ```python
 #usda 1.0
 def "testAssetA" (
-    prepend references = @assetA/assetA.usd@</box>
+    prepend references = @assetA/assetA.usd@</asset>
 )
 {
 }
@@ -56,18 +56,18 @@ Content of the USD file located at `/workspace/shots/shotA/shotA_mapping.usd`
 )
 ```
 
-Content of the USD files located at `/workspace/assets/assetA/assetA.usd` and `/workspace/assets/assetA/assetA_v002.usd`
+Content of the USD files located at `/workspace/assets/assetA/assetA.usd` and `/workspace/assets/assetA/assetA_v001.usd`
 ```python
 #usda 1.0
-def Cube "box" ()
+def Cube "asset" ()
 {
     double size = 2
 }
 ```
-Content of the USD file located at `/workspace/assets/assetA/assetA.usd` and `/workspace/assets/assetA/assetA_v001.usd`
+Content of the USD file located at `/workspace/assets/assetA/assetA.usd` and `/workspace/assets/assetA/assetA_v002.usd`
 ```python
 #usda 1.0
-def Cylinder "box" ()
+def Cylinder "asset" ()
 {
 }
 ```

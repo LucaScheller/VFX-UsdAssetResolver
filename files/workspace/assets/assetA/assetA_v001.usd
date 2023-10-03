@@ -1,5 +1,5 @@
 #usda 1.0
-def Cube "box" ()
+def Cube "asset" ()
 {
     double size = 2
 }

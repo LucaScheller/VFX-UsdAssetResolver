@@ -1,4 +1,4 @@
-name: Build USD Asset Resolvers against Houdini
+name: Build USD Asset Resolvers against Houdini (Linux/Windows)
 
 on:
   release:
