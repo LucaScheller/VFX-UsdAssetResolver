@@ -1,10 +1,5 @@
 REM Clear current session log 
 cls
-REM Source setup
-REM if [ ! $REPO_SOURCED ]
-REM then
-REM    source setup.sh
-REM fi
 REM Clear existing build data and invoke cmake
 rmdir /S /Q build
 rmdir /S /Q dist
