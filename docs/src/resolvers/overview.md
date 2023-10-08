@@ -27,9 +27,9 @@ export TF_DEBUG=AR_RESOLVER_INIT # Debug Logs
 # Windows
 set REPO_ROOT=<InsertPathToRootFolder>
 set RESOLVER_NAME=<InsertResolverName> # E.g. fileResolver
-set PYTHONPATH=%REPO_ROOT%/dist/%RESOLVER_NAME%/lib/python:%PYTHONPATH%
-set PXR_PLUGINPATH_NAME=%REPO_ROOT%/dist/%RESOLVER_NAME%/resources:%PXR_PLUGINPATH_NAME%
-set PATH=%REPO_ROOT%/dist/%RESOLVER_NAME%/lib:%PATH%
+set PYTHONPATH=%REPO_ROOT%\dist\%RESOLVER_NAME%\lib\python;%PYTHONPATH%
+set PXR_PLUGINPATH_NAME=%REPO_ROOT%\dist\%RESOLVER_NAME%\resources;%PXR_PLUGINPATH_NAME%
+set PATH=%REPO_ROOT%\dist\%RESOLVER_NAME%\lib;%PATH%
 set TF_DEBUG=AR_RESOLVER_INIT # Debug Logs
 ```
 ~~~
