@@ -14,50 +14,50 @@
 PXR_NAMESPACE_USING_DIRECTIVE
 
 
-HybridResolverContext::HybridResolverContext() {
+CachedResolverContext::CachedResolverContext() {
     // Init
     this->LoadOrRefreshData();
 }
 
-HybridResolverContext::HybridResolverContext(const HybridResolverContext& ctx) = default;
+CachedResolverContext::CachedResolverContext(const CachedResolverContext& ctx) = default;
 
-HybridResolverContext::HybridResolverContext(const std::string& mappingFilePath)
+CachedResolverContext::CachedResolverContext(const std::string& mappingFilePath)
 {
-    TF_DEBUG(HYBRIDRESOLVER_RESOLVER_CONTEXT).Msg("ResolverContext::ResolverContext('%s') - Creating new context\n", mappingFilePath.c_str());
+    TF_DEBUG(CACHEDRESOLVER_RESOLVER_CONTEXT).Msg("ResolverContext::ResolverContext('%s') - Creating new context\n", mappingFilePath.c_str());
     // Init
     this->SetMappingFilePath(TfAbsPath(mappingFilePath));
     this->LoadOrRefreshData();
 }
 
 bool
-HybridResolverContext::operator<(
-    const HybridResolverContext& ctx) const
+CachedResolverContext::operator<(
+    const CachedResolverContext& ctx) const
 {
     // This is a no-op for now, as it doesn't get used for now.
     return true;
 }
 
 bool
-HybridResolverContext::operator==(
-    const HybridResolverContext& ctx) const
+CachedResolverContext::operator==(
+    const CachedResolverContext& ctx) const
 {
     return this->GetMappingFilePath() == ctx.GetMappingFilePath();
 }
 
 bool
-HybridResolverContext::operator!=(
-    const HybridResolverContext& ctx) const
+CachedResolverContext::operator!=(
+    const CachedResolverContext& ctx) const
 {
     return this->GetMappingFilePath() != ctx.GetMappingFilePath();
 }
 
-size_t hash_value(const HybridResolverContext& ctx)
+size_t hash_value(const CachedResolverContext& ctx)
 {
     return TfHash()(ctx.GetMappingFilePath());
 }
 
 
-bool HybridResolverContext::_GetMappingPairsFromUsdFile(const std::string& filePath)
+bool CachedResolverContext::_GetMappingPairsFromUsdFile(const std::string& filePath)
 {
     data->mappingPairs.clear();
     std::vector<std::string> usdFilePathExts{ ".usd", ".usdc", ".usda" };
@@ -70,7 +70,7 @@ bool HybridResolverContext::_GetMappingPairsFromUsdFile(const std::string& fileP
         return false;
     }
     auto layerMetaData = layer->GetCustomLayerData();
-    auto mappingDataPtr = layerMetaData.GetValueAtPath(HybridResolverTokens->mappingPairs);
+    auto mappingDataPtr = layerMetaData.GetValueAtPath(CachedResolverTokens->mappingPairs);
     if (!mappingDataPtr){
         return false;
     }
@@ -85,8 +85,8 @@ bool HybridResolverContext::_GetMappingPairsFromUsdFile(const std::string& fileP
 }
 
 
-void HybridResolverContext::LoadOrRefreshData(){
-    TF_DEBUG(HYBRIDRESOLVER_RESOLVER_CONTEXT).Msg("ResolverContext::LoadOrRefreshData('%s', '%s', '%s', '%s') - Loading data\n", this->GetMappingFilePath().c_str(), DEFINE_STRING(AR_ENV_SEARCH_PATHS), DEFINE_STRING(AR_ENV_SEARCH_REGEX_EXPRESSION), DEFINE_STRING(AR_ENV_SEARCH_REGEX_FORMAT));
+void CachedResolverContext::LoadOrRefreshData(){
+    TF_DEBUG(CACHEDRESOLVER_RESOLVER_CONTEXT).Msg("ResolverContext::LoadOrRefreshData('%s', '%s', '%s', '%s') - Loading data\n", this->GetMappingFilePath().c_str(), DEFINE_STRING(AR_ENV_SEARCH_PATHS), DEFINE_STRING(AR_ENV_SEARCH_REGEX_EXPRESSION), DEFINE_STRING(AR_ENV_SEARCH_REGEX_FORMAT));
     std::string pythonResult;    
     int state = TfPyInvokeAndExtract(DEFINE_STRING(AR_PYTHONRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME),
                                      "ResolverContext.LoadOrRefreshData",
@@ -96,6 +96,6 @@ void HybridResolverContext::LoadOrRefreshData(){
         std::cerr << "Failed to call ResolverContext.LoadOrRefreshData in " << DEFINE_STRING(AR_PYTHONRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME) << ".py. ";
         std::cerr << "Please verify that the python code is valid!" << std::endl;
     }
-    TF_DEBUG(HYBRIDRESOLVER_RESOLVER_CONTEXT).Msg("ResolverContext::LoadOrRefreshData('%s') - Loaded data '%s'\n", this->GetMappingFilePath().c_str(), pythonResult.c_str());
+    TF_DEBUG(CACHEDRESOLVER_RESOLVER_CONTEXT).Msg("ResolverContext::LoadOrRefreshData('%s') - Loaded data '%s'\n", this->GetMappingFilePath().c_str(), pythonResult.c_str());
     this->SetData(pythonResult);
 }

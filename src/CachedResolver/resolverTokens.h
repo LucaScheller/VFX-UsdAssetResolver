@@ -1,5 +1,5 @@
-#ifndef AR_HYBRIDRESOLVER_TOKENS_H
-#define AR_HYBRIDRESOLVER_TOKENS_H
+#ifndef AR_CACHEDRESOLVER_TOKENS_H
+#define AR_CACHEDRESOLVER_TOKENS_H
 
 #include <vector>
 
@@ -10,16 +10,16 @@
 
 PXR_NAMESPACE_OPEN_SCOPE
 
-struct FileResolverTokensType
+struct CachedResolverTokensType
 {
-    AR_HYBRIDRESOLVER_API FileResolverTokensType();
+    AR_CACHEDRESOLVER_API CachedResolverTokensType();
 
     const TfToken mappingPairs;
     const std::vector<TfToken> allTokens;
 };
 
-extern AR_HYBRIDRESOLVER_API TfStaticData<FileResolverTokensType> FileResolverTokens;
+extern AR_CACHEDRESOLVER_API TfStaticData<CachedResolverTokensType> CachedResolverTokens;
 
 PXR_NAMESPACE_CLOSE_SCOPE
 
-#endif // AR_HYBRIDRESOLVER_TOKENS_H
+#endif // AR_CACHEDRESOLVER_TOKENS_H

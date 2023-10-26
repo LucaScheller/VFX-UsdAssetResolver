@@ -2,7 +2,7 @@
 
 PXR_NAMESPACE_OPEN_SCOPE
 
-FileResolverTokensType::FileResolverTokensType() :
+CachedResolverTokensType::CachedResolverTokensType() :
     mappingPairs("mappingPairs", TfToken::Immortal),
     allTokens({
         mappingPairs
@@ -10,6 +10,6 @@ FileResolverTokensType::FileResolverTokensType() :
 {
 }
 
-TfStaticData<FileResolverTokensType> FileResolverTokens;
+TfStaticData<CachedResolverTokensType> CachedResolverTokens;
 
 PXR_NAMESPACE_CLOSE_SCOPE

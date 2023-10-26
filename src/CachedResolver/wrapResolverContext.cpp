@@ -17,14 +17,14 @@ PXR_NAMESPACE_USING_DIRECTIVE
 
 static
 size_t
-_Hash(const FileResolverContext& ctx)
+_Hash(const CachedResolverContext& ctx)
 {
     return hash_value(ctx);
 }
 
 static
 std::string
-_Repr(const FileResolverContext& ctx)
+_Repr(const CachedResolverContext& ctx)
 {
     return TF_PY_REPR_PREFIX + "ResolverContext" +
         (ctx.GetMappingFilePath().empty() ? "()" : 
@@ -34,9 +34,9 @@ _Repr(const FileResolverContext& ctx)
 void
 wrapResolverContext()
 {
-    using This = FileResolverContext;
+    using This = CachedResolverContext;
 
-    class_<FileResolverContext>("ResolverContext", no_init)
+    class_<CachedResolverContext>("ResolverContext", no_init)
         .def(init<>())
         .def(init<const std::string&>(args("mappingFile")))
         .def(init<const std::vector<std::string>&>(args("searchPaths")))
@@ -45,7 +45,6 @@ wrapResolverContext()
         .def(self != self)
         .def("__hash__", _Hash)
         .def("__repr__", _Repr)
-
         .def("ClearMappingPairs", &This::ClearMappingPairs, "Clear all mapping pairs")
     ;
     ArWrapResolverContextForPython<This>();

@@ -7,7 +7,7 @@ import sys
 from functools import wraps
 
 from pxr import Ar, Sdf
-from usdAssetResolver.HybridResolver import Tokens
+from usdAssetResolver.CachedResolver import Tokens
 
 # Init logger
 logging.basicConfig(format="%(asctime)s %(message)s", datefmt="%Y/%m/%d %I:%M:%S%p")

@@ -1,5 +1,5 @@
-#ifndef AR_HYBRIDRESOLVER_RESOLVER_CONTEXT_H
-#define AR_HYBRIDRESOLVER_RESOLVER_CONTEXT_H
+#ifndef AR_CACHEDRESOLVER_RESOLVER_CONTEXT_H
+#define AR_CACHEDRESOLVER_RESOLVER_CONTEXT_H
 
 #include <memory>
 #include <regex>
@@ -20,45 +20,45 @@ instead of passing thru the pointer. This way we can send
 notifications to the stages.
 > See for more info: https://groups.google.com/g/usd-interest/c/9JrXGGbzBnQ/m/_f3oaqBdAwAJ
 */
-struct HybridResolverContextInternalData
+struct CachedResolverContextInternalData
 {
     std::string mappingFilePath;
     std::map<std::string, std::string> mappingPairs;
 };
 
-class HybridResolverContext
+class CachedResolverContext
 {
 public:
     // Constructors
-    HybridResolverContext();
-    AR_HYBRIDRESOLVER_API
-    HybridResolverContext(const HybridResolverContext& ctx);
-    AR_HYBRIDRESOLVER_API
-    HybridResolverContext(const std::string& mappingFilePath);
+    CachedResolverContext();
+    AR_CACHEDRESOLVER_API
+    CachedResolverContext(const CachedResolverContext& ctx);
+    AR_CACHEDRESOLVER_API
+    CachedResolverContext(const std::string& mappingFilePath);
 
     // Standard Ops
-    AR_HYBRIDRESOLVER_API
-    bool operator<(const HybridResolverContext& ctx) const;
-    AR_HYBRIDRESOLVER_API
-    bool operator==(const HybridResolverContext& ctx) const;
-    AR_HYBRIDRESOLVER_API
-    bool operator!=(const HybridResolverContext& ctx) const;
-    AR_HYBRIDRESOLVER_API
-    friend size_t hash_value(const HybridResolverContext& ctx);
+    AR_CACHEDRESOLVER_API
+    bool operator<(const CachedResolverContext& ctx) const;
+    AR_CACHEDRESOLVER_API
+    bool operator==(const CachedResolverContext& ctx) const;
+    AR_CACHEDRESOLVER_API
+    bool operator!=(const CachedResolverContext& ctx) const;
+    AR_CACHEDRESOLVER_API
+    friend size_t hash_value(const CachedResolverContext& ctx);
 
     // Methods
-    AR_HYBRIDRESOLVER_API
+    AR_CACHEDRESOLVER_API
     const std::string& GetMappingFilePath() const { return data->mappingFilePath;}
-    AR_HYBRIDRESOLVER_API
+    AR_CACHEDRESOLVER_API
     void SetMappingFilePath(std::string mappingFilePath) { data->mappingFilePath = mappingFilePath; }
-    AR_HYBRIDRESOLVER_API
+    AR_CACHEDRESOLVER_API
     const std::map<std::string, std::string>& GetMappingPairs() const { return data->mappingPairs; }
-    AR_HYBRIDRESOLVER_API
+    AR_CACHEDRESOLVER_API
     void ClearMappingPairs() { data->mappingPairs.clear(); }
 
 private:
     // Vars
-    std::shared_ptr<HybridResolverContextInternalData> data = std::make_shared<HybridResolverContextInternalData>();
+    std::shared_ptr<CachedResolverContextInternalData> data = std::make_shared<CachedResolverContextInternalData>();
     
     // Methods
     bool _GetMappingPairsFromUsdFile(const std::string& filePath);
@@ -66,7 +66,7 @@ private:
 };
 
 PXR_NAMESPACE_OPEN_SCOPE
-AR_DECLARE_RESOLVER_CONTEXT(HybridResolverContext);
+AR_DECLARE_RESOLVER_CONTEXT(CachedResolverContext);
 PXR_NAMESPACE_CLOSE_SCOPE
 
-#endif // AR_HYBRIDRESOLVER_RESOLVER_CONTEXT_H
+#endif // AR_CACHEDRESOLVER_RESOLVER_CONTEXT_H

@@ -14,7 +14,7 @@ PXR_NAMESPACE_USING_DIRECTIVE
 void
 wrapResolver()
 {
-    using This = FileResolver;
+    using This = CachedResolver;
 
     class_<This, bases<ArResolver>, AR_BOOST_NAMESPACE::noncopyable>
         ("Resolver", no_init)
