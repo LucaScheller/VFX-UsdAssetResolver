@@ -19,9 +19,12 @@ You can manipulate the resolver context (the object that holds the configuration
 from pxr import Ar, Usd
 from usdAssetResolver import FileResolver
 
+# Get via stage
 stage = Usd.Stage.Open("/some/stage.usd")
 context_collection = stage.GetPathResolverContext()
 fileResolver_context = context_collection.Get()[0]
+# Or context creation
+fileResolver_context = FileResolver.ResolverContext()
 
 # To print a full list of exposed methods:
 for attr in dir(FileResolver.ResolverContext):

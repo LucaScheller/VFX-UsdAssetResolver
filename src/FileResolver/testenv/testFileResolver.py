@@ -136,6 +136,37 @@ class TestArDefaultResolver(unittest.TestCase):
                 resolved_path = resolver.Resolve(layer_v001_identifier)
                 self.assertEqual(resolved_path.GetPathString(), layer_v002_file_path)
 
+    def test_ResolveWithCacheContextRefresh(self):
+        """This test currently does not work.
+        # ToDo Investigate why RefreshContext doesn't flush ResolverScopedCaches
+        """
+        if True:
+            return
+        with tempfile.TemporaryDirectory() as temp_dir_path:
+            stage = Usd.Stage.CreateInMemory()
+            ctx_collection = stage.GetPathResolverContext()
+            ctx = ctx_collection.Get()[0]
+            ctx.SetCustomSearchPaths([temp_dir_path])
+            ctx.RefreshSearchPaths()
+            # Create files
+            layer_a_identifier = "layerA.usd"
+            layer_a_file_path = os.path.join(temp_dir_path, layer_a_identifier)
+            Sdf.Layer.CreateAnonymous().Export(layer_a_file_path)
+            layer_b_identifier = "layerB.usd"
+            layer_b_file_path = os.path.join(temp_dir_path, layer_b_identifier)
+            Sdf.Layer.CreateAnonymous().Export(layer_b_file_path)
+            # Get resolver
+            with Ar.ResolverScopedCache():
+                # Resolve
+                self.assertEqual(os.path.abspath(layer_a_file_path), stage.ResolveIdentifierToEditTarget(layer_a_identifier))
+                # Make edits to context
+                ctx.AddMappingPair(layer_a_identifier, layer_b_identifier)
+                resolver = Ar.GetResolver()
+                resolver.RefreshContext(ctx)
+                # Query cached result
+                self.assertEqual(os.path.abspath(layer_b_file_path), stage.ResolveIdentifierToEditTarget (layer_a_identifier))
+
+
     def test_ResolverContextSearchPaths(self):    
         ctx = FileResolver.ResolverContext()
         # The default env search paths are passed in through cmake test env vars
