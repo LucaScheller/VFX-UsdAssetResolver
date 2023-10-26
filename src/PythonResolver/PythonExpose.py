@@ -261,6 +261,8 @@ class ResolverContext:
         Args:
             mappingFilePath(str): The mapping .usd file path
             searchPathsEnv(str): The search paths environment variable
+            mappingRegexExpressionEnv(str): The mapping regex expression environment variable
+            mappingRegexFormatEnv(str): The mapping regex format environment variable
         Returns:
             str: A serialized json dict that can be used as a context.
         """

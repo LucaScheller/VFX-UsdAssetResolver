@@ -22,9 +22,13 @@ You can manipulate the resolver context (the object that holds the configuration
 ```python
 from pxr import Ar, Usd
 from usdAssetResolver import PythonResolver
+
+# Get via stage
 stage = Usd.Stage.Open("/some/stage.usd")
-context_collection = pxr.Usd.Stage.GetPathResolverContext()
+context_collection = stage.GetPathResolverContext()
 pythonResolver_context = context_collection.Get()[0]
+# Or context creation
+pythonResolver_context = PythonResolver.ResolverContext()
 
 # To print a full list of exposed methods:
 for attr in dir(PythonResolver.ResolverContext):
@@ -182,6 +186,8 @@ class ResolverContext:
         Args:
             mappingFilePath(str): The mapping .usd file path
             searchPathsEnv(str): The search paths environment variable
+            mappingRegexExpressionEnv(str): The mapping regex expression environment variable
+            mappingRegexFormatEnv(str): The mapping regex format environment variable
         Returns:
             str: A serialized json dict that can be used as a context.
         """

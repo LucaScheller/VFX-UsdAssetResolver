@@ -47,6 +47,7 @@ wrapResolverContext()
         .def("SetMappingFilePath", &This::SetMappingFilePath)
         .def("GetData", &This::GetData, return_value_policy<return_by_value>())
         .def("SetData", &This::SetData)
+        .def("LoadOrRefreshData", &This::LoadOrRefreshData)
     ;
     ArWrapResolverContextForPython<This>();
 }
