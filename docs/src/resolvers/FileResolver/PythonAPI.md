@@ -60,7 +60,7 @@ To inspect/tweak the active mapping pairs, you can use the following:
 ```python
 ctx.GetMappingFilePath()                      # Get the mapping file path (Defaults file that the context created Resolver.CreateDefaultContextForAsset() opened)
 ctx.SetMappingFilePath()                      # Set the mapping file path
-ctx.RefreshFromMappingFilePath(filePath: str) # Reload mapping pairs from the mapping file path
+ctx.RefreshFromMappingFilePath()              # Reload mapping pairs from the mapping file path
 ctx.GetMappingPairs()                         # Returns all mapping pairs as a dict
 ctx.AddMappingPair(src: string, dst: str)     # Add a mapping pair
 ctx.ClearMappingPairs()                       # Clear all mapping pairs

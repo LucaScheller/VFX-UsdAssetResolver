@@ -91,14 +91,14 @@ public:
     AR_FILERESOLVER_API
     const std::string& GetMappingRegexExpressionStr() const { return data->mappingRegexExpressionStr; }
     AR_FILERESOLVER_API
-    void SetMappingRegexExpression(std::string& mappingRegexExpressionStr) { 
+    void SetMappingRegexExpression(const std::string& mappingRegexExpressionStr) { 
         data->mappingRegexExpressionStr = mappingRegexExpressionStr;
         data->mappingRegexExpression = std::regex(mappingRegexExpressionStr);
     }
     AR_FILERESOLVER_API
     const std::string& GetMappingRegexFormat() const { return data->mappingRegexFormat; }
     AR_FILERESOLVER_API
-    void SetMappingRegexFormat(std::string& mappingRegexFormat) { data->mappingRegexFormat = mappingRegexFormat; }
+    void SetMappingRegexFormat(const std::string& mappingRegexFormat) { data->mappingRegexFormat = mappingRegexFormat; }
 
 private:
     // Vars

@@ -7,6 +7,12 @@ set(AR_ENV_SEARCH_PATHS "AR_SEARCH_PATHS")
 set(AR_ENV_SEARCH_REGEX_EXPRESSION "AR_SEARCH_REGEX_EXPRESSION")
 set(AR_ENV_SEARCH_REGEX_FORMAT "AR_SEARCH_REGEX_FORMAT")
 
+# Tests
+# Actual invocation of tests is done via ctest in the build directory
+if (NOT WIN32)
+    enable_testing()
+endif()
+
 # File Resolver
 option(AR_FILERESOLVER_BUILD "Build the FileResolver" OFF)
 if("$ENV{RESOLVER_NAME}" STREQUAL "fileResolver")
@@ -141,5 +147,4 @@ message(NOTICE "export PATH=${REPO_ROOT}/dist/${RESOLVER_NAME}/bin:$ENV{HFS}/pyt
 message(NOTICE "export PYTHONPATH=${CMAKE_INSTALL_PREFIX}/lib/python:${AR_PYTHON_LIB_SITEPACKAGES}:$PYTHONPATH")
 message(NOTICE "export PXR_PLUGINPATH_NAME=${CMAKE_INSTALL_PREFIX}/resources:$PXR_PLUGINPATH_NAME")
 message(NOTICE "export LD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:$ENV{HFS}/python/lib:$ENV{HFS}/dsolib:$LD_LIBRARY_PATH")
-message(NOTICE "To test if it worked (Only supported for the 'FileResolver'), run:\nexport $ENV{AR_SEARCH_PATHS}=/some/search/pathA:/some/search/pathB\n${CMAKE_INSTALL_PREFIX}/bin/testResolve")
 message(STATUS "--- Usd Resolver Instructions End ---\n")
