@@ -3,7 +3,7 @@ import tempfile
 import os
 
 from pxr import Ar, Sdf, Usd, Vt
-from usdAssetResolver import FileResolver
+from usdAssetResolver import PythonResolver
 
 import unittest
 
