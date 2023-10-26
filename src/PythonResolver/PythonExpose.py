@@ -225,7 +225,7 @@ class Resolver:
         Returns:
             Ar.ResolvedPath: The resolved path.
         """
-        return Ar.ResolvedPath(assetPath if not assetPath else os.path.normpath(assetPath))
+        return Ar.ResolvedPath(assetPath if not assetPath else os.path.abspath(os.path.normpath(assetPath)))
 
     @staticmethod
     @log_function_args

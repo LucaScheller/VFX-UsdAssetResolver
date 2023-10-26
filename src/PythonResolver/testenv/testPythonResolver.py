@@ -17,7 +17,7 @@ class TestArResolver(unittest.TestCase):
         # Verify that the underlying resolver is the PythonResolver
         assert isinstance(Ar.GetUnderlyingResolver(), PythonResolver.Resolver)
 
-    def _test_CreateIdentifier(self):
+    def test_CreateIdentifier(self):
         resolver = Ar.GetResolver()
 
         # Test for invalid paths
@@ -77,7 +77,7 @@ class TestArResolver(unittest.TestCase):
             ),
         )
 
-    def _test_CreateIdentifierForNewAsset(self):
+    def test_CreateIdentifierForNewAsset(self):
         resolver = Ar.GetResolver()
 
         # Test for invalid paths
@@ -142,12 +142,13 @@ class TestArResolver(unittest.TestCase):
             ),
         )
 
-    def _test_Resolve(self):
+    def test_Resolve(self):
         with tempfile.TemporaryDirectory() as temp_dir_path:
             # Create context
             ctx = PythonResolver.ResolverContext()
-            ctx.SetCustomSearchPaths([temp_dir_path])
-            ctx.RefreshSearchPaths()
+            ctx_data = json.loads(ctx.GetData())
+            ctx_data[PythonResolver.Tokens.searchPaths] = [temp_dir_path]
+            ctx.SetData(json.dumps(ctx_data))
             # Create files
             layer_identifier = "layer.usd"
             layer_file_path = os.path.join(temp_dir_path, layer_identifier)
@@ -165,7 +166,7 @@ class TestArResolver(unittest.TestCase):
                 resolved_path = resolver.Resolve(layer_file_path)
                 self.assertEqual(resolved_path.GetPathString(), layer_file_path)
 
-    def _test_ResolveForNewAsset(self):
+    def test_ResolveForNewAsset(self):
         resolver = Ar.GetResolver()
 
         layer_identifier = "layer.usd"
@@ -178,12 +179,13 @@ class TestArResolver(unittest.TestCase):
         resolved_path = resolver.ResolveForNewAsset(layer_identifier)
         self.assertEqual(resolved_path.GetPathString(), layer_file_path)
 
-    def _test_ResolveWithCache(self):
+    def test_ResolveWithCache(self):
         with tempfile.TemporaryDirectory() as temp_dir_path:
             # Create context
             ctx = PythonResolver.ResolverContext()
-            ctx.SetCustomSearchPaths([temp_dir_path])
-            ctx.RefreshSearchPaths()
+            ctx_data = json.loads(ctx.GetData())
+            ctx_data[PythonResolver.Tokens.searchPaths] = [temp_dir_path]
+            ctx.SetData(json.dumps(ctx_data))
             # Create files
             layer_identifier = "layer.usd"
             layer_file_path = os.path.join(temp_dir_path, layer_identifier)
