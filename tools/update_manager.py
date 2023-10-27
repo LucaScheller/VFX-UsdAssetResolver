@@ -9,8 +9,13 @@ import json
 
 from PySide2 import QtWidgets, QtGui, QtCore
 
-# Execute Directly
-# import urllib,ssl; exec (urllib.urlopen('https://raw.githubusercontent.com/LucaScheller/VFX-LYNX/master/lib/LYNX_update.py',context=ssl._create_unverified_context()).read(), globals(), locals()); LYNX_update_manager_object = LYNX_update_manager();LYNX_update_manager_object.ui_LYNX_update_manager();
+# To run, execute this in the Houdini Python Source Editor
+"""
+import urllib,ssl
+update_manager_url = 'https://raw.githubusercontent.com/LucaScheller/VFX-UsdAssetResolver/main/tools/update_manager.py'
+exec(urllib.request.urlopen(update_manager_url,context=ssl._create_unverified_context()).read(), globals(), locals())
+run_houdini()
+"""
 
 REPO_URL = "https://api.github.com/repos/lucascheller/VFX-UsdAssetResolver"
 RELEASE_ASSET_ELEMENTS_REGEX = re.compile(
@@ -200,7 +205,7 @@ class UpdateManagerUI(QtWidgets.QDialog):
             QT_WINDOW_TITLE,
             "Installation successfull.\n"
             "Please restart the application by launching it via the 'launcher.bat/.sh' file "
-            "in your chosen install directory {install_dir_path}.".format(install_dir_path=install_dir_path),
+            "in your chosen install directory at '{install_dir_path}'.".format(install_dir_path=install_dir_path),
         )
 
     def uninstall_button_clicked(self):

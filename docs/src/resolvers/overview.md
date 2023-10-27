@@ -18,7 +18,7 @@ Run this in your terminal before running your USD capable app. If your are using
 
 
 ~~~admonish tip
-If you are using our quick install method, this will already have been done for you via the "launch.sh/.bat" file in the directory where you downloaded the compiled release to.
+If you are using our quick install method, this will already have been done for you via the "launch.sh/.bat" file in the directory where you downloaded the compiled release to. See our [Automatic Installation](../installation/automatic_install.md) section for more information.
 ~~~
 
 ~~~admonish info title=""
