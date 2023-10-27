@@ -46,7 +46,7 @@ target_compile_definitions(${AR_CACHEDRESOLVER_TARGET_LIB}
 )
 # Install
 configure_file(plugInfo.json.in plugInfo.json)
-install(HYBRIDS ${CMAKE_CURRENT_BINARY_DIR}/plugInfo.json DESTINATION resources)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/plugInfo.json DESTINATION resources)
 install(TARGETS ${AR_CACHEDRESOLVER_TARGET_LIB} RUNTIME DESTINATION lib)
 
 ## Target library > HYBRIDRESOLVER Python ##
