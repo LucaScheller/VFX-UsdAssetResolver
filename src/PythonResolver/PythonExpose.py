@@ -16,7 +16,7 @@ LOG.setLevel(level=logging.INFO)
 
 # Utils
 SYSTEM_IS_LINUX = sys.platform.lower() == "linux"
-SYSTEM_IS_WINDOWS = sys.platform.lower() == "windows"
+SYSTEM_IS_WINDOWS = any([w in sys.platform.lower() for w in ["windows", "win32", "win64", "cygwin"]])
 
 def log_function_args(func):
     """Decorator to print function call details."""
@@ -42,7 +42,8 @@ def TfIsRelativePath(path):
         bool: State if the path is a relative path
     """
     if SYSTEM_IS_WINDOWS:
-        return not path or path[0] != '/' and path[0] == '\\'
+        drive, tail = os.path.splitdrive(path)
+        return not path or (path[0] != '/' and path[0] != '\\' and not drive)
     else:
         return not path or path[0] != '/'
 
