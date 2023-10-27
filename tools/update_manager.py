@@ -440,7 +440,7 @@ class UpdateManager(object):
             directory_path = self.uncompress_file(download_file_path)
             resolver_dir_path = os.path.join(directory_path, resolver_name)
             env = {"PXR_PLUGINPATH_NAME" : os.path.join(resolver_dir_path, "resources"),
-                   "PYTHON_PATH" : os.path.join(resolver_dir_path, "lib", "python")}
+                   "PYTHONPATH" : os.path.join(resolver_dir_path, "lib", "python")}
             if platform == "linux":
                 env["LD_LIBRARY_PATH"] = os.path.join(resolver_dir_path, "lib")
                 launch_file_path = os.path.join(directory_path, "launch.sh")
@@ -490,7 +490,7 @@ class UpdateManager(object):
             # # This currently doesn't work because packages are processed after startup (after USD is initialized)
             # package_content = { "env" : [{ ENV_USD_ASSET_RESOLVER : directory_path},
             #                              { "PXR_PLUGINPATH_NAME" : os.path.join(resolver_dir_path, "resources")},
-            #                              { "PYTHON_PATH" : os.path.join(resolver_dir_path, "lib", "python")},
+            #                              { "PYTHONPATH" : os.path.join(resolver_dir_path, "lib", "python")},
             #                              { "LD_LIBRARY_PATH" : os.path.join(resolver_dir_path, "lib")},
             #                              { "TF_DEBUG" : "AR_RESOLVER_INIT"}]}
             # if platform == "win64":
