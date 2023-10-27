@@ -15,6 +15,12 @@ All resolvers share these common features:
 ## USD Plugin Configuration
 In order for our plugin to be found by USD, we have to specify a few environment variables.
 Run this in your terminal before running your USD capable app. If your are using a pre-compiled release build, redirect the paths accordingly.
+
+
+~~~admonish tip
+If you are using our quick install method, this will already have been done for you via the "launch.sh/.bat" file in the directory where you downloaded the compiled release to.
+~~~
+
 ~~~admonish info title=""
 ```bash
 # Linux

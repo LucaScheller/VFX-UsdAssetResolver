@@ -2,7 +2,6 @@ artifacts
 build
 dist
 temp
-tools
 docs/book
 .vscode
 *.code-workspace
