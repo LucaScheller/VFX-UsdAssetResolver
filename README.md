@@ -9,6 +9,10 @@ To build the various resolvers, follow the instructions in the [install guide](h
 > [!IMPORTANT]
 > This guide currently covers compiling against Houdini on Linux and Windows. Alternatively you can also download a pre-compiled builds on our [release page](https://github.com/LucaScheller/VFX-UsdAssetResolver/releases). To load the resolver, you must specify a few environment variables, see our [environment variables](https://lucascheller.github.io/VFX-UsdAssetResolver/resolvers/overview.html#environment-variables) section for more details.
 
+> [!IMPORTANT]
+> We also offer a quick install method for Houdini via our "Update Manager" that does the download of the compiled resolvers and environment variable setup for you. This is ideal if you want to get your hands dirty right away and you don't have any C++ knowledge or extensive USD developer knowledge. If you are a small studio, you can jump right in and play around with our "PythonResolver"/"CachedResolver" resolvers and prototype around to make it fit your production needs. See our [Automatic Installation](https://lucascheller.github.io/VFX-UsdAssetResolver/installation/automatic_install.html) section for more information.
+
+
 ## Feature Overview
 Asset resolvers that can be compiled via this repository:
 - **File Resolver** - A file system based resolver similar to the default resolver with support for custom mapping pairs as well as at runtime modification and refreshing.
