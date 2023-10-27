@@ -541,6 +541,3 @@ def run_houdini():
 
     dialog = UpdateManagerUI(hou.ui.mainQtWindow())
     dialog.exec_()
-
-
-run_houdini()
