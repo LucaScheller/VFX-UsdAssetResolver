@@ -53,22 +53,25 @@ def install_side_effect_httpResolver(platform_name, software_name, resolver_dir_
         )
 
     demo_dir_path = os.path.join(resolver_dir_path, "demo")
+    if not os.path.exists(demo_dir_path):
+        os.makedirs(demo_dir_path)
     python_exe = os.path.join(os.environ["HFS"], "python", "bin", "python")
 
     # Create venv
-    subprocess.check_call([python_exe, "-m", "venv", "venv"], cwd=demo_dir_path)
+    subprocess.check_call([python_exe, "-m", "venv", "venv"], cwd=demo_dir_path, env={})
     venv_python_exe = os.path.join(demo_dir_path, "venv", "bin", "python")
     # Install deps (We can't use the pyproject.toml as it depends on .git)
-    subprocess.check_call([venv_python_exe, "-m", "pip", "install", "fastapi[all]"], cwd=demo_dir_path)
+    subprocess.check_call([venv_python_exe, "-m", "pip", "install", "fastapi[all]"], cwd=demo_dir_path,  env={})
     # Command
     if platform_name == "linux":
-        command = "{} uvicorn arHttpSampleServer:app --reload &".format(venv_python_exe)
+        venv_uvicorn_exe = os.path.join(demo_dir_path, "venv", "bin", "uvicorn")
+        command = "{} arHttpSampleServer:app --reload &".format(venv_uvicorn_exe)
     elif platform_name == "win64":
-        command = ""
+        command = 'start "ArHttp Webserver" {} arHttpSampleServer:app --reload'.format(venv_uvicorn_exe)
     return command
 
 
-INSTALL_SIDE_EFFECTS = {"httpResolver": install_side_effect_httpResolver}
+INSTALL_SIDE_EFFECTS = {"fileResolver": install_side_effect_httpResolver}
 
 
 class UpdateManagerUI(QtWidgets.QDialog):
@@ -273,7 +276,7 @@ class UpdateManagerUI(QtWidgets.QDialog):
             answer = QtWidgets.QMessageBox.information(
                 self,
                 QT_WINDOW_TITLE,
-                "Uninstall successfull. Please restart the application.\nDo you want to alternatively reinstall a different release? ",
+                "Uninstall successful. Please restart the application.\nDo you want to alternatively reinstall a different release? ",
                 QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.Cancel,
             )
             if answer == QtWidgets.QMessageBox.Yes:
@@ -503,6 +506,11 @@ class UpdateManager(object):
             )
             directory_path = self.uncompress_file(download_file_path)
             resolver_dir_path = os.path.join(directory_path, resolver_name)
+            # Cleanup other resolvers
+            for dir_name in os.listdir(directory_path):
+                if dir_name != resolver_name:
+                    os.rmdir(os.path.join(directory_path, dir_name))
+            # Build launcher
             env = {
                 "PXR_PLUGINPATH_NAME": os.path.join(resolver_dir_path, "resources"),
                 "PYTHONPATH": os.path.join(resolver_dir_path, "lib", "python"),
@@ -531,7 +539,7 @@ class UpdateManager(object):
                                 env_name=env_name, env_value=env_value, sep=os.pathsep
                             )
                         )
-                        # Side effect command
+                    # Side effect command
                     if side_effect_command:
                         lines.append(side_effect_command)
                     # App
