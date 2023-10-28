@@ -22,7 +22,7 @@ ol.chapter li ol.section li.chapter-item.expanded a.active {
     display: inline-block;
     border-left: .25rem solid transparent;
     border-left-color: var(--inline-code-color);
-    padding: .35rem 1rem .35rem 1.25rem;
+    padding: .35rem 1rem .35rem .25rem;
     box-sizing: border-box;
 }
 
