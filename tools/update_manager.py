@@ -31,6 +31,20 @@ QT_WINDOW_TITLE = "USD Asset Resolver - Update Manager"
 QT_ROLE_RELEASE = QtCore.Qt.UserRole + 1001
 
 
+class ZipFileWithPermissions(zipfile.ZipFile):
+    """ Custom ZipFile class handling file permissions.
+    See https://stackoverflow.com/questions/39296101/python-zipfile-removes-execute-permissions-from-binaries
+    """
+    def _extract_member(self, member, target_path, pwd):
+        if not isinstance(member, zipfile.ZipInfo):
+            member = self.getinfo(member)
+        target_path = super()._extract_member(member, target_path, pwd)
+        attr = member.external_attr >> 16
+        if attr != 0:
+            os.chmod(target_path, attr)
+        return target_path
+
+
 class UpdateManagerUI(QtWidgets.QDialog):
     def __init__(self, parent):
         super(UpdateManagerUI, self).__init__(parent)
@@ -425,7 +439,7 @@ class UpdateManager(object):
             )
             if not os.path.exists(dir_path):
                 os.makedirs(dir_path)
-            with zipfile.ZipFile(file_path, "r", zipfile.ZIP_DEFLATED) as archive:
+            with ZipFileWithPermissions(file_path, "r", zipfile.ZIP_DEFLATED) as archive:
                 archive.extractall(dir_path)
             os.remove(file_path)
         else:
