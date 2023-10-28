@@ -23,8 +23,8 @@ then
     export AR_SEARCH_REGEX_EXPRESSION="(bo)"
     export AR_SEARCH_REGEX_FORMAT="Bo"
     # Debug
-    export TF_DEBUG=${RESOLVER_NAME_UPPERCASE}_RESOLVER
-    # export TF_DEBUG=AR_RESOLVER_INIT
+    # export TF_DEBUG=${RESOLVER_NAME_UPPERCASE}_RESOLVER
+    export TF_DEBUG=AR_RESOLVER_INIT
     # Log
     echo "The resolver environment for resolver '${RESOLVER_NAME}' has been initialized." 
 fi

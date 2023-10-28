@@ -1,7 +1,7 @@
 # Automatic/Quick Installation
 
 ```admonish tip
-We also offer a quick install method that does the download of the compiled resolvers and environment variable setup for you. This is ideal if you want to get your hands dirty right away and you don't have any C++ knowledge or extensive USD developer knowledge. If you are a small studio, you can jump right in and play around with our "PythonResolver"/"CachedResolver" resolvers and prototype around to make it fit your production needs.
+We offer a quick install method that does the download of the compiled resolvers and environment variable setup for you. This is ideal if you want to get your hands dirty right away and you don't have any C++ knowledge or extensive USD developer knowledge. If you are a small studio, you can jump right in and play around with our resolvers and prototype them further to make it fit your production needs.
 ```
 
 Currently we only support doing this in Houdini.
@@ -19,7 +19,7 @@ As mentioned in our [Resolvers Plugin Configuration](../resolvers/overview.md#us
 In your install directory you will find a "launch.sh/.bat" file, which does this for you based on what host app you ran the installer in.
 All you then have to do is run the "launch.sh/.bat" file by double clicking it and then your app should open as usual with the resolver running. In the launch file we have enabled the "TF_DEBUG=AR_RESOLVER_INIT" environment variable, so there will be debug logs where you can see if everything worked correctly.
 
-![Install folder and launcher](./media/AutomaticInstallFolder.jpg)
+![Install folder and launcher](./media/AutomaticInstallFolder.png)
 
 ## Houdini
 In Houdini we simply need to open the "Python Source Editor" from the "Windows" menu and run the following code to get access to the update manager. You should preferably do this in a clean Houdini session as a safety measure.

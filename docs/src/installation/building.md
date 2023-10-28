@@ -17,7 +17,7 @@ In the [setup.sh](https://github.com/LucaScheller/VFX-UsdAssetResolver/blob/main
 
 It will then automatically set the `PATH`, `PYTHONPATH`, `PXR_PLUGINPATH_NAME` and `LD_LIBRARY_PATH` environment variables to the correct paths so that after your run the compile, the resolver will be loaded correctly (e.g. if you launch Houdini via `houdinifx`, it will load everything correctly). The build process also logs this information again.
 
-By default it also sets the `TF_DEBUG` env var to `<ResolverName>_RESOLVER` so that you'll get debug logs of what the resolver is doing. Check out the debug codes section of the resolvers for more information.
+By default it also sets the `TF_DEBUG` env var to `AR_RESOLVER_INIT` so that you'll get logs of what resolver is loaded by USD's plugin system, which you can use to verify that everything is working correctly.
 
 ### Manually setting up the environment
 If you don't want to use our convenience script, you can also setup the environment manually.
@@ -48,8 +48,9 @@ build.bat
 The `build.sh/.bat` files also contain (commented out) the environment definition part above, so alternatively just comment out the lines and you are good to go.
 
 ## Testing the build
-Currently we don't include tests as part of the build process yet, so to test if everything worked, you'll have to run Houdini.
-If you didn't use our convenience script as noted above, you'll have to specify a few environment variables, so that our plugin is correctly detected by USD.
+Unit tests are automatically run post-build on Linux using the Houdini version you are using. You can find each resolvers tests in its respective src/<ResolverName>/testenv folder.
+
+Alternatively you can run Houdini and check if the resolver executes correctly. If you didn't use our convenience script as noted above, you'll have to specify a few environment variables, so that our plugin is correctly detected by USD.
 
 Head over to our [Resolvers > Environment Variables](../resolvers/overview.md#environment-variables) section on how to do this.
 
@@ -58,14 +59,6 @@ After that everything should run smoothly, you can try loading the examples in t
 ## Customize build
 If you want to further configure the build, you can head into the [CMakeLists.txt](https://github.com/LucaScheller/VFX-UsdAssetResolver/blob/main/CMakeLists.txt) in the root of this repo. In the first section of the file, you can configure various things, like the environment variables that the resolvers use, Python module namespaces and what resolvers to compile.
 This is a standard `CMakeLists.txt` file that you can also configure via [CMake-GUI](https://cmake.org/cmake/help/latest/manual/cmake-gui.1.html). If you don't want to use the `build.sh` bash script, you can also configure and compile this project like any other C++ project via this file.
-
-If you want to change the resolver names, you'll have to additionally edit the `CMakeLists.txt` files in the corresponding resolver folder by un-commenting the following line in the beginning of the file:
-~~~admonish info title=""
-```cmake
-add_compile_definitions(<ResolverName>=${AR_<RESOLVERNAME>_USD_CXX_CLASS_NAME})
-```
-~~~
-This is considered experimental and is not guaranteed to work. It is easier to just rename all Python/C++ class via a quick search & replace.
 
 # Documentation
 If you want to locally build this documentation, you'll have to download [mdBook](https://github.com/rust-lang/mdBook) and [mdBook-admonish](https://github.com/tommilligan/mdbook-admonish) and add their parent directories to the `PATH`env variable so that the executables are found.

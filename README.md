@@ -10,10 +10,11 @@ To build the various resolvers, follow the instructions in the [install guide](h
 > This guide currently covers compiling against Houdini on Linux and Windows. Alternatively you can also download a pre-compiled builds on our [release page](https://github.com/LucaScheller/VFX-UsdAssetResolver/releases). To load the resolver, you must specify a few environment variables, see our [environment variables](https://lucascheller.github.io/VFX-UsdAssetResolver/resolvers/overview.html#environment-variables) section for more details.
 
 > [!IMPORTANT]
-> We also offer a quick install method for Houdini via our "Update Manager" that does the download of the compiled resolvers and environment variable setup for you. This is ideal if you want to get your hands dirty right away and you don't have any C++ knowledge or extensive USD developer knowledge. If you are a small studio, you can jump right in and play around with our "PythonResolver"/"CachedResolver" resolvers and prototype around to make it fit your production needs. 
+> We also offer a quick install method for Houdini that does the download of the compiled resolvers and environment variable setup for you. This is ideal if you want to get your hands dirty right away and you don't have any C++ knowledge or extensive USD developer knowledge. If you are a small studio, you can jump right in and play around with our resolvers and prototype them further to make it fit your production needs.
 
 To run the "Update Manager" simply run this snippet in the "Houdini Python Source Editor" panel:
 
+> [!IMPORTANT]
     import urllib,ssl
     update_manager_url = 'https://raw.githubusercontent.com/LucaScheller/VFX-UsdAssetResolver/main/tools/update_manager.py'
     exec(urllib.request.urlopen(update_manager_url,context=ssl._create_unverified_context()).read(), globals(), locals())
@@ -21,14 +22,16 @@ To run the "Update Manager" simply run this snippet in the "Houdini Python Sourc
 
 See our [Automatic Installation](https://lucascheller.github.io/VFX-UsdAssetResolver/installation/automatic_install.html) section for more information.
 
-
 ## Feature Overview
 Asset resolvers that can be compiled via this repository:
-- **File Resolver** - A file system based resolver similar to the default resolver with support for custom mapping pairs as well as at runtime modification and refreshing.
-- **Python Resolver** - Python based implementation of the file resolver. The goal of this resolver is to enable easier RnD by running all resolver and resolver context related methods in Python. It can be used to quickly inspect resolve calls and to setup prototypes of resolvers that can then later be re-written in C++ as it is easier to code database interactions in Python for initial research.
-- **Cached Resolver** - Still work in progress, more info soon.
-- **Http Resolver** - A proof of concept http resolver. This is kindly provided and maintained by @charlesfleche in the [arHttp: Offloads USD asset resolution to an HTTP server
-](https://github.com/charlesfleche/arHttp) repository. For documentation, feature suggestions and bug reports, please file a ticket there. This repo handles the auto-compilation against DCCs and exposing to the automatic installation update manager UI.
+- **Production Resolvers**
+    - **File Resolver** - A file system based resolver similar to the default resolver with support for custom mapping pairs as well as at runtime modification and refreshing.
+    - **Cached Resolver** - Still work in progress, more info coming soon.
+- **RnD Resolvers**
+    - **Python Resolver** - Python based implementation of the file resolver. The goal of this resolver is to enable easier RnD by running all resolver and resolver context related methods in Python. It can be used to quickly inspect resolve calls and to setup prototypes of resolvers that can then later be re-written in C++ as it is easier to code database interactions in Python for initial research.
+- **Proof Of Concept Resolvers**
+    - **Http Resolver** - A proof of concept http resolver. This is kindly provided and maintained by @charlesfleche in the [arHttp: Offloads USD asset resolution to an HTTP server
+    ](https://github.com/charlesfleche/arHttp) repository. For documentation, feature suggestions and bug reports, please file a ticket there. This repo handles the auto-compilation against DCCs and exposing to the automatic installation update manager UI.
 
 For more information check out the [building guide](https://lucascheller.github.io/VFX-UsdAssetResolver/installation/building.html) as well as the [individual resolvers](https://lucascheller.github.io/VFX-UsdAssetResolver/resolvers/overview.html) to see their full functionality.
 

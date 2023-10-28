@@ -3,6 +3,11 @@
 ## Simple Example
 
 A very simple setup can be found in In the <REPO_ROOT>/files folder. 
+
+```admonish info
+These examples currently work with the [File Resolver](../FileResolver/overview.md) and [Python Resolver](../PythonResolver/overview.md)
+```
+
 Before launching a Usd related software, you'll have to set these env vars:
 ```bash
 export AR_SEARCH_PATHS=${REPO_ROOT}/files
