@@ -349,8 +349,8 @@ class UpdateManager(object):
         filtered_data = []
         for release in data:
             # Skip pre releases
-            #if release["prerelease"]:
-            #    continue
+            if release["prerelease"]:
+                continue
             for asset in release["assets"]:
                 if asset["content_type"] != "application/zip":
                     continue
