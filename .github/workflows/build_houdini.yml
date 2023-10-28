@@ -50,6 +50,9 @@ jobs:
       - name: Build USD Python Resolver
         run: |
           .github/scripts/houdini_build.sh pythonResolver
+      - name: Build USD Http Resolver
+        run: |
+          .github/scripts/houdini_build.sh httpResolver
       - name: Create single .zip archive
         run: |
           repo_root=$(cd .; pwd)
@@ -93,6 +96,9 @@ jobs:
       - name: Build USD Python Resolver
         run: |
           .\.github\scripts\houdini_build.bat pythonResolver
+      - name: Build USD Http Resolver
+        run: |
+          .\.github\scripts\houdini_build.bat httpResolver
       - name: Create single .zip archive
         run: |
           & python $pwd\.github\scripts\houdini.py --artifact --artifact_src=$pwd\dist --artifact_dst=$pwd\artifacts --artifact_prefix=UsdAssetResolver
