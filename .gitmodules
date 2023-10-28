@@ -1,0 +1,3 @@
+[submodule "src/HttpResolver/arHttp"]
+	path = src/HttpResolver/arHttp
+	url = https://github.com/LucaScheller/arHttp.git
