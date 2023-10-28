@@ -1,13 +1,17 @@
-import os, platform
-import zipfile, shutil
 import contextlib
-import tempfile
-import re
-import urllib, ssl
-from urllib import request
 import json
+import os
+import platform
+import re
+import shutil
+import ssl
+import subprocess
+import tempfile
+import urllib
+import zipfile
+from urllib import request
 
-from PySide2 import QtWidgets, QtGui, QtCore
+from PySide2 import QtCore, QtGui, QtWidgets
 
 # To run, execute this in the Houdini Python Source Editor
 """
@@ -26,6 +30,45 @@ ENV_USD_ASSET_RESOLVER = "USD_ASSET_RESOLVER"
 HOU_PACKAGE_FILE_NAME = "UsdAssetResolver.json"
 QT_WINDOW_TITLE = "USD Asset Resolver - Update Manager"
 QT_ROLE_RELEASE = QtCore.Qt.UserRole + 1001
+
+
+def install_side_effect_httpResolver(platform_name, software_name, resolver_dir_path):
+    """The install side effect for the httpResolver.
+    # ToDo Instead of using 'HFS' for the Houdini install directory, add a software version input arg.
+    This does the following:
+    - Create a venv in the ./demo folder
+    - Install fastapi
+    - Return run command for server
+    Args:
+        platform_name(str): The active platform
+        software_name(str): The software name
+        directory_path(str): The resolver directory path
+    Returns:
+        str: A command to run before app execution
+    """
+    # Validate
+    if platform_name == "macos":
+        raise Exception(
+            "Platform {} is currently not supported!".format(platform_name)
+        )
+
+    demo_dir_path = os.path.join(resolver_dir_path, "demo")
+    python_exe = os.path.join(os.environ["HFS"], "python", "bin", "python")
+
+    # Create venv
+    subprocess.check_call([python_exe, "-m", "venv", "venv"], cwd=demo_dir_path)
+    venv_python_exe = os.path.join(demo_dir_path, "venv", "bin", "python")
+    # Install deps (We can't use the pyproject.toml as it depends on .git)
+    subprocess.check_call([venv_python_exe, "-m", "pip", "install", "fastapi[all]"], cwd=demo_dir_path)
+    # Command
+    if platform_name == "linux":
+        command = "{} uvicorn arHttpSampleServer:app --reload &".format(venv_python_exe)
+    elif platform_name == "win64":
+        command = ""
+    return command
+
+
+INSTALL_SIDE_EFFECTS = {"httpResolver": install_side_effect_httpResolver}
 
 
 class UpdateManagerUI(QtWidgets.QDialog):
@@ -194,10 +237,14 @@ class UpdateManagerUI(QtWidgets.QDialog):
         download_url = self.release_combobox.currentData(QT_ROLE_RELEASE)["url"]
         install_dir_path = self.directory_lineedit.text()
         resolve_name = self.resolver_combobox.currentText()
-        self.update_manager.install_release(self.update_manager.platform,
-                                            self.update_manager.software_name,
-                                            self.update_manager.software_version,
-                                            download_url, install_dir_path, resolve_name)
+        self.update_manager.install_release(
+            self.update_manager.platform,
+            self.update_manager.software_name,
+            self.update_manager.software_version,
+            download_url,
+            install_dir_path,
+            resolve_name,
+        )
         # Message
         self.close()
         QtWidgets.QMessageBox.information(
@@ -205,7 +252,9 @@ class UpdateManagerUI(QtWidgets.QDialog):
             QT_WINDOW_TITLE,
             "Installation successfull.\n"
             "Please restart the application by launching it via the 'launcher.bat/.sh' file "
-            "in your chosen install directory at '{install_dir_path}'.".format(install_dir_path=install_dir_path),
+            "in your chosen install directory at '{install_dir_path}'.".format(
+                install_dir_path=install_dir_path
+            ),
         )
 
     def uninstall_button_clicked(self):
@@ -242,9 +291,7 @@ class UpdateManager(object):
         self.platform = self.get_platform()
         self.software_name, self.software_version = self.get_software()
         self.releases = self.get_release_data(
-            self.get_platform(),
-            self.software_name,
-            self.software_version
+            self.get_platform(), self.software_name, self.software_version
         )
 
     def get_platform(self):
@@ -302,10 +349,10 @@ class UpdateManager(object):
         #     return False
         return True
 
-    def get_release_data(self, platform, software_name, software_version):
+    def get_release_data(self, platform_name, software_name, software_version):
         """Get release data via GitHub API
         Args:
-            platform(str): The OS ('linux' or 'win64')
+            platform_name(str): The OS ('linux' or 'win64')
             software_name(str): The software name ('houdini')
             software_version(str): The software version string.
                                 Only exact matches and major version matches are considered.
@@ -342,7 +389,7 @@ class UpdateManager(object):
                     asset_software_version,
                     asset_platform,
                 ) = asset_name_elements.groups()
-                if asset_platform != platform:
+                if asset_platform != platform_name:
                     continue
                 elif asset_software_name != software_name:
                     continue
@@ -412,22 +459,37 @@ class UpdateManager(object):
         """
         if compression_type == "zip":
             # Extract Archive
-            dir_path = os.path.join(os.path.dirname(file_path), os.path.basename(file_path).replace(".zip", ""))
+            dir_path = os.path.join(
+                os.path.dirname(file_path),
+                os.path.basename(file_path).replace(".zip", ""),
+            )
             if not os.path.exists(dir_path):
                 os.makedirs(dir_path)
             with zipfile.ZipFile(file_path, "r", zipfile.ZIP_DEFLATED) as archive:
                 archive.extractall(dir_path)
             os.remove(file_path)
         else:
-            raise Exception("The given compression type is not supported: {}".format(compression_type))
+            raise Exception(
+                "The given compression type is not supported: {}".format(
+                    compression_type
+                )
+            )
 
         return dir_path
 
-    def install_release(self, platform, software_name, software_version, download_url, directory_path, resolver_name):
+    def install_release(
+        self,
+        platform_name,
+        software_name,
+        software_version,
+        download_url,
+        directory_path,
+        resolver_name,
+    ):
         """Download and install the given release.
         # ToDo Instead of using 'HFS' for the Houdini install directory, use the software version input arg.
         Args:
-            platform(str): The active platform
+            platform_name(str): The active platform
             software_name(str): The software name
             software_version(str): The software version
             download_url(str): The download url
@@ -436,75 +498,108 @@ class UpdateManager(object):
         """
 
         if software_name == "houdini":
-            download_file_path = self.download_file(download_url, "{}.{}".format(directory_path, "zip"))
+            download_file_path = self.download_file(
+                download_url, "{}.{}".format(directory_path, "zip")
+            )
             directory_path = self.uncompress_file(download_file_path)
             resolver_dir_path = os.path.join(directory_path, resolver_name)
-            env = {"PXR_PLUGINPATH_NAME" : os.path.join(resolver_dir_path, "resources"),
-                   "PYTHONPATH" : os.path.join(resolver_dir_path, "lib", "python")}
-            if platform == "linux":
+            env = {
+                "PXR_PLUGINPATH_NAME": os.path.join(resolver_dir_path, "resources"),
+                "PYTHONPATH": os.path.join(resolver_dir_path, "lib", "python"),
+            }
+            if platform_name == "linux":
                 env["LD_LIBRARY_PATH"] = os.path.join(resolver_dir_path, "lib")
                 launch_file_path = os.path.join(directory_path, "launch.sh")
+                side_effect_command = INSTALL_SIDE_EFFECTS.get(
+                    resolver_name, lambda *args: None
+                )(platform_name, software_name, resolver_dir_path)
                 with open(launch_file_path, "w") as launch_file:
                     lines = []
                     lines.append("#!/bin/bash")
+                    # Environment
                     lines.append("# Setup environment")
                     # UpdateManager
-                    lines.append("export {}={}".format(ENV_USD_ASSET_RESOLVER, directory_path))
+                    lines.append(
+                        "export {}={}".format(ENV_USD_ASSET_RESOLVER, directory_path)
+                    )
                     # Debug
                     lines.append("export {}={}".format("TF_DEBUG", "AR_RESOLVER_INIT"))
                     # Env
                     for env_name, env_value in sorted(env.items(), key=lambda k: k[0]):
-                        lines.append("export {env_name}={env_value}{sep}${env_name}".format(env_name=env_name,
-                                                                                            env_value=env_value,
-                                                                                            sep=os.pathsep))
+                        lines.append(
+                            "export {env_name}={env_value}{sep}${env_name}".format(
+                                env_name=env_name, env_value=env_value, sep=os.pathsep
+                            )
+                        )
+                        # Side effect command
+                    if side_effect_command:
+                        lines.append(side_effect_command)
                     # App
-                    lines.append("pushd {} && source houdini_setup && popd".format(os.environ["HFS"]))
-                    lines.append('# Launch Houdini')
+                    lines.append(
+                        "pushd {} && source houdini_setup && popd".format(
+                            os.environ["HFS"]
+                        )
+                    )
+                    # Command
+                    lines.append("# Launch Houdini")
                     lines.append('houdini -foreground "$@"')
-                    launch_file.writelines(line + '\n' for line in lines)
+                    launch_file.writelines(line + "\n" for line in lines)
                 # Make executable
                 os.chmod(launch_file_path, 0o0777)
-            elif platform == "win64":
+            elif platform_name == "win64":
                 env["PATH"] = os.path.join(resolver_dir_path, "lib")
                 launch_file_path = os.path.join(directory_path, "launch.bat")
+                side_effect_command = INSTALL_SIDE_EFFECTS.get(
+                    resolver_name, lambda *args: None
+                )(platform_name, resolver_dir_path)
                 with open(launch_file_path, "w") as launch_file:
                     lines = []
+                    # Environment
                     lines.append("REM Setup environment")
                     # UpdateManager
-                    lines.append("set {}={}".format(ENV_USD_ASSET_RESOLVER, directory_path))
+                    lines.append(
+                        "set {}={}".format(ENV_USD_ASSET_RESOLVER, directory_path)
+                    )
                     # Debug
                     lines.append("set {}={}".format("TF_DEBUG", "AR_RESOLVER_INIT"))
                     # Env
                     for env_name, env_value in sorted(env.items(), key=lambda k: k[0]):
-                        lines.append("set {env_name}={env_value}{sep}%{env_name}%".format(env_name=env_name,
-                                                                                            env_value=env_value,
-                                                                                            sep=os.pathsep))
-                    # App
-                    lines.append('REM Launch Houdini')
+                        lines.append(
+                            "set {env_name}={env_value}{sep}%{env_name}%".format(
+                                env_name=env_name, env_value=env_value, sep=os.pathsep
+                            )
+                        )
+                    # Side effect command
+                    if side_effect_command:
+                        lines.append(side_effect_command)
+                    # App & command
+                    lines.append("REM Launch Houdini")
                     lines.append(os.path.join(os.environ["HFS"], "bin", "houdini"))
-                    launch_file.writelines(line + '\n' for line in lines)
+                    launch_file.writelines(line + "\n" for line in lines)
                 # Make executable
                 os.chmod(launch_file_path, 0o0777)
             else:
-                raise Exception("Platform {} is currently not supported!".format(platform))
+                raise Exception(
+                    "Platform {} is currently not supported!".format(platform_name)
+                )
             # # This currently doesn't work because packages are processed after startup (after USD is initialized)
             # package_content = { "env" : [{ ENV_USD_ASSET_RESOLVER : directory_path},
             #                              { "PXR_PLUGINPATH_NAME" : os.path.join(resolver_dir_path, "resources")},
             #                              { "PYTHONPATH" : os.path.join(resolver_dir_path, "lib", "python")},
             #                              { "LD_LIBRARY_PATH" : os.path.join(resolver_dir_path, "lib")},
             #                              { "TF_DEBUG" : "AR_RESOLVER_INIT"}]}
-            # if platform == "win64":
+            # if platform_name == "win64":
             #     package_content["env"].append({"PATH": os.path.join(resolver_dir_path, "lib")})
             # hou_user_pref_dir_path = os.environ["HOUDINI_USER_PREF_DIR"]
             # hou_packages_dir_path = os.path.join(hou_user_pref_dir_path, "packages")
             # hou_package_file_path = os.path.join(hou_packages_dir_path, HOU_PACKAGE_FILE_NAME)
             # # This doesn't work for language specific user folders
             # # ToDo Find a platform agnostic way to do this
-            # # if platform == "win64":
-            # #     hou_user_pref_dir_path = os.path.join(os.path.expanduser("~"), "Documents", 
+            # # if platform_name == "win64":
+            # #     hou_user_pref_dir_path = os.path.join(os.path.expanduser("~"), "Documents",
             # #                                           "houdini{}".format(".".join(software_version.split("."[:2]))))
             # #     hou_packages_dir_path = os.path.join(hou_user_pref_dir_path, "packages")
-            # # elif platform == "linux":
+            # # elif platform_name == "linux":
             # #     hou_user_pref_dir_path = os.path.join(os.path.expanduser("~"),
             # #                                           "houdini{}".format(".".join(software_version.split("."[:2]))))
             # #     hou_packages_dir_path = os.path.join(hou_user_pref_dir_path, "packages")
@@ -515,7 +610,11 @@ class UpdateManager(object):
             # with open(hou_package_file_path, "w") as hou_package_file:
             #     json.dump(package_content, hou_package_file, indent=4)
         else:
-            raise Exception("The application '{}' is currently not supported by the installer.".format(software_name))
+            raise Exception(
+                "The application '{}' is currently not supported by the installer.".format(
+                    software_name
+                )
+            )
 
         # This protects against running the updated multiple times in the same session.
         os.environ[ENV_USD_ASSET_RESOLVER] = directory_path
@@ -541,3 +640,5 @@ def run_houdini():
 
     dialog = UpdateManagerUI(hou.ui.mainQtWindow())
     dialog.exec_()
+
+run_houdini()

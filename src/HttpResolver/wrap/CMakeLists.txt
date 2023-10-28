@@ -44,4 +44,4 @@ configure_file(plugInfo.json.in plugInfo.json)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/plugInfo.json DESTINATION resources)
 install(TARGETS ${AR_HTTPRESOLVER_TARGET_LIB} RUNTIME DESTINATION lib)
 # Demo
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../arHttp/src/arHttpSampleServer RUNTIME DESTINATION demo)
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../arHttp/src/arHttpSampleServer DESTINATION demo/packages)
