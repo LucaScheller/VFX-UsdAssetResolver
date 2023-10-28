@@ -5,7 +5,6 @@ import platform
 import re
 import shutil
 import ssl
-import subprocess
 import tempfile
 import urllib
 import zipfile
@@ -30,48 +29,6 @@ ENV_USD_ASSET_RESOLVER = "USD_ASSET_RESOLVER"
 HOU_PACKAGE_FILE_NAME = "UsdAssetResolver.json"
 QT_WINDOW_TITLE = "USD Asset Resolver - Update Manager"
 QT_ROLE_RELEASE = QtCore.Qt.UserRole + 1001
-
-
-def install_side_effect_httpResolver(platform_name, software_name, resolver_dir_path):
-    """The install side effect for the httpResolver.
-    # ToDo Instead of using 'HFS' for the Houdini install directory, add a software version input arg.
-    This does the following:
-    - Create a venv in the ./demo folder
-    - Install fastapi
-    - Return run command for server
-    Args:
-        platform_name(str): The active platform
-        software_name(str): The software name
-        directory_path(str): The resolver directory path
-    Returns:
-        str: A command to run before app execution
-    """
-    # Validate
-    if platform_name == "macos":
-        raise Exception(
-            "Platform {} is currently not supported!".format(platform_name)
-        )
-
-    demo_dir_path = os.path.join(resolver_dir_path, "demo")
-    if not os.path.exists(demo_dir_path):
-        os.makedirs(demo_dir_path)
-    python_exe = os.path.join(os.environ["HFS"], "python", "bin", "python")
-
-    # Create venv
-    subprocess.check_call([python_exe, "-m", "venv", "venv"], cwd=demo_dir_path, env={})
-    venv_python_exe = os.path.join(demo_dir_path, "venv", "bin", "python")
-    # Install deps (We can't use the pyproject.toml as it depends on .git)
-    subprocess.check_call([venv_python_exe, "-m", "pip", "install", "fastapi[all]"], cwd=demo_dir_path,  env={})
-    # Command
-    if platform_name == "linux":
-        venv_uvicorn_exe = os.path.join(demo_dir_path, "venv", "bin", "uvicorn")
-        command = "{} arHttpSampleServer:app --reload &".format(venv_uvicorn_exe)
-    elif platform_name == "win64":
-        command = 'start "ArHttp Webserver" {} arHttpSampleServer:app --reload'.format(venv_uvicorn_exe)
-    return command
-
-
-INSTALL_SIDE_EFFECTS = {"fileResolver": install_side_effect_httpResolver}
 
 
 class UpdateManagerUI(QtWidgets.QDialog):
@@ -181,16 +138,16 @@ class UpdateManagerUI(QtWidgets.QDialog):
             self.resolver_label.setVisible(True)
             self.resolver_combobox.setVisible(True)
             self.uninstall_button.setVisible(False)
-        # Query data
-        self.update_manager.initialize()
-        # Update UI
-        for release in self.update_manager.releases:
-            release_name = release["name"]
-            item = QtGui.QStandardItem(release_name)
-            item.setData(release, QT_ROLE_RELEASE)
-            self.release_combobox.model().appendRow(item)
-        if not self.update_manager.releases:
-            self.install_button.setEnabled(False)
+            # Query data
+            self.update_manager.initialize()
+            # Update UI
+            for release in self.update_manager.releases:
+                release_name = release["name"]
+                item = QtGui.QStandardItem(release_name)
+                item.setData(release, QT_ROLE_RELEASE)
+                self.release_combobox.model().appendRow(item)
+            if not self.update_manager.releases:
+                self.install_button.setEnabled(False)
 
     def directory_lineedit_editingFinished(self):
         """Validate the directory path"""
@@ -378,8 +335,8 @@ class UpdateManager(object):
         filtered_data = []
         for release in data:
             # Skip pre releases
-            if release["prerelease"]:
-                continue
+            #if release["prerelease"]:
+            #    continue
             for asset in release["assets"]:
                 if asset["content_type"] != "application/zip":
                     continue
@@ -509,7 +466,7 @@ class UpdateManager(object):
             # Cleanup other resolvers
             for dir_name in os.listdir(directory_path):
                 if dir_name != resolver_name:
-                    os.rmdir(os.path.join(directory_path, dir_name))
+                    shutil.rmtree(os.path.join(directory_path, dir_name))
             # Build launcher
             env = {
                 "PXR_PLUGINPATH_NAME": os.path.join(resolver_dir_path, "resources"),
@@ -518,9 +475,6 @@ class UpdateManager(object):
             if platform_name == "linux":
                 env["LD_LIBRARY_PATH"] = os.path.join(resolver_dir_path, "lib")
                 launch_file_path = os.path.join(directory_path, "launch.sh")
-                side_effect_command = INSTALL_SIDE_EFFECTS.get(
-                    resolver_name, lambda *args: None
-                )(platform_name, software_name, resolver_dir_path)
                 with open(launch_file_path, "w") as launch_file:
                     lines = []
                     lines.append("#!/bin/bash")
@@ -539,17 +493,14 @@ class UpdateManager(object):
                                 env_name=env_name, env_value=env_value, sep=os.pathsep
                             )
                         )
-                    # Side effect command
-                    if side_effect_command:
-                        lines.append(side_effect_command)
                     # App
+                    lines.append("# Launch Houdini")
                     lines.append(
                         "pushd {} && source houdini_setup && popd".format(
                             os.environ["HFS"]
                         )
                     )
                     # Command
-                    lines.append("# Launch Houdini")
                     lines.append('houdini -foreground "$@"')
                     launch_file.writelines(line + "\n" for line in lines)
                 # Make executable
@@ -557,9 +508,6 @@ class UpdateManager(object):
             elif platform_name == "win64":
                 env["PATH"] = os.path.join(resolver_dir_path, "lib")
                 launch_file_path = os.path.join(directory_path, "launch.bat")
-                side_effect_command = INSTALL_SIDE_EFFECTS.get(
-                    resolver_name, lambda *args: None
-                )(platform_name, resolver_dir_path)
                 with open(launch_file_path, "w") as launch_file:
                     lines = []
                     # Environment
@@ -577,9 +525,6 @@ class UpdateManager(object):
                                 env_name=env_name, env_value=env_value, sep=os.pathsep
                             )
                         )
-                    # Side effect command
-                    if side_effect_command:
-                        lines.append(side_effect_command)
                     # App & command
                     lines.append("REM Launch Houdini")
                     lines.append(os.path.join(os.environ["HFS"], "bin", "houdini"))
@@ -648,5 +593,3 @@ def run_houdini():
 
     dialog = UpdateManagerUI(hou.ui.mainQtWindow())
     dialog.exec_()
-
-run_houdini()

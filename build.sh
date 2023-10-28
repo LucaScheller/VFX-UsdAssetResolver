@@ -2,7 +2,7 @@
 clear
 # Source environment (Uncomment lines starting with "export" if you current env does not have these defined.)
 # export HFS=/opt/<InsertHoudiniVersion>
-# Define Resolver > Has to be one of 'fileResolver'/'pythonResolver'/'cachedResolver'
+# Define Resolver > Has to be one of 'fileResolver'/'pythonResolver'/'cachedResolver'/'httpResolver'
 # export RESOLVER_NAME=fileResolver
 # Clear existing build data and invoke cmake
 rm -R build
