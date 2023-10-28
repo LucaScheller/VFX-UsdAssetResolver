@@ -14,6 +14,8 @@ As the resolver reacts to http requests, we need to setup a local server to answ
 This can be easily done by running:
 - <install/dist root folder>/httpResolver/demo/server_install.sh/.bat file to create the python virtual environment with the necessary packages
 - <install/dist root folder>/httpResolver/demo/server_launch.sh/.bat file to run the demo server
+
+Make sure you are running the scripts with the current directory set to <install/dist root folder>/httpResolver/demo, otherwise it won't work!
 ~~~
 
 ~~~admonish warning
