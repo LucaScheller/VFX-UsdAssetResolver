@@ -10,7 +10,7 @@ if (WIN32)
 endif()
 
 ### Targets ###
-## Target library > FILERESOLVER ##
+## Target library > fileResolver ##
 add_library(${AR_FILERESOLVER_TARGET_LIB}
     SHARED
         debugCodes.cpp
@@ -53,7 +53,7 @@ configure_file(plugInfo.json.in plugInfo.json)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/plugInfo.json DESTINATION resources)
 install(TARGETS ${AR_FILERESOLVER_TARGET_LIB} RUNTIME DESTINATION lib)
 
-## Target library > FILERESOLVER Python ##
+## Target library > fileResolver Python ##
 add_library(${AR_FILERESOLVER_TARGET_PYTHON}
     SHARED
         module.cpp

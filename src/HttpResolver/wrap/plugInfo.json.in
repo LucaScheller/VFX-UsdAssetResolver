@@ -1,0 +1,19 @@
+{
+    "Plugins": [
+        {
+            "Info": {
+                "Types": {
+                    "@AR_HTTPRESOLVER_USD_CXX_CLASS_NAME@": {
+                        "bases": ["ArResolver"],
+                        "implementsContexts" : true
+                    }
+                }
+            },
+            "LibraryPath": "../lib/@AR_HTTPRESOLVER_TARGET_LIB@.@AR_ARCH_LIB_SUFFIX@",
+            "Name": "@AR_HTTPRESOLVER_USD_PLUGIN_NAME@",
+            "Root": ".",
+            "Type": "library"
+        }
+    ]
+}
+

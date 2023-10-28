@@ -53,6 +53,16 @@ set(AR_CACHEDRESOLVER_TARGET_PYTHON _${AR_CACHEDRESOLVER_TARGET_LIB})
 set(AR_CACHEDRESOLVER_INSTALL_PREFIX ${AR_PROJECT_NAME}/${AR_CACHEDRESOLVER_USD_PLUGIN_NAME})
 set(AR_CACHEDRESOLVER_ENV_CONTEXT_BYPASS "AR_CONTEXT_BYPASS")
 set(AR_CACHEDRESOLVER_ENV_CONTEXT_DIRTY "AR_CONTEXT_DIRTY")
+# Http Resolver
+option(AR_HTTPRESOLVER_BUILD "Build the HttpResolver" OFF)
+if("$ENV{RESOLVER_NAME}" STREQUAL "httpResolver")
+    set(AR_HTTPRESOLVER_BUILD ON)
+endif()
+set(AR_HTTPRESOLVER_USD_PLUGIN_NAME httpResolver)
+set(AR_HTTPRESOLVER_USD_CXX_CLASS_NAME ArHttp)
+set(AR_HTTPRESOLVER_TARGET_LIB httpResolver)
+set(AR_HTTPRESOLVER_INSTALL_PREFIX ${AR_PROJECT_NAME}/${AR_HTTPRESOLVER_USD_PLUGIN_NAME})
+
 
 # Arch
 if (WIN32)
@@ -127,6 +137,7 @@ link_directories(${AR_PXR_LIB_DIR})
 link_directories(${AR_PYTHON_LIB_DIR})
 
 ### Targets ###
+## Maintained in this repo
 # FileResolver
 if(${AR_FILERESOLVER_BUILD})
     add_subdirectory("src/FileResolver")
@@ -135,9 +146,14 @@ endif()
 if(${AR_PYTHONRESOLVER_BUILD})
     add_subdirectory("src/PythonResolver")
 endif()
-# HybridResolver
+# CachedResolver
 if(${AR_CACHEDRESOLVER_BUILD})
     add_subdirectory("src/CachedResolver")
+endif()
+## Maintained in submodule repos
+# HttpResolver
+if(${AR_HTTPRESOLVER_BUILD})
+    add_subdirectory("src/HttpResolver/wrap")
 endif()
 
 # Status

@@ -1,7 +1,8 @@
+.vscode
+*.code-workspace
 artifacts
 build
 dist
-temp
 docs/book
-.vscode
-*.code-workspace
+temp
+venv

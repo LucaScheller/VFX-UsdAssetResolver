@@ -49,7 +49,7 @@ configure_file(plugInfo.json.in plugInfo.json)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/plugInfo.json DESTINATION resources)
 install(TARGETS ${AR_CACHEDRESOLVER_TARGET_LIB} RUNTIME DESTINATION lib)
 
-## Target library > HYBRIDRESOLVER Python ##
+## Target library > CachedResolver Python ##
 add_library(${AR_CACHEDRESOLVER_TARGET_PYTHON}
     SHARED
         wrapResolver.cpp
