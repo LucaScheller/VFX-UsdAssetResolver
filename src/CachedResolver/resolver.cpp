@@ -148,45 +148,53 @@ CachedResolver::_Resolve(
                 if (ctx) {
                     // Search for mapping pairs
                     auto &mappingPairs = ctx->GetMappingPairs();
+                    
                     auto map_find = mappingPairs.find(assetPath);
                     if(map_find != mappingPairs.end()){
                         ArResolvedPath resolvedPath = _ResolveAnchored(this->emptyString, map_find->second);
-                        if (resolvedPath) {
-                            return resolvedPath;
-                        }
+                        return resolvedPath;
+                        // Assume that a map hit is always valid.
+                        // if (resolvedPath) {
+                        //     return resolvedPath;
+                        // }
                     }
                     // Search for cached pairs
                     auto &cachedPairs = ctx->GetCachedPairs();
                     auto cache_find = cachedPairs.find(assetPath);
                     if(cache_find != cachedPairs.end()){
                         ArResolvedPath resolvedPath = _ResolveAnchored(this->emptyString, cache_find->second);
-                        if (resolvedPath) {
-                            return resolvedPath;
-                        }
+                        return resolvedPath;
+                        // Assume that a cache hit is always valid.
+                        // if (resolvedPath) {
+                        //     return resolvedPath;
+                        // }
                     }
+                    // Perform query if caches don't have a hit.
+                    std::string pythonResult;
                     {
-                        // Perform query if caches don't have a hit.
                         /*
                         We perform the resource/thread lock in the context itself to 
                         allow for resolver multithreading with different contexts
                         Is this approach in general a hacky solution? Yes, we are circumventing C++'s
-                        'constants' mechanism by redirecting our queries into Python. This way we can modify our
-                        'const' read locked resolver context. While it works, be aware that potential side effects may occur.
+                        'constants' mechanism by redirecting our queries into Python in which we 
+                        write-access our Resolver Context. This way we can modify our 'const' C++ read
+                        locked resolver context. While it works, be aware that potential side effects may occur.
                         */
                         const std::lock_guard<std::mutex> lock(g_resolver_query_mutex);
 
                         TF_DEBUG(CACHEDRESOLVER_RESOLVER).Msg("Resolver::_Resolve('%s') -> No cache hit, switching to Python query\n", assetPath.c_str());
-                        ArResolvedPath pythonResult;
+                        
                         int state = TfPyInvokeAndExtract(DEFINE_STRING(AR_CACHEDRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME),
                                                          "Resolver.ResolveAndCache",
-                                                         &pythonResult, assetPath);
+                                                         &pythonResult, assetPath, *ctx);
                         if (!state) {
-                            std::cerr << "Failed to call Resolver._Resolve in " << DEFINE_STRING(AR_CACHEDRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME) << ".py. ";
+                            std::cerr << "Failed to call Resolver.ResolveAndCache in " << DEFINE_STRING(AR_CACHEDRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME) << ".py. ";
                             std::cerr << "Please verify that the python code is valid!" << std::endl;
                         }
-                        if (pythonResult) {
-                            return pythonResult;
-                        }
+                    }
+                    ArResolvedPath resolvedPath = _ResolveAnchored(this->emptyString, pythonResult);
+                    if (resolvedPath) {
+                        return resolvedPath;
                     }
                 }
             }

@@ -19,7 +19,9 @@ class TestArResolver(unittest.TestCase):
     def test_debug(self):
         resolver = Ar.GetResolver()
         resolved_path = resolver.Resolve("debug")
-        raise Exception(">> {}".format(resolved_path.GetPathString()))
+        print("::::::::::::::::::::::::::::::::::::::: Result Call 1 ->", resolved_path)
+        resolved_path = resolver.Resolve("debug")
+        print("::::::::::::::::::::::::::::::::::::::: Result Call 2 ->", resolved_path)
 
     def _test_CreateIdentifier(self):
         resolver = Ar.GetResolver()

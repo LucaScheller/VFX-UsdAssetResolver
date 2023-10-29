@@ -116,7 +116,7 @@ def _ResolveAnchored(anchorPath, path):
 class Resolver:
     @staticmethod
     @log_function_args
-    def ResolveAndCache(assetPath):
+    def ResolveAndCache(assetPath, context):
         """Return the resolved path for the given assetPath or an empty
         ArResolvedPath if no asset exists at that path.
         Args:
@@ -124,6 +124,10 @@ class Resolver:
         Returns:
             Ar.ResolvedPath: The resolved path.
         """
+
+        #raise Exception(">>>>>>>{}".format(dir(context)))
+        print(":::::::::::::::::::::::::::::::::::::::::::::::::: Context ->", context.GetMappingPairs())
+        context.AddMappingPair("debug", "How cool is this!")
         return Ar.ResolvedPath("Debug Working")
 
         # if not assetPath:
