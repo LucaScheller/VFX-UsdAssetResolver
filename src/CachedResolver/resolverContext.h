@@ -4,6 +4,7 @@
 #include <memory>
 #include <regex>
 #include <string>
+#include <map>
 
 #include "pxr/pxr.h"
 #include "pxr/usd/ar/defineResolverContext.h"
@@ -24,18 +25,20 @@ struct CachedResolverContextInternalData
 {
     std::string mappingFilePath;
     std::map<std::string, std::string> mappingPairs;
+    std::map<std::string, std::string> cachedPairs;
 };
 
 class CachedResolverContext
 {
 public:
     // Constructors
+    AR_CACHEDRESOLVER_API
     CachedResolverContext();
     AR_CACHEDRESOLVER_API
     CachedResolverContext(const CachedResolverContext& ctx);
     AR_CACHEDRESOLVER_API
     CachedResolverContext(const std::string& mappingFilePath);
-
+    
     // Standard Ops
     AR_CACHEDRESOLVER_API
     bool operator<(const CachedResolverContext& ctx) const;
@@ -52,9 +55,23 @@ public:
     AR_CACHEDRESOLVER_API
     void SetMappingFilePath(std::string mappingFilePath) { data->mappingFilePath = mappingFilePath; }
     AR_CACHEDRESOLVER_API
+    void RefreshFromMappingFilePath();
+    AR_CACHEDRESOLVER_API
+    void AddMappingPair(const std::string& sourceStr, const std::string& targetStr);
+    AR_CACHEDRESOLVER_API
+    void RemoveMappingByKey(const std::string& sourceStr);
+    AR_CACHEDRESOLVER_API
+    void RemoveMappingByValue(const std::string& targetStr);
+    AR_CACHEDRESOLVER_API
     const std::map<std::string, std::string>& GetMappingPairs() const { return data->mappingPairs; }
     AR_CACHEDRESOLVER_API
     void ClearMappingPairs() { data->mappingPairs.clear(); }
+    AR_CACHEDRESOLVER_API
+    const std::string ResolveAndCachePair(const std::string& assetPath) const;
+    AR_CACHEDRESOLVER_API
+    const std::map<std::string, std::string>& GetCachedPairs() const { return data->cachedPairs; }
+    AR_CACHEDRESOLVER_API
+    void ClearCachedPairs() { data->cachedPairs.clear(); }
 
 private:
     // Vars
@@ -62,7 +79,6 @@ private:
     
     // Methods
     bool _GetMappingPairsFromUsdFile(const std::string& filePath);
-
 };
 
 PXR_NAMESPACE_OPEN_SCOPE

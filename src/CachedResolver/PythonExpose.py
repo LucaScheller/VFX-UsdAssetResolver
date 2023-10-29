@@ -16,7 +16,7 @@ LOG.setLevel(level=logging.INFO)
 
 # Utils
 SYSTEM_IS_LINUX = sys.platform.lower() == "linux"
-SYSTEM_IS_WINDOWS = sys.platform.lower() == "windows"
+SYSTEM_IS_WINDOWS = any([w in sys.platform.lower() for w in ["windows", "win32", "win64", "cygwin"]])
 
 def log_function_args(func):
     """Decorator to print function call details."""
@@ -32,32 +32,91 @@ def log_function_args(func):
     return wrapper
 
 
-def _GetMappingPairsFromUsdFile(mappingFilePath):
-    """Lookup mapping pairs from the given mapping .usd file.
+def TfIsRelativePath(path):
+    """Check if the path is not an absolute path,
+    by checking if it starts with "/" or "\\" depending on the host
+    os path style.
     Args:
-        mappingFilePath(str): The mapping .usd file path
+        path(str): The path
     Returns:
-        mappingPairs(dict): A dict of mapping pairs
+        bool: State if the path is a relative path
     """
-    if not os.path.isfile(mappingFilePath) or not mappingFilePath.endswith((".usd", ".usdc", ".usda")):
-        return {}
-    layer = Sdf.Layer.FindOrOpen(mappingFilePath)
-    if not layer:
-        return {}
-    layerMetaData = layer.customLayerData
-    mappingPairs = layerMetaData.get(Tokens.mappingPairs)
-    if not mappingPairs:
-        return {}
-    if len(mappingPairs) % 2 != 0:
-        return {}
-    mappingPairs = dict(zip(mappingPairs[::2], mappingPairs[1::2]))
-    return mappingPairs
+    if SYSTEM_IS_WINDOWS:
+        drive, tail = os.path.splitdrive(path)
+        return not path or (path[0] != '/' and path[0] != '\\' and not drive)
+    else:
+        return not path or path[0] != '/'
+
+
+def _IsRelativePath(path):
+    """Check if the path is not an absolute path,
+    by checking if it starts with "/" or "\\"
+    Args:
+        path(str): The path
+    Returns:
+        bool: State if the path is a relative path
+    """
+    return path and TfIsRelativePath(path)
+
+
+def _IsFileRelativePath(path):
+    """Check if the path is a relative file path
+    Args:
+        path(str): The path
+    Returns:
+        bool: State if the path is a relative file path
+    """
+    return path.startswith("./") or path.startswith("../")
+
+
+def _IsSearchPath(path):
+    """Check if the path is search path resolveable
+    Args:
+        path(str): The path
+    Returns:
+        bool: State if the path is a search path resolveable path
+    """
+    return _IsRelativePath(path) and not _IsFileRelativePath(path)
+
+
+def _AnchorRelativePath(anchorPath, path):
+    """Anchor the relative path by the anchor path.
+    Args:
+        anchorPath(str): The anchor path
+        path(str): The path to anchor
+    Returns:
+        str: An anchored path
+    """
+    if (TfIsRelativePath(anchorPath) or not _IsRelativePath(path)):
+        return path
+    # Ensure we are using forward slashes and not back slashes.
+    forwardPath = anchorPath.replace('\\', '/')
+    # If anchorPath does not end with a '/', we assume it is specifying
+    ## a file, strip off the last component, and anchor the path to that
+    ## directory.
+    anchoredPath = os.path.join(os.path.dirname(forwardPath), path)
+    return os.path.normpath(anchoredPath)
+
+
+def _ResolveAnchored(anchorPath, path):
+    """Anchor the path by the anchor path.
+    Args:
+        anchorPath(str): The anchor path
+        path(str): The path to anchor
+    Returns:
+        Ar.ResolvedPath: An anchored resolved path
+    """
+    resolvedPath = path
+    if (anchorPath):
+        resolvedPath = os.path.join(anchorPath, path)
+    return Ar.ResolvedPath(os.path.normpath(resolvedPath)) if os.path.isfile(resolvedPath) else Ar.ResolvedPath()
+
 
 
 class Resolver:
     @staticmethod
     @log_function_args
-    def _Resolve(assetPath, serializedContext, serializedFallbackContext):
+    def ResolveAndCache(assetPath):
         """Return the resolved path for the given assetPath or an empty
         ArResolvedPath if no asset exists at that path.
         Args:
@@ -65,65 +124,30 @@ class Resolver:
         Returns:
             Ar.ResolvedPath: The resolved path.
         """
-        if not assetPath:
-            return Ar.ResolvedPath()
-        for data in [serializedContext, serializedFallbackContext]:
-            if not data:
-                continue
-            try:
-                ctx = json.loads(data)
-            except Exception:
-                print("Failed to extract context, data is not serialized json data: {data}".format(data=data))
-                continue
-            mappingPairs = ctx.get(Tokens.mappingPairs, {})
-            mappedPath = assetPath
-            if mappingPairs:
-                if ctx.get(Tokens.mappingRegexExpression, ""):
-                    mappedPath = re.sub(ctx[Tokens.mappingRegexExpression],
-                                        ctx.get(Tokens.mappingRegexFormat, ""),
-                                        mappedPath)
-            mappedPath = mappingPairs.get(mappedPath, mappedPath)
-            for searchPath in ctx.get(Tokens.searchPaths, []):
-                resolvedPath = _ResolveAnchored(searchPath, mappedPath)
-                if resolvedPath:
-                    return resolvedPath
-        return _ResolveAnchored("", assetPath)
+        return Ar.ResolvedPath("Debug Working")
 
-    @staticmethod
-    @log_function_args
-    def _IsContextDependentPath(assetPath):
-        """Returns true if assetPath is a context-dependent path, false otherwise.
-        Args:
-            assetPath (str): An unresolved asset path.
-        Returns:
-            bool: The context-dependent state.
-        """
-        # ToDo This is not used, please see the _IsContextDependentPath (docstring)
-        # for more information. This can't be implmented in Python due to it 
-        # being performance critical function.
-        raise NotImplementedError
-
-class ResolverContext:
-    @staticmethod
-    @log_function_args
-    def LoadOrRefreshData(mappingFilePath, searchPathsEnv, mappingRegexExpressionEnv, mappingRegexFormatEnv):
-        """Load or refresh the mapping pairs from file and the search paths from the
-        configured environment variables.
-        Args:
-            mappingFilePath(str): The mapping .usd file path
-            searchPathsEnv(str): The search paths environment variable
-        Returns:
-            str: A serialized json dict that can be used as a context.
-        """
-        ctx = {}
-        # Search Paths
-        searchPaths = os.environ.get(searchPathsEnv, "").split(os.path.pathsep)
-        searchPaths = [os.path.normpath(path) for path in searchPaths]
-        ctx[Tokens.searchPaths] = searchPaths
-        # Regex Formatting
-        ctx[Tokens.mappingRegexExpression] = os.environ.get(mappingRegexExpressionEnv, "")
-        ctx[Tokens.mappingRegexFormat] = os.environ.get(mappingRegexFormatEnv, "")
-        # Mapping Pairs
-        mappingPairs = _GetMappingPairsFromUsdFile(mappingFilePath)
-        ctx[Tokens.mappingPairs] = mappingPairs
-        return json.dumps(ctx)
+        # if not assetPath:
+        #     return Ar.ResolvedPath()
+        # if _IsRelativePath(assetPath):
+        #     if Resolver._IsContextDependentPath(assetPath):
+        #         for data in [serializedContext, serializedFallbackContext]:
+        #             if not data:
+        #                 continue
+        #             try:
+        #                 ctx = json.loads(data)
+        #             except Exception:
+        #                 print("Failed to extract context, data is not serialized json data: {data}".format(data=data))
+        #                 continue
+        #             mappingPairs = ctx.get(Tokens.mappingPairs, {})
+        #             mappedPath = assetPath
+        #             if mappingPairs:
+        #                 if ctx.get(Tokens.mappingRegexExpression, ""):
+        #                     mappedPath = re.sub(ctx[Tokens.mappingRegexExpression],
+        #                                         ctx.get(Tokens.mappingRegexFormat, ""),
+        #                                         mappedPath)
+        #             mappedPath = mappingPairs.get(mappedPath, mappedPath)
+        #             for searchPath in ctx.get(Tokens.searchPaths, []):
+        #                 resolvedPath = _ResolveAnchored(searchPath, mappedPath)
+        #                 if resolvedPath:
+        #                     return resolvedPath
+        # return _ResolveAnchored("", assetPath)

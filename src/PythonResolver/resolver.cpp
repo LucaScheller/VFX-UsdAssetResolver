@@ -20,7 +20,6 @@
 #include "resolver.h"
 #include "resolverContext.h"
 
-namespace python = AR_BOOST_NAMESPACE::python;
 
 PXR_NAMESPACE_OPEN_SCOPE
 

@@ -17,8 +17,6 @@
 #include "resolver.h"
 #include "resolverContext.h"
 
-namespace python = AR_BOOST_NAMESPACE::python;
-
 PXR_NAMESPACE_OPEN_SCOPE
 
 AR_DEFINE_RESOLVER(FileResolver, ArResolver);
@@ -224,7 +222,7 @@ FileResolver::_CreateDefaultContextForAsset(
     std::string assetDir = TfGetPathName(TfAbsPath(resolvedPathStr));
     struct FileResolverContextRecord record;
     record.timestamp = this->_GetModificationTimestamp(assetPath, resolvedPath);
-    record.ctx = FileResolverContext(resolvedPath, std::vector<std::string>(1, assetDir));;
+    record.ctx = FileResolverContext(resolvedPath, std::vector<std::string>(1, assetDir));
     _sharedContexts.insert(std::pair<std::string, FileResolverContextRecord>(resolvedPath, record));
     return ArResolverContext(record.ctx);
 }

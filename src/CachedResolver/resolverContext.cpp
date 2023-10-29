@@ -2,6 +2,7 @@
 #define DEFINE_STRING(string) CONVERT_STRING(string)
 
 #include <iostream>
+#include <vector>
 
 #include "pxr/pxr.h"
 #include "pxr/base/tf/getenv.h"
@@ -13,11 +14,32 @@
 
 PXR_NAMESPACE_USING_DIRECTIVE
 
-
-CachedResolverContext::CachedResolverContext() {
-    // Init
-    this->LoadOrRefreshData();
+bool getStringEndswithString(const std::string &value, const std::string &compareValue)
+{
+    if (compareValue.size() > value.size())
+    {
+        return false;
+    }
+    if (std::equal(compareValue.rbegin(), compareValue.rend(), value.rbegin()))
+    {
+        return true;
+    }
+    return false;
 }
+
+bool getStringEndswithStrings(const std::string &value, const std::vector<std::string> array)
+{
+    for (int i=0; i < array.size(); i++)
+    {
+        if (getStringEndswithString(value, array[i]))
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+CachedResolverContext::CachedResolverContext() {}
 
 CachedResolverContext::CachedResolverContext(const CachedResolverContext& ctx) = default;
 
@@ -26,7 +48,7 @@ CachedResolverContext::CachedResolverContext(const std::string& mappingFilePath)
     TF_DEBUG(CACHEDRESOLVER_RESOLVER_CONTEXT).Msg("ResolverContext::ResolverContext('%s') - Creating new context\n", mappingFilePath.c_str());
     // Init
     this->SetMappingFilePath(TfAbsPath(mappingFilePath));
-    this->LoadOrRefreshData();
+    this->_GetMappingPairsFromUsdFile(this->GetMappingFilePath());
 }
 
 bool
@@ -56,7 +78,6 @@ size_t hash_value(const CachedResolverContext& ctx)
     return TfHash()(ctx.GetMappingFilePath());
 }
 
-
 bool CachedResolverContext::_GetMappingPairsFromUsdFile(const std::string& filePath)
 {
     data->mappingPairs.clear();
@@ -84,18 +105,43 @@ bool CachedResolverContext::_GetMappingPairsFromUsdFile(const std::string& fileP
     return true;
 }
 
-
-void CachedResolverContext::LoadOrRefreshData(){
-    TF_DEBUG(CACHEDRESOLVER_RESOLVER_CONTEXT).Msg("ResolverContext::LoadOrRefreshData('%s', '%s', '%s', '%s') - Loading data\n", this->GetMappingFilePath().c_str(), DEFINE_STRING(AR_ENV_SEARCH_PATHS), DEFINE_STRING(AR_ENV_SEARCH_REGEX_EXPRESSION), DEFINE_STRING(AR_ENV_SEARCH_REGEX_FORMAT));
-    std::string pythonResult;    
-    int state = TfPyInvokeAndExtract(DEFINE_STRING(AR_PYTHONRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME),
-                                     "ResolverContext.LoadOrRefreshData",
-                                     &pythonResult, this->GetMappingFilePath(), DEFINE_STRING(AR_ENV_SEARCH_PATHS),
-                                     DEFINE_STRING(AR_ENV_SEARCH_REGEX_EXPRESSION), DEFINE_STRING(AR_ENV_SEARCH_REGEX_FORMAT));  
-    if (!state) {
-        std::cerr << "Failed to call ResolverContext.LoadOrRefreshData in " << DEFINE_STRING(AR_PYTHONRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME) << ".py. ";
-        std::cerr << "Please verify that the python code is valid!" << std::endl;
+void CachedResolverContext::AddMappingPair(const std::string& sourceStr, const std::string& targetStr){
+    auto map_find = data->mappingPairs.find(sourceStr);
+    if(map_find != data->mappingPairs.end()){
+        map_find->second = targetStr;
+    }else{
+        data->mappingPairs.insert(std::pair<std::string, std::string>(sourceStr,targetStr));
     }
-    TF_DEBUG(CACHEDRESOLVER_RESOLVER_CONTEXT).Msg("ResolverContext::LoadOrRefreshData('%s') - Loaded data '%s'\n", this->GetMappingFilePath().c_str(), pythonResult.c_str());
-    this->SetData(pythonResult);
+}
+
+void CachedResolverContext::RemoveMappingByKey(const std::string& sourceStr){
+    const auto &it = data->mappingPairs.find(sourceStr);
+    if (it != data->mappingPairs.end()){
+        data->mappingPairs.erase(it);
+    }
+}
+
+void CachedResolverContext::RemoveMappingByValue(const std::string& targetStr){
+    for (auto it = data->mappingPairs.cbegin(); it != data->mappingPairs.cend();)
+    {
+        if (it->second == targetStr)
+        {
+            data->mappingPairs.erase(it++);
+        }
+        else
+        {
+            ++it;
+        }
+    }
+}
+
+void CachedResolverContext::RefreshFromMappingFilePath(){
+    this->_GetMappingPairsFromUsdFile(this->GetMappingFilePath());
+}
+
+const std::string CachedResolverContext::ResolveAndCachePair(const std::string& assetPath) const{
+                    // We perform the resource/thread lock in the context itself to allow for resolver multithreading with different contexts
+                    // This can populate multiple cachePairs to allow for batch loading of a identifier cache
+    std::string debug{"debug"};
+    return debug;
 }

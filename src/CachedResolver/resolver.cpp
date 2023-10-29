@@ -1,8 +1,7 @@
-#include <fstream>
-#include <iostream>
-#include <map>
-#include <string>
-#include <regex>
+#define CONVERT_STRING(string) #string
+#define DEFINE_STRING(string) CONVERT_STRING(string)
+#include "resolver.h"
+#include "resolverContext.h"
 
 #include "pxr/base/arch/systemInfo.h"
 #include "pxr/base/tf/fileUtils.h"
@@ -14,8 +13,20 @@
 #include "pxr/usd/ar/filesystemWritableAsset.h"
 #include "pxr/usd/ar/notice.h"
 
-#include "resolver.h"
-#include "resolverContext.h"
+#include <fstream>
+#include <iostream>
+#include <map>
+#include <mutex>
+#include <string>
+#include <thread>
+#include <regex>
+
+/*
+Safety-wise we lock via a mutex when we don't have a cache hit.
+In theory we probably don't need this, as our Python call does this anyway.
+See the _Resolve method for more information.
+*/
+static std::mutex g_resolver_query_mutex;
 
 namespace python = AR_BOOST_NAMESPACE::python;
 
@@ -35,7 +46,7 @@ _IsFileRelativePath(const std::string& path) {
 }
 
 static bool
-_IsSearchPath(const std::string& path)
+_IsNotFilePath(const std::string& path)
 {
     return _IsRelativePath(path) && !_IsFileRelativePath(path);
 }
@@ -81,7 +92,7 @@ CachedResolver::_CreateIdentifier(
     const ArResolvedPath& anchorAssetPath) const
 {
     TF_DEBUG(CACHEDRESOLVER_RESOLVER).Msg("Resolver::_CreateIdentifier('%s', '%s')\n",
-                                        assetPath.c_str(), anchorAssetPath.GetPathString().c_str());
+                                          assetPath.c_str(), anchorAssetPath.GetPathString().c_str());
 
     if (assetPath.empty()) {
         return assetPath;
@@ -93,7 +104,7 @@ CachedResolver::_CreateIdentifier(
 
     const std::string anchoredAssetPath = _AnchorRelativePath(anchorAssetPath, assetPath);
 
-    if (_IsSearchPath(assetPath) && Resolve(anchoredAssetPath).empty()) {
+    if (_IsNotFilePath(assetPath) && Resolve(anchoredAssetPath).empty()) {
         return TfNormPath(assetPath);
     }
 
@@ -131,59 +142,53 @@ CachedResolver::_Resolve(
     }
     if (_IsRelativePath(assetPath)) {
         if (this->_IsContextDependentPath(assetPath)) {
-
-
-            const PythonResolverContext* contexts[2] = {this->_GetCurrentContextPtr(), &_fallbackContext};
-            std::string serializedContext = "";
-            std::string serializedFallbackContext = _fallbackContext.GetData(); 
-            if (contexts[0] != nullptr){serializedContext=this->_GetCurrentContextPtr()->GetData();}
-            TF_DEBUG(PYTHONRESOLVER_RESOLVER).Msg("Resolver::_Resolve('%s', '%s', '%s')\n", assetPath.c_str(),
-                                                serializedContext.c_str(), serializedFallbackContext.c_str());
-            ArResolvedPath pythonResult;
-            int state = TfPyInvokeAndExtract(DEFINE_STRING(AR_PYTHONRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME),
-                                            "Resolver._Resolve",
-                                            &pythonResult, assetPath, serializedContext, serializedFallbackContext);
-            if (!state) {
-                std::cerr << "Failed to call Resolver._Resolve in " << DEFINE_STRING(AR_PYTHONRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME) << ".py. ";
-                std::cerr << "Please verify that the python code is valid!" << std::endl;
-            }
-            return pythonResult;
-
-
-
-
-
-
             const CachedResolverContext* contexts[2] = {this->_GetCurrentContextPtr(), &_fallbackContext};
             for (const CachedResolverContext* ctx : contexts) {
                 if (ctx) {
+                    // Search for mapping pairs
                     auto &mappingPairs = ctx->GetMappingPairs();
-                    std::string mappedPath = assetPath;
-                    if (!mappingPairs.empty()){
-                        if (!ctx->GetMappingRegexExpressionStr().empty())
-                        {
-                            mappedPath = std::regex_replace(mappedPath,
-                                                            ctx->GetMappingRegexExpression(),
-                                                            ctx->GetMappingRegexFormat());
-                            TF_DEBUG(CACHEDRESOLVER_RESOLVER_CONTEXT).Msg("Resolver::_CreateDefaultContextForAsset('%s')"
-                                                                        " - Mapped to '%s' via regex expression '%s' with formatting '%s'\n", 
-                                                                        assetPath.c_str(),
-                                                                        mappedPath.c_str(),
-                                                                        ctx->GetMappingRegexExpressionStr().c_str(),
-                                                                        ctx->GetMappingRegexFormat().c_str());
+                    auto map_find = mappingPairs.find(assetPath);
+                    if(map_find != mappingPairs.end()){
+                        ArResolvedPath resolvedPath = _ResolveAnchored(this->emptyString, map_find->second);
+                        if (resolvedPath) {
+                            return resolvedPath;
                         }
                     }
-                    auto map_find = mappingPairs.find(mappedPath);
-                    if(map_find != mappingPairs.end()){
-                        mappedPath = map_find->second;
+                    // Search for cached pairs
+                    auto &cachedPairs = ctx->GetCachedPairs();
+                    auto cache_find = cachedPairs.find(assetPath);
+                    if(cache_find != cachedPairs.end()){
+                        ArResolvedPath resolvedPath = _ResolveAnchored(this->emptyString, cache_find->second);
+                        if (resolvedPath) {
+                            return resolvedPath;
+                        }
+                    }
+                    {
+                        // Perform query if caches don't have a hit.
+                        /*
+                        We perform the resource/thread lock in the context itself to 
+                        allow for resolver multithreading with different contexts
+                        Is this approach in general a hacky solution? Yes, we are circumventing C++'s
+                        'constants' mechanism by redirecting our queries into Python. This way we can modify our
+                        'const' read locked resolver context. While it works, be aware that potential side effects may occur.
+                        */
+                        const std::lock_guard<std::mutex> lock(g_resolver_query_mutex);
+
+                        TF_DEBUG(CACHEDRESOLVER_RESOLVER).Msg("Resolver::_Resolve('%s') -> No cache hit, switching to Python query\n", assetPath.c_str());
+                        std::string pythonResult;
+                        int state = TfPyInvokeAndExtract(DEFINE_STRING(AR_CACHEDRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME),
+                                                         "Resolver.ResolveAndCache",
+                                                         &pythonResult, assetPath);
+                        if (!state) {
+                            std::cerr << "Failed to call Resolver._Resolve in " << DEFINE_STRING(AR_CACHEDRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME) << ".py. ";
+                            std::cerr << "Please verify that the python code is valid!" << std::endl;
+                        }
+                        if (pythonResult) {
+                            return pythonResult;
+                        }
                     }
                 }
             }
-
-
-
-
-            
         }
         return ArResolvedPath();
     }
@@ -243,7 +248,6 @@ CachedResolver::_CreateDefaultContextForAsset(
     }
     // Create new context
     TF_DEBUG(CACHEDRESOLVER_RESOLVER_CONTEXT).Msg("Resolver::_CreateDefaultContextForAsset('%s') - Constructing new context\n", assetPath.c_str());
-    std::string assetDir = TfGetPathName(TfAbsPath(resolvedPathStr));
     struct CachedResolverContextRecord record;
     record.timestamp = this->_GetModificationTimestamp(assetPath, resolvedPath);
     record.ctx = CachedResolverContext(resolvedPath);
@@ -255,12 +259,8 @@ bool
 CachedResolver::_IsContextDependentPath(
     const std::string& assetPath) const
 {
-    // This controls what identifiers are parsed by the non-default file path logic.
-    // Since we just check for non relative/absolute paths, this hybrid resolver takes anything
-    // that doesn't start with "./" or "/" as a valid identifier to run through our custom logic.
-    // This way The fallback behaviour of resolving standard file paths is guaranteed.
     TF_DEBUG(CACHEDRESOLVER_RESOLVER_CONTEXT).Msg("Resolver::_IsContextDependentPath()\n");
-    return _IsSearchPath(assetPath);
+    return _IsNotFilePath(assetPath);
 }
 
 void
