@@ -1,14 +1,14 @@
 #define CONVERT_STRING(string) #string
 #define DEFINE_STRING(string) CONVERT_STRING(string)
 
-#include <iostream>
+#include "resolverContext.h"
+#include "resolverTokens.h"
 
 #include "pxr/pxr.h"
 #include "pxr/base/tf/pathUtils.h"
 #include "pxr/base/tf/pyInvoke.h"
 
-#include "resolverContext.h"
-#include "resolverTokens.h"
+#include <iostream>
 
 PXR_NAMESPACE_USING_DIRECTIVE
 

@@ -1,7 +1,7 @@
+#include "resolverTokens.h"
+
 #include "boost_include_wrapper.h"
 #include BOOST_INCLUDE(python/class.hpp)
-
-#include "resolverTokens.h"
 
 using namespace AR_BOOST_NAMESPACE::python;
 

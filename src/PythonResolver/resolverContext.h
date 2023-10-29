@@ -1,16 +1,17 @@
 #ifndef AR_PYTHONRESOLVER_RESOLVER_CONTEXT_H
 #define AR_PYTHONRESOLVER_RESOLVER_CONTEXT_H
 
-#include <memory>
-#include <regex>
-#include <string>
+#include "api.h"
+#include "debugCodes.h"
 
 #include "pxr/pxr.h"
 #include "pxr/usd/ar/defineResolverContext.h"
 #include "pxr/usd/ar/resolverContext.h"
 
-#include "api.h"
-#include "debugCodes.h"
+#include <memory>
+#include <regex>
+#include <string>
+
 
 /* Data Model
 We use an internal data struct that is accessed via a shared pointer

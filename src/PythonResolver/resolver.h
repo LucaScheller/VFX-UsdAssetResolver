@@ -1,16 +1,16 @@
 #ifndef AR_PYTHONRESOLVER_RESOLVER_H
 #define AR_PYTHONRESOLVER_RESOLVER_H
 
-#include <memory>
-#include <string>
-#include <map>
+#include "api.h"
+#include "debugCodes.h"
+#include "resolverContext.h"
 
 #include "pxr/pxr.h"
 #include "pxr/usd/ar/resolver.h"
 
-#include "api.h"
-#include "debugCodes.h"
-#include "resolverContext.h"
+#include <memory>
+#include <string>
+#include <map>
 
 PXR_NAMESPACE_OPEN_SCOPE
 
