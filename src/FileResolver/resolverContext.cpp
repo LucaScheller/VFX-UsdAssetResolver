@@ -1,16 +1,16 @@
 #define CONVERT_STRING(string) #string
 #define DEFINE_STRING(string) CONVERT_STRING(string)
 
-#include <iostream>
-#include <vector>
+#include "resolverContext.h"
+#include "resolverTokens.h"
 
 #include "pxr/pxr.h"
 #include "pxr/base/tf/getenv.h"
 #include "pxr/base/tf/pathUtils.h"
 #include <pxr/usd/sdf/layer.h>
 
-#include "resolverContext.h"
-#include "resolverTokens.h"
+#include <iostream>
+#include <vector>
 
 PXR_NAMESPACE_USING_DIRECTIVE
 

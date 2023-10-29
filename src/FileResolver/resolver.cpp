@@ -1,8 +1,5 @@
-#include <fstream>
-#include <iostream>
-#include <map>
-#include <string>
-#include <regex>
+#include "resolver.h"
+#include "resolverContext.h"
 
 #include "pxr/base/arch/systemInfo.h"
 #include "pxr/base/tf/fileUtils.h"
@@ -14,8 +11,11 @@
 #include "pxr/usd/ar/filesystemWritableAsset.h"
 #include "pxr/usd/ar/notice.h"
 
-#include "resolver.h"
-#include "resolverContext.h"
+#include <fstream>
+#include <iostream>
+#include <map>
+#include <string>
+#include <regex>
 
 PXR_NAMESPACE_OPEN_SCOPE
 
