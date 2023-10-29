@@ -1,4 +1,4 @@
-#include <string>
+#include "resolverContext.h"
 
 #include "pxr/pxr.h"
 #include "pxr/base/tf/pyUtils.h"
@@ -9,7 +9,7 @@
 #include BOOST_INCLUDE(python/operators.hpp)
 #include BOOST_INCLUDE(python/return_value_policy.hpp)
 
-#include "resolverContext.h"
+#include <string>
 
 using namespace AR_BOOST_NAMESPACE::python;
 

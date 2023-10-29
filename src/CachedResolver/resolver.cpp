@@ -1,5 +1,6 @@
 #define CONVERT_STRING(string) #string
 #define DEFINE_STRING(string) CONVERT_STRING(string)
+
 #include "resolver.h"
 #include "resolverContext.h"
 
@@ -175,7 +176,7 @@ CachedResolver::_Resolve(
                         const std::lock_guard<std::mutex> lock(g_resolver_query_mutex);
 
                         TF_DEBUG(CACHEDRESOLVER_RESOLVER).Msg("Resolver::_Resolve('%s') -> No cache hit, switching to Python query\n", assetPath.c_str());
-                        std::string pythonResult;
+                        ArResolvedPath pythonResult;
                         int state = TfPyInvokeAndExtract(DEFINE_STRING(AR_CACHEDRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME),
                                                          "Resolver.ResolveAndCache",
                                                          &pythonResult, assetPath);

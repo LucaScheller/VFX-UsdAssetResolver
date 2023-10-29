@@ -1,12 +1,12 @@
 #ifndef AR_CACHEDRESOLVER_TOKENS_H
 #define AR_CACHEDRESOLVER_TOKENS_H
 
-#include <vector>
+#include "api.h"
 
 #include <pxr/pxr.h>
 #include <pxr/base/tf/staticTokens.h>
 
-#include "api.h"
+#include <vector>
 
 PXR_NAMESPACE_OPEN_SCOPE
 

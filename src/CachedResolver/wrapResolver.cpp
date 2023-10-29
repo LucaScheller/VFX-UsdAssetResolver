@@ -1,11 +1,10 @@
+#include "resolver.h"
 
 #include <pxr/pxr.h>
 
 #include "boost_include_wrapper.h"
 #include BOOST_INCLUDE(python/class.hpp)
 #include BOOST_INCLUDE(python/return_value_policy.hpp)
-
-#include "resolver.h"
 
 using namespace AR_BOOST_NAMESPACE::python;
 
