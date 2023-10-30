@@ -92,7 +92,7 @@ Below we show the Python exposed methods, note that we use static methods, as we
 
 The method signatures match the C++ signatures, except how the context is injected, as this is necessary due to how the Python exposing works.
 
-To enable a similiar logging as the `TF_DEBUG` env var does, you can uncomment the following in the `log_function_args` function.
+To enable a similar logging as the `TF_DEBUG` env var does, you can uncomment the following in the `log_function_args` function.
 
 ```python
 ...code...

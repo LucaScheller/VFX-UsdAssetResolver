@@ -25,7 +25,7 @@ See our [Automatic Installation](https://lucascheller.github.io/VFX-UsdAssetReso
 Asset resolvers that can be compiled via this repository:
 - **Production Resolvers**
     - **File Resolver** - A file system based resolver similar to the default resolver with support for custom mapping pairs as well as at runtime modification and refreshing.
-    - **Cached Resolver** - Still work in progress, more info coming soon.
+    - **Cached Resolver** - A resolver that first consults an internal resolver context dependent cache to resolve asset paths. If the asset path is not found in the cache, it will redirect the request to Python and cache the result. This is ideal for smaller studios, as this preserves the speed of C++ with the flexibility of Python.
 - **RnD Resolvers**
     - **Python Resolver** - Python based implementation of the file resolver. The goal of this resolver is to enable easier RnD by running all resolver and resolver context related methods in Python. It can be used to quickly inspect resolve calls and to setup prototypes of resolvers that can then later be re-written in C++ as it is easier to code database interactions in Python for initial research.
 - **Proof Of Concept Resolvers**

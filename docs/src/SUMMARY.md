@@ -14,6 +14,8 @@
     - [Production Resolvers](./resolvers/production.md)
         - [File Resolver](./resolvers/FileResolver/overview.md)
             - [Python API](./resolvers/FileResolver/PythonAPI.md)
+        - [Cached Resolver](./resolvers/CachedResolver/overview.md)
+            - [Python API](./resolvers/CachedResolver/PythonAPI.md)
     - [RnD Resolvers](./resolvers/rnd.md)
         - [Python Resolver](./resolvers/PythonResolver/overview.md)
             - [Python API](./resolvers/PythonResolver/PythonAPI.md)

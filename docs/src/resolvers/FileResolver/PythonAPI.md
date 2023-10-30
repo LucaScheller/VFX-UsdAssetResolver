@@ -6,7 +6,6 @@ from pxr import Ar
 from usdAssetResolver import FileResolver
 ```
 
-
 ## Tokens
 Tokens can be found in FileResolver.Tokens:
 ```python
@@ -62,7 +61,7 @@ ctx.SetCustomSearchPaths(searchPaths: list) # Set custom search paths
 To inspect/tweak the active mapping pairs, you can use the following:
 ```python
 ctx.GetMappingFilePath()                      # Get the mapping file path (Defaults file that the context created Resolver.CreateDefaultContextForAsset() opened)
-ctx.SetMappingFilePath()                      # Set the mapping file path
+ctx.SetMappingFilePath(p: str)                # Set the mapping file path
 ctx.RefreshFromMappingFilePath()              # Reload mapping pairs from the mapping file path
 ctx.GetMappingPairs()                         # Returns all mapping pairs as a dict
 ctx.AddMappingPair(src: string, dst: str)     # Add a mapping pair
@@ -89,5 +88,5 @@ To change the asset path formatting before it is looked up in the mapping pairs,
 ctx.GetMappingRegexExpression()               # Get the regex expression
 ctx.SetMappingRegexExpression(regex_str: str) # Set the regex expression
 ctx.GetMappingRegexFormat()                   # Get the regex expression substitution formatting
-ctx.SetMappingRegexFormat()                   # Set the regex expression substitution formatting
+ctx.SetMappingRegexFormat(f: str)             # Set the regex expression substitution formatting
 ```
