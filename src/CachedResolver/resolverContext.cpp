@@ -7,10 +7,20 @@
 #include "pxr/pxr.h"
 #include "pxr/base/tf/getenv.h"
 #include "pxr/base/tf/pathUtils.h"
+#include "pxr/base/tf/pyInvoke.h"
 #include <pxr/usd/sdf/layer.h>
 
 #include <iostream>
+#include <mutex>
+#include <thread>
 #include <vector>
+
+/*
+Safety-wise we lock via a mutex when we don't have a cache hit.
+In theory we probably don't need this, as our Python call does this anyway.
+See the _Resolve method for more information.
+*/
+static std::mutex g_resolver_query_mutex;
 
 PXR_NAMESPACE_USING_DIRECTIVE
 
@@ -105,6 +115,10 @@ bool CachedResolverContext::_GetMappingPairsFromUsdFile(const std::string& fileP
     return true;
 }
 
+void CachedResolverContext::RefreshFromMappingFilePath(){
+    this->_GetMappingPairsFromUsdFile(this->GetMappingFilePath());
+}
+
 void CachedResolverContext::AddMappingPair(const std::string& sourceStr, const std::string& targetStr){
     auto map_find = data->mappingPairs.find(sourceStr);
     if(map_find != data->mappingPairs.end()){
@@ -135,13 +149,59 @@ void CachedResolverContext::RemoveMappingByValue(const std::string& targetStr){
     }
 }
 
-void CachedResolverContext::RefreshFromMappingFilePath(){
-    this->_GetMappingPairsFromUsdFile(this->GetMappingFilePath());
+void CachedResolverContext::AddCachingPair(const std::string& sourceStr, const std::string& targetStr){
+    auto cache_find = data->cachedPairs.find(sourceStr);
+    if(cache_find != data->cachedPairs.end()){
+        cache_find->second = targetStr;
+    }else{
+        data->cachedPairs.insert(std::pair<std::string, std::string>(sourceStr,targetStr));
+    }
+}
+
+void CachedResolverContext::RemoveCachingByKey(const std::string& sourceStr){
+    const auto &it = data->cachedPairs.find(sourceStr);
+    if (it != data->cachedPairs.end()){
+        data->cachedPairs.erase(it);
+    }
+}
+
+void CachedResolverContext::RemoveCachingByValue(const std::string& targetStr){
+    for (auto it = data->cachedPairs.cbegin(); it != data->cachedPairs.cend();)
+    {
+        if (it->second == targetStr)
+        {
+            data->cachedPairs.erase(it++);
+        }
+        else
+        {
+            ++it;
+        }
+    }
 }
 
 const std::string CachedResolverContext::ResolveAndCachePair(const std::string& assetPath) const{
-                    // We perform the resource/thread lock in the context itself to allow for resolver multithreading with different contexts
-                    // This can populate multiple cachePairs to allow for batch loading of a identifier cache
-    std::string debug{"debug"};
-    return debug;
+    std::string pythonResult;
+    {
+        /*
+        We perform the resource/thread lock in the context itself to 
+        allow for resolver multithreading with different contexts.
+        Is this approach in general a hacky solution? Yes, we are circumventing C++'s
+        'constants' mechanism by redirecting our queries into Python in which we 
+        write-access our Resolver Context. This way we can modify our 'const' C++ read
+        locked resolver context. While it works, be aware that potential side effects may occur.
+        This allows us to populate multiple cachePairs to allow for batch loading.
+        */
+        const std::lock_guard<std::mutex> lock(g_resolver_query_mutex);
+
+        TF_DEBUG(CACHEDRESOLVER_RESOLVER).Msg("ResolverContext::ResolveAndCachePair('%s')\n", assetPath.c_str());
+        
+        int state = TfPyInvokeAndExtract(DEFINE_STRING(AR_CACHEDRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME),
+                                         "ResolverContext.ResolveAndCache",
+                                         &pythonResult, assetPath, this);
+        if (!state) {
+            std::cerr << "Failed to call Resolver.ResolveAndCache in " << DEFINE_STRING(AR_CACHEDRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME) << ".py. ";
+            std::cerr << "Please verify that the python code is valid!" << std::endl;
+        }
+    }
+    return pythonResult;
 }

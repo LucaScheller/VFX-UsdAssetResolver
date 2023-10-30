@@ -82,7 +82,7 @@ protected:
 private:
     const CachedResolverContext* _GetCurrentContextPtr() const;
     CachedResolverContext _fallbackContext;
-    const std::string emptyString;
+    const std::string emptyString{};
 };
 
 PXR_NAMESPACE_CLOSE_SCOPE

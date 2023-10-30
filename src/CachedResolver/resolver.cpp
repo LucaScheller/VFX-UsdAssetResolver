@@ -7,8 +7,8 @@
 #include "pxr/base/arch/systemInfo.h"
 #include "pxr/base/tf/fileUtils.h"
 #include "pxr/base/tf/pathUtils.h"
-#include "pxr/base/tf/pyInvoke.h"
 #include "pxr/base/tf/staticTokens.h"
+#include "pxr/base/tf/stringUtils.h"
 #include "pxr/usd/ar/defineResolver.h"
 #include "pxr/usd/ar/filesystemAsset.h"
 #include "pxr/usd/ar/filesystemWritableAsset.h"
@@ -17,17 +17,9 @@
 #include <fstream>
 #include <iostream>
 #include <map>
-#include <mutex>
-#include <string>
-#include <thread>
-#include <regex>
 
-/*
-Safety-wise we lock via a mutex when we don't have a cache hit.
-In theory we probably don't need this, as our Python call does this anyway.
-See the _Resolve method for more information.
-*/
-static std::mutex g_resolver_query_mutex;
+#include <string>
+#include <regex>
 
 namespace python = AR_BOOST_NAMESPACE::python;
 
@@ -159,7 +151,7 @@ CachedResolver::_Resolve(
                         // }
                     }
                     // Search for cached pairs
-                    auto &cachedPairs = ctx->GetCachedPairs();
+                    auto &cachedPairs = ctx->GetCachingPairs();
                     auto cache_find = cachedPairs.find(assetPath);
                     if(cache_find != cachedPairs.end()){
                         ArResolvedPath resolvedPath = _ResolveAnchored(this->emptyString, cache_find->second);
@@ -170,29 +162,13 @@ CachedResolver::_Resolve(
                         // }
                     }
                     // Perform query if caches don't have a hit.
-                    std::string pythonResult;
-                    {
-                        /*
-                        We perform the resource/thread lock in the context itself to 
-                        allow for resolver multithreading with different contexts
-                        Is this approach in general a hacky solution? Yes, we are circumventing C++'s
-                        'constants' mechanism by redirecting our queries into Python in which we 
-                        write-access our Resolver Context. This way we can modify our 'const' C++ read
-                        locked resolver context. While it works, be aware that potential side effects may occur.
-                        */
-                        const std::lock_guard<std::mutex> lock(g_resolver_query_mutex);
-
-                        TF_DEBUG(CACHEDRESOLVER_RESOLVER).Msg("Resolver::_Resolve('%s') -> No cache hit, switching to Python query\n", assetPath.c_str());
-                        
-                        int state = TfPyInvokeAndExtract(DEFINE_STRING(AR_CACHEDRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME),
-                                                         "Resolver.ResolveAndCache",
-                                                         &pythonResult, assetPath, *ctx);
-                        if (!state) {
-                            std::cerr << "Failed to call Resolver.ResolveAndCache in " << DEFINE_STRING(AR_CACHEDRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME) << ".py. ";
-                            std::cerr << "Please verify that the python code is valid!" << std::endl;
-                        }
-                    }
-                    ArResolvedPath resolvedPath = _ResolveAnchored(this->emptyString, pythonResult);
+                    TF_DEBUG(CACHEDRESOLVER_RESOLVER).Msg("Resolver::_Resolve('%s') -> No cache hit, switching to Python query\n", assetPath.c_str());
+                    /*
+                    We perform the resource/thread lock in the context itself to 
+                    allow for resolver multithreading with different contexts.
+                    See .ResolveAndCachePair for more information.
+                    */
+                    ArResolvedPath resolvedPath = _ResolveAnchored(this->emptyString, ctx->ResolveAndCachePair(assetPath));
                     if (resolvedPath) {
                         return resolvedPath;
                     }

@@ -51,6 +51,11 @@ wrapResolverContext()
         .def("RemoveMappingByKey", &This::RemoveMappingByKey, "Remove a mapping pair by key")
         .def("RemoveMappingByValue", &This::RemoveMappingByValue, "Remove a mapping pair by value")
         .def("ClearMappingPairs", &This::ClearMappingPairs, "Clear all mapping pairs")
+        .def("GetCachingPairs", &This::GetCachingPairs, return_value_policy<return_by_value>(), "Returns all caching pairs as a dict")
+        .def("AddCachingPair", &This::AddCachingPair, "Add a caching pair")
+        .def("RemoveCachingByKey", &This::RemoveCachingByKey, "Remove a caching pair by key")
+        .def("RemoveCachingByValue", &This::RemoveCachingByValue, "Remove a caching pair by value")
+        .def("ClearCachingPairs", &This::ClearCachingPairs, "Clear all caching pairs")
     ;
     ArWrapResolverContextForPython<This>();
 }

@@ -67,16 +67,22 @@ public:
     AR_CACHEDRESOLVER_API
     void ClearMappingPairs() { data->mappingPairs.clear(); }
     AR_CACHEDRESOLVER_API
+    void AddCachingPair(const std::string& sourceStr, const std::string& targetStr);
+    AR_CACHEDRESOLVER_API
+    void RemoveCachingByKey(const std::string& sourceStr);
+    AR_CACHEDRESOLVER_API
+    void RemoveCachingByValue(const std::string& targetStr);
+    AR_CACHEDRESOLVER_API
+    const std::map<std::string, std::string>& GetCachingPairs() const { return data->cachedPairs; }
+    AR_CACHEDRESOLVER_API
+    void ClearCachingPairs() { data->cachedPairs.clear(); }
+    AR_CACHEDRESOLVER_API
     const std::string ResolveAndCachePair(const std::string& assetPath) const;
-    AR_CACHEDRESOLVER_API
-    const std::map<std::string, std::string>& GetCachedPairs() const { return data->cachedPairs; }
-    AR_CACHEDRESOLVER_API
-    void ClearCachedPairs() { data->cachedPairs.clear(); }
 
 private:
     // Vars
     std::shared_ptr<CachedResolverContextInternalData> data = std::make_shared<CachedResolverContextInternalData>();
-    
+    std::string emptyString{""};
     // Methods
     bool _GetMappingPairsFromUsdFile(const std::string& filePath);
 };
