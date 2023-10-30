@@ -57,7 +57,7 @@ class ResolverContext:
         LOG.debug("::: ResolverContext.Initialize")
         """The code below is only needed to verify that UnitTests work."""
         UnitTestHelper.context_initialize_call_counter += 1
-        context.AddCachingPair("shot.usd", "/mnt/data/PROJECT/VFX-UsdAssetResolver/files/box.usda")
+        context.AddCachingPair("shot.usd", "/some/path/to/a/file.usd")
         return
 
     @staticmethod
