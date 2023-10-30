@@ -25,6 +25,23 @@ def log_function_args(func):
 
 
 class ResolverContext:
+
+    @staticmethod
+    @log_function_args
+    def Initialize(context):
+        """Initialize the context. This get's called on default and post mapping file path 
+        context creation.
+        
+        Here you can inject data by batch calling context.AddCachingPair(assetPath, resolvePath),
+        this will then populate the internal C++ resolve cache and all resolves calls
+        to those assetPaths will not invoke Python and instead use the cache.
+
+        Args:
+            context (CachedResolverContext): The active context.
+        """
+        LOG.debug("::: ResolverContext.Initialize")
+        return
+
     @staticmethod
     @log_function_args
     def ResolveAndCache(assetPath, context):
@@ -39,8 +56,8 @@ class ResolverContext:
                  still count as a cache hit and be stored inside the cachedPairs dict.
         """
         resolved_asset_path = assetPath
-        context.AddCachePair(assetPath, resolved_asset_path)
-        LOG.debug("::: ResolveAndCache | {}".format(context.GetCachingPairs()))
+        context.AddCachingPair(assetPath, resolved_asset_path)
+        LOG.debug("::: ResolverContext.ResolveAndCache | {}".format(context.GetCachingPairs()))
         """
         To clear the context cache call:
         context.ClearCachingPairs()

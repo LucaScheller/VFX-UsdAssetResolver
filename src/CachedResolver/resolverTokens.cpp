@@ -4,7 +4,6 @@ PXR_NAMESPACE_OPEN_SCOPE
 
 CachedResolverTokensType::CachedResolverTokensType() :
     mappingPairs("mappingPairs", TfToken::Immortal),
-    cachedPairs("cachedPairs", TfToken::Immortal),
     allTokens({
         mappingPairs
     })

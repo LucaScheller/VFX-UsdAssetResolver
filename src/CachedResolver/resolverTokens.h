@@ -15,7 +15,6 @@ struct CachedResolverTokensType
     AR_CACHEDRESOLVER_API CachedResolverTokensType();
 
     const TfToken mappingPairs;
-    const TfToken cachedPairs;
     const std::vector<TfToken> allTokens;
 };
 

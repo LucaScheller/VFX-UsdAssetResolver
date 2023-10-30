@@ -37,5 +37,4 @@ void wrapResolverTokens()
     class_<CachedResolverTokensType, AR_BOOST_NAMESPACE::noncopyable>
         cls("Tokens", no_init);
     _AddToken(cls, "mappingPairs", CachedResolverTokens->mappingPairs);
-    _AddToken(cls, "cachedPairs", CachedResolverTokens->cachedPairs);
 }

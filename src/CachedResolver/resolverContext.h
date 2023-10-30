@@ -51,6 +51,10 @@ public:
 
     // Methods
     AR_CACHEDRESOLVER_API
+    void Initialize();
+    AR_CACHEDRESOLVER_API
+    void ClearAndReinitialize();
+    AR_CACHEDRESOLVER_API
     const std::string& GetMappingFilePath() const { return data->mappingFilePath;}
     AR_CACHEDRESOLVER_API
     void SetMappingFilePath(std::string mappingFilePath) { data->mappingFilePath = mappingFilePath; }

@@ -49,7 +49,10 @@ bool getStringEndswithStrings(const std::string &value, const std::vector<std::s
     return false;
 }
 
-CachedResolverContext::CachedResolverContext() {}
+CachedResolverContext::CachedResolverContext() {
+    TF_DEBUG(CACHEDRESOLVER_RESOLVER_CONTEXT).Msg("ResolverContext::ResolverContext() - Creating new context\n");
+    this->Initialize();
+}
 
 CachedResolverContext::CachedResolverContext(const CachedResolverContext& ctx) = default;
 
@@ -59,6 +62,7 @@ CachedResolverContext::CachedResolverContext(const std::string& mappingFilePath)
     // Init
     this->SetMappingFilePath(TfAbsPath(mappingFilePath));
     this->_GetMappingPairsFromUsdFile(this->GetMappingFilePath());
+    this->Initialize();
 }
 
 bool
@@ -87,6 +91,29 @@ size_t hash_value(const CachedResolverContext& ctx)
 {
     return TfHash()(ctx.GetMappingFilePath());
 }
+
+void CachedResolverContext::Initialize(){
+    TF_DEBUG(CACHEDRESOLVER_RESOLVER_CONTEXT).Msg("ResolverContext::Initialize()\n");
+    
+    int state = TfPyInvoke(DEFINE_STRING(AR_CACHEDRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME),
+                           "ResolverContext.Initialize",
+                           this);
+    if (!state) {
+        std::cerr << "Failed to call Resolver.ResolveAndCache in " << DEFINE_STRING(AR_CACHEDRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME) << ".py. ";
+        std::cerr << "Please verify that the python code is valid!" << std::endl;
+    }
+}
+
+void CachedResolverContext::ClearAndReinitialize(){
+    TF_DEBUG(CACHEDRESOLVER_RESOLVER_CONTEXT).Msg("ResolverContext::ClearAndReinitialize()\n");
+    this->ClearMappingPairs();
+    this->ClearCachingPairs();
+    if (!this->GetMappingFilePath().empty()){
+        this->RefreshFromMappingFilePath();
+    }
+    this->Initialize();
+}
+
 
 bool CachedResolverContext::_GetMappingPairsFromUsdFile(const std::string& filePath)
 {
@@ -193,7 +220,7 @@ const std::string CachedResolverContext::ResolveAndCachePair(const std::string& 
         */
         const std::lock_guard<std::mutex> lock(g_resolver_query_mutex);
 
-        TF_DEBUG(CACHEDRESOLVER_RESOLVER).Msg("ResolverContext::ResolveAndCachePair('%s')\n", assetPath.c_str());
+        TF_DEBUG(CACHEDRESOLVER_RESOLVER_CONTEXT).Msg("ResolverContext::ResolveAndCachePair('%s')\n", assetPath.c_str());
         
         int state = TfPyInvokeAndExtract(DEFINE_STRING(AR_CACHEDRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME),
                                          "ResolverContext.ResolveAndCache",
