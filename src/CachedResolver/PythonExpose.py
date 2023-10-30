@@ -4,6 +4,8 @@ import os
 from functools import wraps
 
 from pxr import Ar
+# This import is needed so that our methods below know what a CachedResolver.Context is!
+from usdAssetResolver import CachedResolver
 
 # Init logger
 logging.basicConfig(format="%(asctime)s %(message)s", datefmt="%Y/%m/%d %I:%M:%S%p")
@@ -36,7 +38,9 @@ class UnitTestHelper:
         cls.resolve_and_cache_call_counter = 0
         cls.current_directory_path = current_directory_path
 
+
 class ResolverContext:
+
     @staticmethod
     @log_function_args
     def Initialize(context):
@@ -53,7 +57,7 @@ class ResolverContext:
         LOG.debug("::: ResolverContext.Initialize")
         """The code below is only needed to verify that UnitTests work."""
         UnitTestHelper.context_initialize_call_counter += 1
-        context.AddCachingPair("shot.usd", "/some/path/to/a/file.usd")
+        context.AddCachingPair("shot.usd", "/mnt/data/PROJECT/VFX-UsdAssetResolver/files/box.usda")
         return
 
     @staticmethod
@@ -86,4 +90,4 @@ class ResolverContext:
             asset_b_file_path = os.path.join(current_dir_path, "assetB.usd")
             context.AddCachingPair("assetA.usd", asset_a_file_path)
             context.AddCachingPair("assetB.usd", asset_b_file_path)
-        return Ar.ResolvedPath(resolved_asset_path)
+        return resolved_asset_path

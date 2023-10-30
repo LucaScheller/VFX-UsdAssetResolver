@@ -45,7 +45,8 @@ You can reload it as follows, that way the active stage gets the change notifica
 from pxr import Ar
 from usdAssetResolver import PythonResolver
 resolver = Ar.GetResolver()
-context_collection = pxr.Usd.Stage.GetPathResolverContext()
+stage = pxr.Usd.Stage.Open("/some/stage.usd")
+context_collection = stage.GetPathResolverContext()
 pythonResolver_context = context_collection.Get()[0]
 # Make edits as described below to the context.
 pythonResolver_context.SetData("{'mappingPairs': {'source.usd': 'destination.usd'}, 'searchPaths': ['/path/A']}")
@@ -60,7 +61,7 @@ It can be retrieved/edited/set as follows:
 ```python
 import json
 stage = pxr.Usd.Stage.Open("/some/stage.usd")
-context_collection = pxr.Usd.Stage.GetPathResolverContext()
+context_collection = stage.GetPathResolverContext()
 pythonResolver_context = context_collection.Get()[0]
 # Load context
 data = json.loads(pythonResolver_context.GetData())

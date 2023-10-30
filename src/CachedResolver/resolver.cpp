@@ -9,6 +9,7 @@
 #include "pxr/base/tf/pathUtils.h"
 #include "pxr/base/tf/staticTokens.h"
 #include "pxr/base/tf/stringUtils.h"
+#include "pxr/usd/sdf/layer.h"
 #include "pxr/usd/ar/defineResolver.h"
 #include "pxr/usd/ar/filesystemAsset.h"
 #include "pxr/usd/ar/filesystemWritableAsset.h"
@@ -132,6 +133,9 @@ CachedResolver::_Resolve(
 {
     if (assetPath.empty()) {
         return ArResolvedPath();
+    }
+    if (SdfLayer::IsAnonymousLayerIdentifier(assetPath)){
+        return ArResolvedPath(assetPath);
     }
     if (_IsRelativePath(assetPath)) {
         if (this->_IsContextDependentPath(assetPath)) {

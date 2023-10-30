@@ -40,7 +40,8 @@ You can reload it as follows, that way the active stage gets the change notifica
 from pxr import Ar
 from usdAssetResolver import CachedResolver
 resolver = Ar.GetResolver()
-context_collection = pxr.Usd.Stage.GetPathResolverContext()
+stage = pxr.Usd.Stage.Open("/some/stage.usd")
+context_collection = stage.GetPathResolverContext()
 cachedResolver_context = context_collection.Get()[0]
 # Make edits as described below to the context.
 cachedResolver_context.AddMappingPair("identifier.usd", "/absolute/file/path/destination.usd")
@@ -55,7 +56,7 @@ We also use these methods in the `PythonExpose.py` module.
 ```python
 import json
 stage = pxr.Usd.Stage.Open("/some/stage.usd")
-context_collection = pxr.Usd.Stage.GetPathResolverContext()
+context_collection = stage.GetPathResolverContext()
 cachedResolver_context = context_collection.Get()[0]
 
 # Mapping Pairs (Same as Caching Pairs, but have a higher loading priority)
