@@ -52,6 +52,9 @@ jobs:
       - name: Build USD Python Resolver
         run: |
           .github/scripts/houdini_build.sh pythonResolver
+      - name: Build USD Cached Resolver
+        run: |
+          .github/scripts/houdini_build.sh cachedResolver
       - name: Build USD Http Resolver
         run: |
           .github/scripts/houdini_build.sh httpResolver
@@ -100,6 +103,9 @@ jobs:
       - name: Build USD Python Resolver
         run: |
           .\.github\scripts\houdini_build.bat pythonResolver
+      - name: Build USD Cached Resolver
+        run: |
+          .\.github\scripts\houdini_build.bat cachedResolver
       - name: Build USD Http Resolver
         run: |
           .\.github\scripts\houdini_build.bat httpResolver

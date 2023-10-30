@@ -31,10 +31,10 @@ class UnitTestHelper:
     current_directory_path = ""
 
     @classmethod
-    def reset(cls):
+    def reset(cls, current_directory_path=""):
         cls.context_initialize_call_counter = 0
         cls.resolve_and_cache_call_counter = 0
-        cls.current_directory_path = ""
+        cls.current_directory_path = current_directory_path
 
 class ResolverContext:
     @staticmethod
