@@ -1,12 +1,10 @@
 from __future__ import print_function
 import tempfile
 import os
+import unittest
 
 from pxr import Ar, Sdf, Usd, Vt
 from usdAssetResolver import FileResolver
-
-import unittest
-
 
 class TestArResolver(unittest.TestCase):
     @classmethod
@@ -72,6 +70,14 @@ class TestArResolver(unittest.TestCase):
             "/other/relative/path.usd",
             resolver.CreateIdentifier(
                 "/some/../other/relative/path.usd",
+                Ar.ResolvedPath("/some/absolute/path.usd"),
+            ),
+        )
+
+        self.assertEqual(
+            "project/assets/asset/path.usd",
+            resolver.CreateIdentifier(
+                "project/assets/asset/path.usd",
                 Ar.ResolvedPath("/some/absolute/path.usd"),
             ),
         )
@@ -177,7 +183,7 @@ class TestArResolver(unittest.TestCase):
         resolved_path = resolver.ResolveForNewAsset(layer_identifier)
         self.assertEqual(resolved_path.GetPathString(), layer_file_path)
 
-    def test_ResolveWithCache(self):
+    def test_ResolveWithScopedCache(self):
         with tempfile.TemporaryDirectory() as temp_dir_path:
             # Create context
             ctx = FileResolver.ResolverContext()

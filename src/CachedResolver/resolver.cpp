@@ -140,7 +140,6 @@ CachedResolver::_Resolve(
                 if (ctx) {
                     // Search for mapping pairs
                     auto &mappingPairs = ctx->GetMappingPairs();
-                    
                     auto map_find = mappingPairs.find(assetPath);
                     if(map_find != mappingPairs.end()){
                         ArResolvedPath resolvedPath = _ResolveAnchored(this->emptyString, map_find->second);
@@ -172,6 +171,8 @@ CachedResolver::_Resolve(
                     if (resolvedPath) {
                         return resolvedPath;
                     }
+                    // Only try the first valid context.
+                    break;
                 }
             }
         }

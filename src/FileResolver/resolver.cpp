@@ -158,6 +158,8 @@ FileResolver::_Resolve(
                             return resolvedPath;
                         }
                     }
+                    // Only try the first valid context.
+                    break;
                 }
             }
         }

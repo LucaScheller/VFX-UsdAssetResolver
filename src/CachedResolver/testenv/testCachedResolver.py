@@ -1,12 +1,12 @@
 from __future__ import print_function
 import tempfile
 import os
+import unittest
 
 from pxr import Ar, Sdf, Usd, Vt
 from usdAssetResolver import CachedResolver
 
-import unittest
-
+import PythonExpose
 
 class TestArResolver(unittest.TestCase):
     @classmethod
@@ -16,14 +16,7 @@ class TestArResolver(unittest.TestCase):
         # Verify that the underlying resolver is the CachedResolver
         assert isinstance(Ar.GetUnderlyingResolver(), CachedResolver.Resolver)
 
-    def test_debug(self):
-        resolver = Ar.GetResolver()
-        resolved_path = resolver.Resolve("debug")
-        print("::::::::::::::::::::::::::::::::::::::: Result Call 1 ->", resolved_path)
-        resolved_path = resolver.Resolve("debug")
-        print("::::::::::::::::::::::::::::::::::::::: Result Call 2 ->", resolved_path)
-
-    def _test_CreateIdentifier(self):
+    def test_CreateIdentifier(self):
         resolver = Ar.GetResolver()
 
         # Test for invalid paths
@@ -83,7 +76,15 @@ class TestArResolver(unittest.TestCase):
             ),
         )
 
-    def _test_CreateIdentifierForNewAsset(self):
+        self.assertEqual(
+            "project/assets/asset/path.usd",
+            resolver.CreateIdentifier(
+                "project/assets/asset/path.usd",
+                Ar.ResolvedPath("/some/absolute/path.usd"),
+            ),
+        )
+
+    def test_CreateIdentifierForNewAsset(self):
         resolver = Ar.GetResolver()
 
         # Test for invalid paths
@@ -148,16 +149,15 @@ class TestArResolver(unittest.TestCase):
             ),
         )
 
-    def _test_Resolve(self):
+    def test_Resolve(self):
         with tempfile.TemporaryDirectory() as temp_dir_path:
-            # Create context
-            ctx = CachedResolver.ResolverContext()
-            ctx.SetCustomSearchPaths([temp_dir_path])
-            ctx.RefreshSearchPaths()
             # Create files
             layer_identifier = "layer.usd"
             layer_file_path = os.path.join(temp_dir_path, layer_identifier)
             Sdf.Layer.CreateAnonymous().Export(layer_file_path)
+            # Create context
+            ctx = CachedResolver.ResolverContext()
+            ctx.AddCachingPair(layer_identifier, layer_file_path)
             # Get resolver
             resolver = Ar.GetResolver()
             with Ar.ResolverContextBinder(ctx):
@@ -171,7 +171,7 @@ class TestArResolver(unittest.TestCase):
                 resolved_path = resolver.Resolve(layer_file_path)
                 self.assertEqual(resolved_path.GetPathString(), layer_file_path)
 
-    def _test_ResolveForNewAsset(self):
+    def test_ResolveForNewAsset(self):
         resolver = Ar.GetResolver()
 
         layer_identifier = "layer.usd"
@@ -184,16 +184,15 @@ class TestArResolver(unittest.TestCase):
         resolved_path = resolver.ResolveForNewAsset(layer_identifier)
         self.assertEqual(resolved_path.GetPathString(), layer_file_path)
 
-    def _test_ResolveWithCache(self):
+    def test_ResolveWithScopedCache(self):
         with tempfile.TemporaryDirectory() as temp_dir_path:
-            # Create context
-            ctx = CachedResolver.ResolverContext()
-            ctx.SetCustomSearchPaths([temp_dir_path])
-            ctx.RefreshSearchPaths()
             # Create files
             layer_identifier = "layer.usd"
             layer_file_path = os.path.join(temp_dir_path, layer_identifier)
             Sdf.Layer.CreateAnonymous().Export(layer_file_path)
+            # Create context
+            ctx = CachedResolver.ResolverContext()
+            ctx.AddCachingPair(layer_identifier, layer_file_path)
             # Get resolver
             resolver = Ar.GetResolver()
             with Ar.ResolverContextBinder(ctx):
@@ -213,15 +212,79 @@ class TestArResolver(unittest.TestCase):
                 # Uncached result should now return empty result
                 self.assertEqual("", resolver.Resolve(layer_identifier))
 
-    def _test_ResolveWithContext(self):
+    def test_ResolverCachingMechanism(self):
         with tempfile.TemporaryDirectory() as temp_dir_path:
+            # Get resolver
+            resolver = Ar.GetResolver()
+            # Reset UnitTestHelper
+            PythonExpose.UnitTestHelper.reset(current_directory_path=temp_dir_path)
+            # Create files
+            asset_a_identifier = "assetA.usd"
+            asset_a_layer_file_path = os.path.join(temp_dir_path, asset_a_identifier)
+            Sdf.Layer.CreateAnonymous().Export(asset_a_layer_file_path)
+            asset_b_identifier = "assetB.usd"
+            asset_b_layer_file_path = os.path.join(temp_dir_path, asset_b_identifier)
+            Sdf.Layer.CreateAnonymous().Export(asset_b_layer_file_path)
+            asset_c_identifier = "assetC.usd"
+            asset_c_layer_file_path = os.path.join(temp_dir_path, asset_c_identifier)
+            Sdf.Layer.CreateAnonymous().Export(asset_c_layer_file_path)
+            self.assertEqual(PythonExpose.UnitTestHelper.resolve_and_cache_call_counter, 0)
             # Create context
             ctx = CachedResolver.ResolverContext()
-            ctx.SetCustomSearchPaths([temp_dir_path])
-            ctx.RefreshSearchPaths()
-            ctx.SetMappingRegexExpression("(v\d\d\d)")
-            ctx.SetMappingRegexFormat("v000")
-            ctx.AddMappingPair("layer_v000.usd", "layer_v002.usd")
+            self.assertEqual(PythonExpose.UnitTestHelper.context_initialize_call_counter, 1)
+            self.assertEqual(PythonExpose.UnitTestHelper.resolve_and_cache_call_counter, 0)
+            resolver = Ar.GetResolver()
+            with Ar.ResolverContextBinder(ctx):
+                # Resolve
+                layer_identifier = "layer.usd"
+                resolver.Resolve(layer_identifier)
+                self.assertEqual(PythonExpose.UnitTestHelper.resolve_and_cache_call_counter, 1)
+                # See PythonExpose.py for more info
+                layer_identifier = "unittest.usd"
+                resolver.Resolve(layer_identifier)
+                self.assertEqual(PythonExpose.UnitTestHelper.resolve_and_cache_call_counter, 2)
+                # Our unittest.usd resolve call caches these test paths,
+                # see PythonExpose.py for more info
+                resolver.Resolve(layer_identifier)
+                self.assertEqual(PythonExpose.UnitTestHelper.resolve_and_cache_call_counter, 2)
+                self.assertEqual(ctx.GetCachingPairs(),
+                                 {'assetA.usd': asset_a_layer_file_path,
+                                  'assetB.usd': asset_b_layer_file_path,
+                                  'layer.usd': '/some/path/to/a/file.usd',
+                                  'unittest.usd': '/some/path/to/a/file.usd',
+                                  'shot.usd': '/some/path/to/a/file.usd'})
+                # Verify that mapping pairs have higher loading priority than
+                # caching pairs.
+                ctx.AddCachingPair(asset_c_identifier, asset_c_layer_file_path)
+                self.assertEqual(resolver.Resolve(asset_c_identifier), asset_c_layer_file_path)
+                self.assertEqual(PythonExpose.UnitTestHelper.resolve_and_cache_call_counter, 2)
+                ctx.AddMappingPair(asset_c_identifier, asset_a_layer_file_path)
+                self.assertEqual(resolver.Resolve(asset_c_identifier), asset_a_layer_file_path)
+                self.assertEqual(PythonExpose.UnitTestHelper.resolve_and_cache_call_counter, 2)
+                ctx.RemoveMappingByKey(asset_c_identifier)
+                self.assertEqual(resolver.Resolve(asset_c_identifier), asset_c_layer_file_path)
+                self.assertEqual(PythonExpose.UnitTestHelper.resolve_and_cache_call_counter, 2)
+                # Check that re-init works
+                mapping_file_path = os.path.join(temp_dir_path, "mapping.usd")
+                mapping_layer = Sdf.Layer.CreateAnonymous()
+                mapping_pairs = {
+                    asset_a_identifier: asset_c_layer_file_path,
+                }
+                mapping_array = []
+                for source_path, target_path in mapping_pairs.items():
+                    mapping_array.extend([source_path, target_path])
+                mapping_layer.customLayerData = {
+                    CachedResolver.Tokens.mappingPairs: Vt.StringArray(mapping_array)
+                }
+                mapping_layer.Export(mapping_file_path)
+                ctx.SetMappingFilePath(mapping_file_path)
+                ctx.ClearAndReinitialize()
+                self.assertEqual(ctx.GetMappingPairs(), {asset_a_identifier: asset_c_layer_file_path})
+                self.assertEqual(PythonExpose.UnitTestHelper.context_initialize_call_counter, 2)
+
+
+    def test_ResolveWithContext(self):
+        with tempfile.TemporaryDirectory() as temp_dir_path:
             # Create files
             layer_v001_identifier = "layer_v001.usd"
             layer_v001_file_path = os.path.join(temp_dir_path, layer_v001_identifier)
@@ -229,13 +292,16 @@ class TestArResolver(unittest.TestCase):
             layer_v002_identifier = "layer_v002.usd"
             layer_v002_file_path = os.path.join(temp_dir_path, layer_v002_identifier)
             Sdf.Layer.CreateAnonymous().Export(layer_v002_file_path)
+            # Create context
+            ctx = CachedResolver.ResolverContext()
+            ctx.AddMappingPair(layer_v001_identifier, layer_v002_file_path)
             # Get resolver
             resolver = Ar.GetResolver()
             with Ar.ResolverContextBinder(ctx):
                 resolved_path = resolver.Resolve(layer_v001_identifier)
                 self.assertEqual(resolved_path.GetPathString(), layer_v002_file_path)
 
-    def _test_ResolveWithCacheContextRefresh(self):
+    def test_ResolveWithCacheContextRefresh(self):
         """This test currently does not work.
         # ToDo Investigate why RefreshContext doesn't flush ResolverScopedCaches
         """
@@ -271,70 +337,23 @@ class TestArResolver(unittest.TestCase):
                     stage.ResolveIdentifierToEditTarget(layer_a_identifier),
                 )
 
-    def _test_ResolverContextSearchPaths(self):
-        ctx = CachedResolver.ResolverContext()
-        # The default env search paths are passed in through cmake test env vars
-        self.assertEqual(
-            ctx.GetSearchPaths(), ["/env/search/pathA", "/env/search/pathB"]
-        )
-        self.assertEqual(
-            ctx.GetEnvSearchPaths(), ["/env/search/pathA", "/env/search/pathB"]
-        )
-        self.assertEqual(ctx.GetCustomSearchPaths(), [])
-        # Test env search paths
-        os.environ["AR_SEARCH_PATHS"] = "/env/search/pathC:/env/search/pathD"
-        self.assertEqual(
-            ctx.GetEnvSearchPaths(), ["/env/search/pathA", "/env/search/pathB"]
-        )
-        ctx.RefreshSearchPaths()
-        self.assertEqual(
-            ctx.GetEnvSearchPaths(), ["/env/search/pathC", "/env/search/pathD"]
-        )
-        # Test custom search paths
-        ctx.SetCustomSearchPaths(["/custom/search/pathA", "/custom/search/pathB"])
-        self.assertEqual(
-            ctx.GetSearchPaths(), ["/env/search/pathC", "/env/search/pathD"]
-        )
-        ctx.RefreshSearchPaths()
-        self.assertEqual(
-            ctx.GetSearchPaths(),
-            [
-                "/env/search/pathC",
-                "/env/search/pathD",
-                "/custom/search/pathA",
-                "/custom/search/pathB",
-            ],
-        )
-        # Test context (re-)creation
-        os.environ["AR_SEARCH_PATHS"] = "/env/search/pathA:/env/search/pathB"
-        ctx = CachedResolver.ResolverContext()
-        # Previous context editing should have no influence
-        self.assertEqual(
-            ctx.GetSearchPaths(), ["/env/search/pathA", "/env/search/pathB"]
-        )
-
-    def _test_ResolverContextHash(self):
+    def test_ResolverContextHash(self):
         self.assertEqual(
             hash(CachedResolver.ResolverContext()), hash(CachedResolver.ResolverContext())
         )
         # Currently only the pinning file path influences the hash
-        search_paths = ["/custom/search/pathA", "/custom/search/pathB"]
-        self.assertEqual(
-            hash(CachedResolver.ResolverContext(search_paths)),
-            hash(CachedResolver.ResolverContext()),
-        )
         self.assertNotEqual(
             hash(CachedResolver.ResolverContext("/some/mapping/file.usd")),
             hash(CachedResolver.ResolverContext()),
         )
 
-    def _test_ResolverContextRepr(self):
+    def test_ResolverContextRepr(self):
         self.assertEqual(
             repr(CachedResolver.ResolverContext("/some/mapping/file.usd")),
             "CachedResolver.ResolverContext('/some/mapping/file.usd')",
         )
 
-    def _test_ResolverContextMappingPairs(self):
+    def test_ResolverContextMappingPairs(self):
         with tempfile.TemporaryDirectory() as temp_dir_path:
             # Create mapping file
             mapping_file_path = os.path.join(temp_dir_path, "mapping.usd")
@@ -384,15 +403,36 @@ class TestArResolver(unittest.TestCase):
             ctx.RefreshFromMappingFilePath()
             self.assertEqual(ctx.GetMappingPairs(), mapping_pairs)
 
-    def _test_ResolverContextRegexExpressions(self):
-        ctx = CachedResolver.ResolverContext()
-        # The default regex expression values are passed in through cmake test env vars
-        self.assertEqual(ctx.GetMappingRegexExpression(), "(v\d\d\d)")
-        self.assertEqual(ctx.GetMappingRegexFormat(), "v000")
-        ctx.SetMappingRegexExpression("(cube)")
-        ctx.SetMappingRegexFormat("Cube")
-        self.assertEqual(ctx.GetMappingRegexExpression(), "(cube)")
-        self.assertEqual(ctx.GetMappingRegexFormat(), "Cube")
+    def test_ResolverContextCachingPairs(self):
+        with tempfile.TemporaryDirectory() as temp_dir_path:
+            ctx = CachedResolver.ResolverContext()
+            # Test caching add
+            caching_pairs_updated = {k: v for k, v in ctx.GetCachingPairs().items()}
+            ctx.AddCachingPair("example/cube", "example/sphere")
+            ctx.AddCachingPair("example/cone", "example/triangle")
+            ctx.AddCachingPair("example/cylinder", "example/sphere")
+            self.assertNotEqual(ctx.GetCachingPairs(), caching_pairs_updated)
+            caching_pairs_updated["example/cube"] = "example/sphere"
+            caching_pairs_updated["example/cone"] = "example/triangle"
+            caching_pairs_updated["example/cylinder"] = "example/sphere"
+            self.assertEqual(ctx.GetCachingPairs(), caching_pairs_updated)
+            # Test mapping remove
+            ctx.RemoveCachingByKey("example/cone")
+            self.assertNotEqual(ctx.GetCachingPairs(), caching_pairs_updated)
+            caching_pairs_updated.pop("example/cone")
+            self.assertEqual(ctx.GetCachingPairs(), caching_pairs_updated)
+
+            ctx.RemoveCachingByValue("example/sphere")
+            self.assertNotEqual(ctx.GetCachingPairs(), caching_pairs_updated)
+            caching_pairs_updated.pop("example/cube")
+            caching_pairs_updated.pop("example/cylinder")
+            self.assertEqual(ctx.GetCachingPairs(), caching_pairs_updated)
+            # Test clear
+            ctx.ClearCachingPairs()
+            self.assertEqual(ctx.GetCachingPairs(), {})
+            # Test refresh from file
+            ctx.ClearAndReinitialize()
+            self.assertEqual(ctx.GetCachingPairs(), {'shot.usd': '/some/path/to/a/file.usd'})
 
 
 if __name__ == "__main__":

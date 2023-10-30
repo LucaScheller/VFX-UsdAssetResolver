@@ -213,6 +213,8 @@ class Resolver:
                         resolvedPath = _ResolveAnchored(searchPath, mappedPath)
                         if resolvedPath:
                             return resolvedPath
+                    # Only try the first valid context.
+                    break
         return _ResolveAnchored("", assetPath)
 
     @staticmethod
