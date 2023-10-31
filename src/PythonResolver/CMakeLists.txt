@@ -1,6 +1,4 @@
 ### CPP Settings ###
-SET(CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}/dist/${AR_PYTHONRESOLVER_USD_PLUGIN_NAME}" CACHE PATH "Default install dir " FORCE)
-
 # Preprocessor Defines (Same as #define)
 # This is a hacky way of preprocessing the class name to a custom name.
 # It is not advised to do this in a production setup! (https://stackoverflow.com/questions/20979584)
@@ -50,8 +48,8 @@ target_compile_definitions(${AR_PYTHONRESOLVER_TARGET_LIB}
 )
 # Install
 configure_file(plugInfo.json.in plugInfo.json)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/plugInfo.json DESTINATION resources)
-install(TARGETS ${AR_PYTHONRESOLVER_TARGET_LIB} RUNTIME DESTINATION lib)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/plugInfo.json DESTINATION ${AR_PYTHONRESOLVER_USD_PLUGIN_NAME}/resources)
+install(TARGETS ${AR_PYTHONRESOLVER_TARGET_LIB} DESTINATION ${AR_PYTHONRESOLVER_USD_PLUGIN_NAME}/lib)
 
 ## Target library > pythonResolver Python ##
 add_library(${AR_PYTHONRESOLVER_TARGET_PYTHON}
@@ -101,15 +99,15 @@ target_compile_definitions(${AR_PYTHONRESOLVER_TARGET_PYTHON}
 # Install
 install (
     FILES __init__.py
-    DESTINATION lib/python/${AR_RESOLVER_USD_PYTHON_MODULE_NAME}/${AR_PYTHONRESOLVER_USD_PYTHON_MODULE_NAME}
+    DESTINATION ${AR_PYTHONRESOLVER_USD_PLUGIN_NAME}/lib/python/${AR_RESOLVER_USD_PYTHON_MODULE_NAME}/${AR_PYTHONRESOLVER_USD_PYTHON_MODULE_NAME}
 )
 install (
     FILES ${AR_PYTHONRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME}.py
-    DESTINATION lib/python
+    DESTINATION ${AR_PYTHONRESOLVER_USD_PLUGIN_NAME}/lib/python
 )
 install(
     TARGETS ${AR_PYTHONRESOLVER_TARGET_PYTHON}
-    DESTINATION lib/python/${AR_RESOLVER_USD_PYTHON_MODULE_NAME}/${AR_PYTHONRESOLVER_USD_PYTHON_MODULE_NAME}
+    DESTINATION ${AR_PYTHONRESOLVER_USD_PLUGIN_NAME}/lib/python/${AR_RESOLVER_USD_PYTHON_MODULE_NAME}/${AR_PYTHONRESOLVER_USD_PYTHON_MODULE_NAME}
 )
 
 ### Tests ###

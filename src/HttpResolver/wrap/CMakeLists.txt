@@ -1,6 +1,4 @@
 ### CPP Settings ###
-SET(CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}/dist/${AR_HTTPRESOLVER_USD_PLUGIN_NAME}" CACHE PATH "Default install dir " FORCE)
-
 # Preprocessor Defines (Same as #define)
 if (WIN32)
     add_compile_definitions(AR_HTTPRESOLVER_EXPORTS)
@@ -41,15 +39,15 @@ target_compile_definitions(${AR_HTTPRESOLVER_TARGET_LIB}
 )
 # Install
 configure_file(plugInfo.json.in plugInfo.json)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/plugInfo.json DESTINATION resources)
-install(TARGETS ${AR_HTTPRESOLVER_TARGET_LIB} RUNTIME DESTINATION lib)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/plugInfo.json DESTINATION ${AR_HTTPRESOLVER_USD_PLUGIN_NAME}/resources)
+install(TARGETS ${AR_HTTPRESOLVER_TARGET_LIB} DESTINATION ${AR_HTTPRESOLVER_USD_PLUGIN_NAME}/lib)
 # Demo
 set(_server_permissions OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_WRITE WORLD_EXECUTE)
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../arHttp/src/arHttpSampleServer DESTINATION demo/packages)
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../arHttp/src/arHttpSampleServer DESTINATION ${AR_HTTPRESOLVER_USD_PLUGIN_NAME}/demo/packages)
 if (WIN32)
-    install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/server_install.bat PERMISSIONS ${_server_permissions} DESTINATION demo)
-    install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/server_launch.bat PERMISSIONS ${_server_permissions} DESTINATION demo)
+    install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/server_install.bat PERMISSIONS ${_server_permissions} DESTINATION ${AR_HTTPRESOLVER_USD_PLUGIN_NAME}/demo)
+    install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/server_launch.bat PERMISSIONS ${_server_permissions} DESTINATION ${AR_HTTPRESOLVER_USD_PLUGIN_NAME}/demo)
 else()
-    install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/server_install.sh PERMISSIONS ${_server_permissions} DESTINATION demo)
-    install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/server_launch.sh PERMISSIONS ${_server_permissions} DESTINATION demo)
+    install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/server_install.sh PERMISSIONS ${_server_permissions} DESTINATION ${AR_HTTPRESOLVER_USD_PLUGIN_NAME}/demo)
+    install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/server_launch.sh PERMISSIONS ${_server_permissions} DESTINATION ${AR_HTTPRESOLVER_USD_PLUGIN_NAME}/demo)
 endif()
