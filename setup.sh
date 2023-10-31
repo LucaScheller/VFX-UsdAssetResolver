@@ -13,10 +13,9 @@ then
     popd > /dev/null
     export HOUDINI_LMINFO_VERBOSE=1
     # Source env
-    export PATH=${REPO_ROOT}/dist/${RESOLVER_NAME}/bin:${PATH}
-    export PYTHONPATH=${REPO_ROOT}/dist/${RESOLVER_NAME}/lib/python:${HFS}/python/lib/python3.9/site-packages:$PYTHONPATH
+    export PYTHONPATH=${REPO_ROOT}/dist/${RESOLVER_NAME}/lib/python:${PYTHONPATH}
     export PXR_PLUGINPATH_NAME=${REPO_ROOT}/dist/${RESOLVER_NAME}/resources:${PXR_PLUGINPATH_NAME}
-    export LD_LIBRARY_PATH=${REPO_ROOT}/dist/${RESOLVER_NAME}/lib:${HFS}/python/lib:${HFS}/dsolib
+    export LD_LIBRARY_PATH=${REPO_ROOT}/dist/${RESOLVER_NAME}/lib:${LD_LIBRARY_PATH}
     alias  usdpython="$HFS/python/bin/python $@"
     # Configure resolver
     export AR_SEARCH_PATHS=${REPO_ROOT}/files

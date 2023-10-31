@@ -17,6 +17,16 @@ add_library(${AR_CACHEDRESOLVER_TARGET_LIB}
         resolver.cpp
         resolverContext.cpp
         resolverTokens.cpp
+        # Since when our resolver calls into Python it passes the ResolverContext,
+        # we need to ensure that Python has loaded the ResolverContext C++ representation.
+        # While we do have duplicate compiled code by adding the below, this allows us to not do hacky workarounds like
+        # LD_PRELOAD-ing the lib. See https://github.com/LucaScheller/VFX-UsdAssetResolver/issues/3 for more information.
+        # If you know a better way around this please file a PR :)
+        module.cpp
+        moduleDeps.cpp
+        wrapResolver.cpp
+        wrapResolverContext.cpp
+        wrapResolverTokens.cpp
 )
 set_boost_namespace(${AR_CACHEDRESOLVER_TARGET_LIB})
 # Libs
@@ -45,6 +55,10 @@ target_compile_definitions(${AR_CACHEDRESOLVER_TARGET_LIB}
         # USD Plugin Internal Namings
         MFB_PACKAGE_NAME=${AR_CACHEDRESOLVER_USD_PLUGIN_NAME}
         AR_CACHEDRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME=${AR_CACHEDRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME}
+        AR_CACHEDRESOLVER_USD_PLUGIN_NAME=${AR_CACHEDRESOLVER_USD_PLUGIN_NAME}
+        AR_CACHEDRESOLVER_USD_PYTHON_MODULE_FULLNAME=${AR_CACHEDRESOLVER_USD_PYTHON_MODULE_FULLNAME}
+        AR_CACHEDRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME=${AR_CACHEDRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME}
+
 )
 # Install
 configure_file(plugInfo.json.in plugInfo.json)
