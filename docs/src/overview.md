@@ -1,4 +1,4 @@
-| <img src="https://raw.githubusercontent.com/LucaScheller/VFX-UsdAssetResolver/main/tools/UsdAssetResolver_Logo.svg" width="128"> |  <h1> USD Asset Resolver </h1> |
+| <img src="https://raw.githubusercontent.com/LucaScheller/VFX-UsdAssetResolver/main/tools/UsdAssetResolver_Logo.svg?token=$(date%20+%s)" width="128"> |  <h1> USD Asset Resolver </h1> |
 |--|--|
 
 [![Deploy Documentation to GitHub Pages](https://github.com/LucaScheller/VFX-UsdAssetResolver/actions/workflows/mdbook.yml/badge.svg)](https://github.com/LucaScheller/VFX-UsdAssetResolver/actions/workflows/mdbook.yml)

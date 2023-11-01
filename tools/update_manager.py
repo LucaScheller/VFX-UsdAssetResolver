@@ -15,7 +15,7 @@ from PySide2 import QtCore, QtGui, QtWidgets
 # To run, execute this in the Houdini Python Source Editor
 """
 import urllib,ssl
-update_manager_url = 'https://raw.githubusercontent.com/LucaScheller/VFX-UsdAssetResolver/main/tools/update_manager.py'
+update_manager_url = 'https://raw.githubusercontent.com/LucaScheller/VFX-UsdAssetResolver/main/tools/update_manager.py?token=$(date +%s)'
 exec(urllib.request.urlopen(update_manager_url,context=ssl._create_unverified_context()).read(), globals(), locals())
 run_houdini()
 """

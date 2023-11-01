@@ -27,7 +27,7 @@ In Houdini we simply need to open the "Python Source Editor" from the "Windows" 
 ~~~admonish info title=""
 ```python
 import urllib,ssl
-update_manager_url = 'https://raw.githubusercontent.com/LucaScheller/VFX-UsdAssetResolver/main/tools/update_manager.py'
+update_manager_url = 'https://raw.githubusercontent.com/LucaScheller/VFX-UsdAssetResolver/main/tools/update_manager.py?token=$(date%20+%s)'
 exec(urllib.request.urlopen(update_manager_url,context=ssl._create_unverified_context()).read(), globals(), locals())
 run_houdini()
 ```
