@@ -151,6 +151,8 @@ FileResolver::_Resolve(
                     auto map_find = mappingPairs.find(mappedPath);
                     if(map_find != mappingPairs.end()){
                         mappedPath = map_find->second;
+                        if (!_IsRelativePath(mappedPath))
+                            return ArResolvedPath(mappedPath);
                     }
                     for (const auto& searchPath : ctx->GetSearchPaths()) {
                         ArResolvedPath resolvedPath = _ResolveAnchored(searchPath, mappedPath);
