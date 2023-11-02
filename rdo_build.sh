@@ -1,0 +1,1 @@
+/rdo/rodeo/setup/rez/linux/current/bin/rez/rez env cmake houdini-19.5.435 -- scl enable devtoolset-6 ./build.sh
