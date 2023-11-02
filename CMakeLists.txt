@@ -85,8 +85,8 @@ endif()
 
 set(AR_PXR_INCLUDE_DIR ${AR_HOUDINI_INCLUDE_DIR})
 # Python
-set(AR_PYTHON_LIB python3.9)
-set(AR_PYTHON_LIB_NUMBER python39)
+set(AR_PYTHON_LIB "python$ENV{REZ_PYTHON_MAJOR_VERSION}.$ENV{REZ_PYTHON_MINOR_VERSION}")
+set(AR_PYTHON_LIB_NUMBER "python$ENV{REZ_PYTHON_MAJOR_VERSION}$ENV{REZ_PYTHON_MINOR_VERSION}")
 if (WIN32)
     set(AR_PYTHON_LIB_DIR ${AR_HOUDINI_ROOT}/${AR_PYTHON_LIB_NUMBER}/libs)
     set(AR_PYTHON_LIB_SITEPACKAGES ${AR_HOUDINI_ROOT}/${AR_PYTHON_LIB_NUMBER}/lib/site-packages)
@@ -94,7 +94,12 @@ else()
     set(AR_PYTHON_LIB_DIR ${AR_HOUDINI_ROOT}/python/lib)
     set(AR_PYTHON_LIB_SITEPACKAGES ${AR_PYTHON_LIB_DIR}/${AR_PYTHON_LIB}/site-packages)
 endif()
+# Rodeo: python3.7 has suffix m https://discuss.python.org/t/whats-the-difference-between-python3-7-and-python3-7m/16914
 set(AR_PYTHON_INCLUDE_DIR ${AR_HOUDINI_INCLUDE_DIR}/${AR_PYTHON_LIB})
+if ("${AR_PYTHON_LIB}" STREQUAL "python3.7")
+	set(AR_PYTHON_INCLUDE_DIR ${AR_PYTHON_INCLUDE_DIR}m)
+endif()
+
 # Boost
 set(AR_BOOST_NAMESPACE hboost)
 if (WIN32)
