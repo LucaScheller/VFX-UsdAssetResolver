@@ -6,6 +6,7 @@
 
 
 - [Overview](./overview.md)
+    - [Video Tutorials](./tutorials/overview.md)
 - [Installation](./installation/overview.md)
     - [Automatic Installation](./installation/automatic_install.md)
     - [Requirements](./installation/requirements.md)
