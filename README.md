@@ -38,7 +38,7 @@ For more information check out the [building guide](https://lucascheller.github.
 
 ## Tutorials
 We also have video tutorials covering how to (build and) install the resolvers in this repository as well as how you can customize them to fit your needs.
-You can check them out in our [tutorials section](https://lucascheller.github.io/VFX-UsdAssetResolver/tutorials/overview.html) or on [Youtube](https://www.youtube.com/watch?v=y4FjYprM4oA&list=PLiu1hwgXfcszQXU1WU0Ucsc2o9Fz8zLsL)/[Vimeo](https://vimeo.com/showcase/10771710)
+You can check them out in our [tutorials section](https://lucascheller.github.io/VFX-UsdAssetResolver/tutorials/overview.html) or on [Youtube](https://www.youtube.com/watch?v=y4FjYprM4oA&list=PLiu1hwgXfcszQXU1WU0Ucsc2o9Fz8zLsL)/[Vimeo](https://vimeo.com/showcase/10771710).
 
 ## Contributing and Acknowledgements
 Special thanks to [Jonas Sorgenfrei](https://github.com/jonassorgenfrei) for helping bring this project to life as well as all the contributors on the Usd-Interest forum, particularly
