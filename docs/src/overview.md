@@ -4,8 +4,7 @@
 [![Deploy Documentation to GitHub Pages](https://github.com/LucaScheller/VFX-UsdAssetResolver/actions/workflows/mdbook.yml/badge.svg)](https://github.com/LucaScheller/VFX-UsdAssetResolver/actions/workflows/mdbook.yml)
 [![Build USD Asset Resolvers against Houdini](https://github.com/LucaScheller/VFX-UsdAssetResolver/actions/workflows/build_houdini.yml/badge.svg)](https://github.com/LucaScheller/VFX-UsdAssetResolver/actions/workflows/build_houdini.yml)
 
-This repository holds reference implementations for [Usd](https://openusd.org/release/index.html) [asset resolvers](https://openusd.org/release/glossary.html#usdglossary-assetresolution). The resolvers are compatible with the AR 2.0 standard proposed in the [Asset Resolver 2.0 Specification](https://openusd.org/release/wp_ar2.html). As the Usd documentation offers quite a good overview over the overall asset resolution system, we will not be covering it in this repository's documentation. You can find a video tutorial [here](./tutorials.md) (or on [Vimeo](https://vimeo.com/881606494)/[Youtube](https://www.youtube.com/watch?v=y4FjYprM4oA)).
-
+This repository holds reference implementations for [Usd](https://openusd.org/release/index.html) [asset resolvers](https://openusd.org/release/glossary.html#usdglossary-assetresolution). The resolvers are compatible with the AR 2.0 standard proposed in the [Asset Resolver 2.0 Specification](https://openusd.org/release/wp_ar2.html). As the Usd documentation offers quite a good overview over the overall asset resolution system, we will not be covering it in this repository's documentation. You can find a video tutorial [here](./tutorials.md) (or on [Youtube](https://www.youtube.com/watch?v=y4FjYprM4oA&list=PLiu1hwgXfcszQXU1WU0Ucsc2o9Fz8zLsL)/[Vimeo](https://vimeo.com/showcase/10771710)).
 
 ## Installation
 To build the various resolvers, follow the instructions in the [install guide](./installation/overview.md). 
