@@ -92,12 +92,15 @@ def install_sidefx_houdini():
                                                                   platform=sidefx_platform,
                                                                   only_production=True)
     # Switch to new gcc version starting with H20
-    for release in releases_list:
-        if release["version"] == "20.0":
-            if not release["platform"].endswith("gcc11.2"):
-                continue
-        latest_production_release = release
-        break
+    if sidefx_platform == "linux":
+        for release in releases_list:
+            if release["version"] == "20.0":
+                if not release["platform"].endswith("gcc11.2"):
+                    continue
+            latest_production_release = release
+            break
+    else:
+        latest_production_release = releases_list[0]
     latest_production_release_download = sidefx_service.download.get_daily_build_download(product='houdini',
                                                                                           version=latest_production_release["version"],
                                                                                           build=latest_production_release["build"],
