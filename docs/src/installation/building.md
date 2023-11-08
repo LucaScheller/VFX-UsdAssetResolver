@@ -36,6 +36,17 @@ set RESOLVER_NAME=fileResolver
 ## Running the build
 To run the build, run:
 
+~~~admonish warning title="Houdini GCC ABI Change"
+Starting with Houdini 20, SideFX is offering gcc 11 builds. Our automatic builds use this version.
+If you still want to use gcc 9, then you'll have to set the below in our main CMakeLists.txt file.
+See the official [Release Notes](https://www.sidefx.com/docs/houdini/news/20/platforms.html) for more information.
+```bash
+    ...
+    add_compile_definitions(_GLIBCXX_USE_CXX11_ABI=0)
+    ...
+```
+~~~
+
 ~~~admonish info title=""
 ```bash
 # Linux

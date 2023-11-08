@@ -91,12 +91,17 @@ def install_sidefx_houdini():
     releases_list = sidefx_service.download.get_daily_builds_list(product=sidefx_product,
                                                                   platform=sidefx_platform,
                                                                   only_production=True)
-    latest_production_release = releases_list[0]
+    # Switch to new gcc version starting with H20
+    for release in releases_list:
+        if release["version"] == "20.0":
+            if not release["platform"].endswith("gcc11.2"):
+                continue
+        latest_production_release = release
+        break
     latest_production_release_download = sidefx_service.download.get_daily_build_download(product='houdini',
                                                                                           version=latest_production_release["version"],
                                                                                           build=latest_production_release["build"],
                                                                                           platform=sidefx_platform)
-
 
     # Download latest production release
     logging.info('Downloading Houdini build {version}.{build}'.format(version=latest_production_release["version"], 
