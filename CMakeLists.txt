@@ -70,44 +70,44 @@ if (WIN32)
 else()
     set(AR_ARCH_LIB_SUFFIX "so")
 endif()
-# Houdini
-set(AR_HOUDINI_ROOT $ENV{HFS} CACHE PATH "Houdini install directory")
-set(AR_HOUDINI_LIB_DIR ${AR_HOUDINI_ROOT}/custom/houdini/dsolib)
-set(AR_HOUDINI_INCLUDE_DIR ${AR_HOUDINI_ROOT}/toolkit/include)
+
 # Usd
+set(AR_USD_ROOT $ENV{USD_LOCATION} CACHE PATH "USD install directory")
+set(AR_USD_INCLUDE_DIR ${AR_USD_ROOT}/include)
+set(AR_PXR_LIB_DIR ${AR_USD_ROOT}/lib)
 if (WIN32)
-    set(AR_PXR_LIB_DIR ${AR_HOUDINI_ROOT}/custom/houdini/dsolib)
-    set(AR_PXR_LIB_PREFIX "libpxr_")
+    set(AR_PXR_LIB_PREFIX "libusd_")
 else()
-    set(AR_PXR_LIB_DIR ${AR_HOUDINI_ROOT}/dsolib)
-    set(AR_PXR_LIB_PREFIX "pxr_")
+    set(AR_PXR_LIB_PREFIX "usd_")
 endif()
 
-set(AR_PXR_INCLUDE_DIR ${AR_HOUDINI_INCLUDE_DIR})
+set(AR_PXR_INCLUDE_DIR ${AR_USD_INCLUDE_DIR})
+
 # Python
+set(AR_PYTHON_ROOT $ENV{REZ_PYTHON_ROOT} CACHE PATH "Python install directory")
 set(AR_PYTHON_LIB "python$ENV{REZ_PYTHON_MAJOR_VERSION}.$ENV{REZ_PYTHON_MINOR_VERSION}")
 set(AR_PYTHON_LIB_NUMBER "python$ENV{REZ_PYTHON_MAJOR_VERSION}$ENV{REZ_PYTHON_MINOR_VERSION}")
 if (WIN32)
-    set(AR_PYTHON_LIB_DIR ${AR_HOUDINI_ROOT}/${AR_PYTHON_LIB_NUMBER}/libs)
-    set(AR_PYTHON_LIB_SITEPACKAGES ${AR_HOUDINI_ROOT}/${AR_PYTHON_LIB_NUMBER}/lib/site-packages)
+    set(AR_PYTHON_LIB_DIR ${AR_PYTHON_ROOT}/libs)
+    set(AR_PYTHON_LIB_SITEPACKAGES ${AR_PYTHON_ROOT}/Lib/site-packages)
 else()
-    set(AR_PYTHON_LIB_DIR ${AR_HOUDINI_ROOT}/python/lib)
+    set(AR_PYTHON_LIB_DIR ${AR_PYTHON_ROOT}/lib)
     set(AR_PYTHON_LIB_SITEPACKAGES ${AR_PYTHON_LIB_DIR}/${AR_PYTHON_LIB}/site-packages)
 endif()
 # Rodeo: python3.7 has suffix m https://discuss.python.org/t/whats-the-difference-between-python3-7-and-python3-7m/16914
-set(AR_PYTHON_INCLUDE_DIR ${AR_HOUDINI_INCLUDE_DIR}/${AR_PYTHON_LIB})
+set(AR_PYTHON_INCLUDE_DIR ${AR_PYTHON_ROOT}/include/${AR_PYTHON_LIB})
 if ("${AR_PYTHON_LIB}" STREQUAL "python3.7")
 	set(AR_PYTHON_INCLUDE_DIR ${AR_PYTHON_INCLUDE_DIR}m)
 endif()
 
 # Boost
-set(AR_BOOST_NAMESPACE hboost)
+set(AR_BOOST_NAMESPACE boost)
 if (WIN32)
     set(AR_BOOST_PYTHON_LIB ${AR_BOOST_NAMESPACE}_${AR_PYTHON_LIB_NUMBER}-mt-x64)
 else()
     set(AR_BOOST_PYTHON_LIB ${AR_BOOST_NAMESPACE}_${AR_PYTHON_LIB_NUMBER})
 endif()
-set(AR_BOOST_INCLUDE_DIR ${AR_HOUDINI_INCLUDE_DIR}/${AR_BOOST_NAMESPACE})
+set(AR_BOOST_INCLUDE_DIR ${AR_USD_INCLUDE_DIR}/${AR_BOOST_NAMESPACE})
 
 ### Init ###
 cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
@@ -134,9 +134,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/defaults)
 # Boost Namespace Wrapper
 include(setBoostNamespace)
 include_directories(${CMAKE_SOURCE_DIR}/src/utils)
-# Houdini
-link_directories(${AR_HOUDINI_LIB_DIR})
-# Usd (Already provided via Houdini)
+# Usd
 link_directories(${AR_PXR_LIB_DIR})
 # Python
 link_directories(${AR_PYTHON_LIB_DIR})
