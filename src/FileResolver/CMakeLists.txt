@@ -7,6 +7,10 @@ if (WIN32)
     add_compile_definitions(AR_FILERESOLVER_EXPORTS)
 endif()
 
+
+#set(CMAKE_INSTALL_RPATH "${AR_PXR_LIB_DIR}")
+#set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
 ### Targets ###
 ## Target library > fileResolver ##
 add_library(${AR_FILERESOLVER_TARGET_LIB}

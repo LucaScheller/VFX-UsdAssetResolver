@@ -71,6 +71,8 @@ else()
     set(AR_ARCH_LIB_SUFFIX "so")
 endif()
 
+# TODO: support build with HOUDINI usd/python
+
 # Usd
 set(AR_USD_ROOT $ENV{USD_LOCATION} CACHE PATH "USD install directory")
 set(AR_USD_INCLUDE_DIR ${AR_USD_ROOT}/include)
