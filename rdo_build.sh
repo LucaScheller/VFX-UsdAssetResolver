@@ -1,1 +1,2 @@
 /rdo/rodeo/setup/rez/linux/current/bin/rez/rez env cmake usd -- scl enable devtoolset-6 ./build.sh
+/rdo/rodeo/setup/rez/linux/current/bin/rez/rez env cmake houdini-19.5.435 -- scl enable devtoolset-6 ./build.sh
