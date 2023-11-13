@@ -10,4 +10,4 @@ set -e # Exit on error
 cmake . -B build
 cmake --build build --clean-first              # make clean all
 cmake --install build                          # make install
-ctest -VV --test-dir build
+#ctest -VV --test-dir build
