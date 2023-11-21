@@ -1,11 +1,14 @@
 import inspect
 import logging
 import os
+import json
 from functools import wraps
 
 from pxr import Ar
 # This import is needed so that our methods below know what a CachedResolver.Context is!
-from usdAssetResolver import CachedResolver
+from usdAssetResolver import CachedResolver  # pylint: disable=unused-import
+
+from rdo_publish_pipeline import manager
 
 # Init logger
 logging.basicConfig(format="%(asctime)s %(message)s", datefmt="%Y/%m/%d %I:%M:%S%p")
@@ -57,7 +60,7 @@ class ResolverContext:
         LOG.debug("::: ResolverContext.Initialize")
         """The code below is only needed to verify that UnitTests work."""
         UnitTestHelper.context_initialize_call_counter += 1
-        context.AddCachingPair("shot.usd", "/some/path/to/a/file.usd")
+#         context.AddCachingPair("shot.usd", "/some/path/to/a/file.usd")
         return
 
     @staticmethod
@@ -73,7 +76,12 @@ class ResolverContext:
                  it will be resolved to an empty ArResolvedPath internally, but will
                  still count as a cache hit and be stored inside the cachedPairs dict.
         """
-        resolved_asset_path = "/some/path/to/a/file.usd"
+
+        if assetPath.startswith('rdojson:'):
+            resolved_asset_path = ResolverContext._getPublishedFilePathFromJsonAsset(assetPath)
+        else:
+            resolved_asset_path = assetPath
+
         context.AddCachingPair(assetPath, resolved_asset_path)
         LOG.debug(
             "::: ResolverContext.ResolveAndCache | {} | {}".format(assetPath, context.GetCachingPairs())
@@ -90,4 +98,30 @@ class ResolverContext:
             asset_b_file_path = os.path.join(current_dir_path, "assetB.usd")
             context.AddCachingPair("assetA.usd", asset_a_file_path)
             context.AddCachingPair("assetB.usd", asset_b_file_path)
+
         return resolved_asset_path
+
+    @staticmethod
+    @log_function_args
+    def _getPublishedFilePathFromJsonAsset(assetPath):
+        """Decode json asset path and use dict content to query published file.
+
+        Args:
+            assetPath (str): An unresolved asset path.
+
+        Returns:
+            str: The resolved path string.
+        """
+        # strip 'rdojson:'
+        arDict = json.loads(assetPath[8:])
+        publish = manager.Publish.fromString(arDict["publish"])
+        version = arDict["version"]
+        if not isinstance(version, int):
+            version = getattr(manager.version, arDict.get("version", "latestApprovedOrLatest"))
+
+        publishedFile = publish.version(version)
+        if publishedFile:
+            subdir = arDict.get("subdir")
+            if subdir:
+                return publishedFile.path.asDict().get(subdir)[0]
+            return publishedFile.path[0]
