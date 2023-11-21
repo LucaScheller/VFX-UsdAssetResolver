@@ -1,7 +1,7 @@
 # Clear current session log 
 clear
 # Source environment (Uncomment lines starting with "export" if you current env does not have these defined.)
-export RESOLVER_NAME=fileResolver
+export RESOLVER_NAME=cachedResolver
 # Clear existing build data and invoke cmake
 
 rm -rf build

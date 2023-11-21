@@ -4,7 +4,9 @@ import os
 import json
 from functools import wraps
 
-from pxr import Ar
+import six
+
+from pxr import Ar  # pylint: disable=unused-import
 # This import is needed so that our methods below know what a CachedResolver.Context is!
 from usdAssetResolver import CachedResolver  # pylint: disable=unused-import
 
@@ -21,10 +23,16 @@ def log_function_args(func):
 
     @wraps(func)
     def wrapper(*args, **kwargs):
-        func_args = inspect.signature(func).bind(*args, **kwargs).arguments
-        func_args_str = ", ".join(map("{0[0]} = {0[1]!r}".format, func_args.items()))
         # To enable logging on all methods, re-enable this.
-        # LOG.info(f"{func.__module__}.{func.__qualname__} ({func_args_str})")
+        # if six.PY2:
+        #     # no inspect.signature in py2
+        #     func_args_str = ", ".join([str(arg) for arg in args])
+        #     func_kwargs_str = ", ".join(map("{0[0]} = {0[1]!r}".format, kwargs.items()))
+        #     LOG.info("%s.%s (%s, %s)", func.__module__, func.__name__, func_args_str, func_kwargs_str)
+        # else:
+        #     func_args = inspect.signature(func).bind(*args, **kwargs).arguments
+        #     func_args_str = ", ".join(map("{0[0]} = {0[1]!r}".format, func_args.items()))
+        #     LOG.info("%s.%s (%s)", func.__module__, func.__qualname__, func_args_str)
         return func(*args, **kwargs)
 
     return wrapper
