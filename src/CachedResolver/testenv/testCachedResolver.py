@@ -282,7 +282,6 @@ class TestArResolver(unittest.TestCase):
                 self.assertEqual(ctx.GetMappingPairs(), {asset_a_identifier: asset_c_layer_file_path})
                 self.assertEqual(PythonExpose.UnitTestHelper.context_initialize_call_counter, 2)
 
-
     def test_ResolveWithContext(self):
         with tempfile.TemporaryDirectory() as temp_dir_path:
             # Create files

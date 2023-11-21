@@ -4,8 +4,7 @@ import os
 from functools import wraps
 
 from pxr import Ar
-# This import is needed so that our methods below know what a CachedResolver.Context is!
-from usdAssetResolver import CachedResolver
+
 
 # Init logger
 logging.basicConfig(format="%(asctime)s %(message)s", datefmt="%Y/%m/%d %I:%M:%S%p")
@@ -39,6 +38,28 @@ class UnitTestHelper:
         cls.current_directory_path = current_directory_path
 
 
+class Resolver:
+
+    @staticmethod
+    @log_function_args
+    def CreateRelativePathIdentifier(resolver, anchoredAssetPath, assetPath, anchorAssetPath, ):
+        """Returns an identifier for the asset specified by assetPath.
+        If anchorAssetPath is not empty, it is the resolved asset path
+        that assetPath should be anchored to if it is a relative path.
+        Args:
+            resolver (CachedResolver): The resolver
+            anchoredAssetPath (str): The anchored asset path, this has to be used as the cached key.
+            assetPath (str): An unresolved asset path.
+            anchorAssetPath (Ar.ResolvedPath): A resolved anchor path.
+
+        Returns:
+            str: The identifier.
+        """
+        remappedRelativePathIdentifier = f"{assetPath[2:]}?{anchorAssetPath}"
+        resolver.AddCachedRelativePathIdentifierPair(anchoredAssetPath, remappedRelativePathIdentifier)
+        return remappedRelativePathIdentifier
+
+
 class ResolverContext:
 
     @staticmethod
@@ -62,12 +83,12 @@ class ResolverContext:
 
     @staticmethod
     @log_function_args
-    def ResolveAndCache(assetPath, context):
+    def ResolveAndCache(context, assetPath):
         """Return the resolved path for the given assetPath or an empty
         ArResolvedPath if no asset exists at that path.
         Args:
-            assetPath (str): An unresolved asset path.
             context (CachedResolverContext): The active context.
+            assetPath (str): An unresolved asset path.
         Returns:
             str: The resolved path string. If it points to a non-existent file,
                  it will be resolved to an empty ArResolvedPath internally, but will

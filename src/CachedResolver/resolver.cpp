@@ -7,6 +7,7 @@
 #include "pxr/base/arch/systemInfo.h"
 #include "pxr/base/tf/fileUtils.h"
 #include "pxr/base/tf/pathUtils.h"
+#include "pxr/base/tf/pyInvoke.h"
 #include "pxr/base/tf/staticTokens.h"
 #include "pxr/base/tf/stringUtils.h"
 #include "pxr/usd/sdf/layer.h"
@@ -18,9 +19,17 @@
 #include <fstream>
 #include <iostream>
 #include <map>
-
+#include <mutex>
+#include <thread>
 #include <string>
 #include <regex>
+
+/*
+Safety-wise we lock via a mutex when we re-rout the relative path lookup to a Python call.
+In theory we probably don't need this, as our Python call does this anyway.
+See the _CreateIdentifier method for more information.
+*/
+static std::mutex g_resolver_create_identifier_mutex;
 
 namespace python = AR_BOOST_NAMESPACE::python;
 
@@ -80,6 +89,38 @@ CachedResolver::CachedResolver() = default;
 
 CachedResolver::~CachedResolver() = default;
 
+void CachedResolver::AddCachedRelativePathIdentifierPair(const std::string& sourceStr, const std::string& targetStr){
+    auto cache_find = cachedRelativePathIdentifierPairs.find(sourceStr);
+    if(cache_find != cachedRelativePathIdentifierPairs.end()){
+        cache_find->second = targetStr;
+    }else{
+        cachedRelativePathIdentifierPairs.insert(std::pair<std::string, std::string>(sourceStr,targetStr));
+    }
+}
+
+
+void CachedResolver::RemoveCachedRelativePathIdentifierByKey(const std::string& sourceStr){
+    const auto &it = cachedRelativePathIdentifierPairs.find(sourceStr);
+    if (it != cachedRelativePathIdentifierPairs.end()){
+        cachedRelativePathIdentifierPairs.erase(it);
+    }
+}
+
+
+void CachedResolver::RemoveCachedRelativePathIdentifierByValue(const std::string& targetStr){
+    for (auto it = cachedRelativePathIdentifierPairs.cbegin(); it != cachedRelativePathIdentifierPairs.cend();)
+    {
+        if (it->second == targetStr)
+        {
+            cachedRelativePathIdentifierPairs.erase(it++);
+        }
+        else
+        {
+            ++it;
+        }
+    }
+}
+
 std::string
 CachedResolver::_CreateIdentifier(
     const std::string& assetPath,
@@ -97,11 +138,46 @@ CachedResolver::_CreateIdentifier(
     }
 
     const std::string anchoredAssetPath = _AnchorRelativePath(anchorAssetPath, assetPath);
-
+    // Anchor non file path based identifiers and see if a file exists.
+    // This is mostly for debugging as it allows us to add a file relative to our
+    // anchor directory that has a higher priority than our (usually unanchored) 
+    // resolved asset path.
     if (_IsNotFilePath(assetPath) && Resolve(anchoredAssetPath).empty()) {
         return TfNormPath(assetPath);
     }
 
+    // Re-direct to Python to allow optional re-routing of relative paths
+    // through the resolver.
+    if (true) {
+        if (_IsFileRelativePath(assetPath)) {
+            auto cache_find = this->cachedRelativePathIdentifierPairs.find(anchorAssetPath);
+            if(cache_find != this->cachedRelativePathIdentifierPairs.end()){
+                return cache_find->second;
+            }else{
+                std::string pythonResult;
+                {
+                    /*
+                    We optionally re-route relative file paths to be pre-formatted in Python.
+                    This allows us to optionally override relative paths too and not only
+                    non file path identifiers.
+                    Please see the CachedResolverContext::ResolveAndCachePair method for
+                    risks (as this does the same hacky workaround)
+                    and the Python Resolver.CreateRelativePathIdentified method on how to use this. 
+                    */
+                    const std::lock_guard<std::mutex> lock(g_resolver_create_identifier_mutex);
+                    int state = TfPyInvokeAndExtract(DEFINE_STRING(AR_CACHEDRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME),
+                                                     "Resolver.CreateRelativePathIdentifier",
+                                                     &pythonResult, AR_BOOST_NAMESPACE::ref(*this), anchoredAssetPath, assetPath, anchorAssetPath);
+                    if (!state) {
+                        std::cerr << "Failed to call Resolver.CreateRelativePathIdentifier in " << DEFINE_STRING(AR_CACHEDRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME) << ".py. ";
+                        std::cerr << "Please verify that the python code is valid!" << std::endl;
+                        pythonResult = TfNormPath(anchoredAssetPath);
+                    }
+                }
+                return pythonResult;
+            }
+        }
+    }
     return TfNormPath(anchoredAssetPath);
 }
 
@@ -137,51 +213,51 @@ CachedResolver::_Resolve(
     if (SdfLayer::IsAnonymousLayerIdentifier(assetPath)){
         return ArResolvedPath(assetPath);
     }
-    if (_IsRelativePath(assetPath)) {
-        if (this->_IsContextDependentPath(assetPath)) {
-            const CachedResolverContext* contexts[2] = {this->_GetCurrentContextPtr(), &_fallbackContext};
-            for (const CachedResolverContext* ctx : contexts) {
-                if (ctx) {
-                    // Search for mapping pairs
-                    auto &mappingPairs = ctx->GetMappingPairs();
-                    auto map_find = mappingPairs.find(assetPath);
-                    if(map_find != mappingPairs.end()){
-                        ArResolvedPath resolvedPath = _ResolveAnchored(this->emptyString, map_find->second);
-                        return resolvedPath;
-                        // Assume that a map hit is always valid.
-                        // if (resolvedPath) {
-                        //     return resolvedPath;
-                        // }
-                    }
-                    // Search for cached pairs
-                    auto &cachedPairs = ctx->GetCachingPairs();
-                    auto cache_find = cachedPairs.find(assetPath);
-                    if(cache_find != cachedPairs.end()){
-                        ArResolvedPath resolvedPath = _ResolveAnchored(this->emptyString, cache_find->second);
-                        return resolvedPath;
-                        // Assume that a cache hit is always valid.
-                        // if (resolvedPath) {
-                        //     return resolvedPath;
-                        // }
-                    }
-                    // Perform query if caches don't have a hit.
-                    TF_DEBUG(CACHEDRESOLVER_RESOLVER).Msg("Resolver::_Resolve('%s') -> No cache hit, switching to Python query\n", assetPath.c_str());
-                    /*
-                    We perform the resource/thread lock in the context itself to 
-                    allow for resolver multithreading with different contexts.
-                    See .ResolveAndCachePair for more information.
-                    */
-                    ArResolvedPath resolvedPath = _ResolveAnchored(this->emptyString, ctx->ResolveAndCachePair(assetPath));
-                    if (resolvedPath) {
-                        return resolvedPath;
-                    }
-                    // Only try the first valid context.
-                    break;
+
+    if (this->_IsContextDependentPath(assetPath)) {
+        const CachedResolverContext* contexts[2] = {this->_GetCurrentContextPtr(), &_fallbackContext};
+        for (const CachedResolverContext* ctx : contexts) {
+            if (ctx) {
+                // Search for mapping pairs
+                auto &mappingPairs = ctx->GetMappingPairs();
+                auto map_find = mappingPairs.find(assetPath);
+                if(map_find != mappingPairs.end()){
+                    ArResolvedPath resolvedPath = _ResolveAnchored(this->emptyString, map_find->second);
+                    return resolvedPath;
+                    // Assume that a map hit is always valid.
+                    // if (resolvedPath) {
+                    //     return resolvedPath;
+                    // }
                 }
+                // Search for cached pairs
+                auto &cachedPairs = ctx->GetCachingPairs();
+                auto cache_find = cachedPairs.find(assetPath);
+                if(cache_find != cachedPairs.end()){
+                    ArResolvedPath resolvedPath = _ResolveAnchored(this->emptyString, cache_find->second);
+                    return resolvedPath;
+                    // Assume that a cache hit is always valid.
+                    // if (resolvedPath) {
+                    //     return resolvedPath;
+                    // }
+                }
+                // Perform query if caches don't have a hit.
+                TF_DEBUG(CACHEDRESOLVER_RESOLVER).Msg("Resolver::_Resolve('%s') -> No cache hit, switching to Python query\n", assetPath.c_str());
+                /*
+                We perform the resource/thread lock in the context itself to 
+                allow for resolver multithreading with different contexts.
+                See .ResolveAndCachePair for more information.
+                */
+                ArResolvedPath resolvedPath = _ResolveAnchored(this->emptyString, ctx->ResolveAndCachePair(assetPath));
+                if (resolvedPath) {
+                    return resolvedPath;
+                }
+                // Only try the first valid context.
+                break;
             }
         }
         return ArResolvedPath();
     }
+
     return _ResolveAnchored(std::string(), assetPath);
 }
 

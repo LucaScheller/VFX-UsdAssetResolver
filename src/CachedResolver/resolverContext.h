@@ -25,7 +25,7 @@ struct CachedResolverContextInternalData
 {
     std::string mappingFilePath;
     std::map<std::string, std::string> mappingPairs;
-    std::map<std::string, std::string> cachedPairs;
+    std::map<std::string, std::string> cachingPairs;
 };
 
 class CachedResolverContext
@@ -77,17 +77,15 @@ public:
     AR_CACHEDRESOLVER_API
     void RemoveCachingByValue(const std::string& targetStr);
     AR_CACHEDRESOLVER_API
-    const std::map<std::string, std::string>& GetCachingPairs() const { return data->cachedPairs; }
+    const std::map<std::string, std::string>& GetCachingPairs() const { return data->cachingPairs; }
     AR_CACHEDRESOLVER_API
-    void ClearCachingPairs() { data->cachedPairs.clear(); }
+    void ClearCachingPairs() { data->cachingPairs.clear(); }
     AR_CACHEDRESOLVER_API
     const std::string ResolveAndCachePair(const std::string& assetPath) const;
 
 private:
-    // Vars
     std::shared_ptr<CachedResolverContextInternalData> data = std::make_shared<CachedResolverContextInternalData>();
     std::string emptyString{""};
-    // Methods
     bool _GetMappingPairsFromUsdFile(const std::string& filePath);
 };
 

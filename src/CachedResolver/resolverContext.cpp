@@ -177,27 +177,27 @@ void CachedResolverContext::RemoveMappingByValue(const std::string& targetStr){
 }
 
 void CachedResolverContext::AddCachingPair(const std::string& sourceStr, const std::string& targetStr){
-    auto cache_find = data->cachedPairs.find(sourceStr);
-    if(cache_find != data->cachedPairs.end()){
+    auto cache_find = data->cachingPairs.find(sourceStr);
+    if(cache_find != data->cachingPairs.end()){
         cache_find->second = targetStr;
     }else{
-        data->cachedPairs.insert(std::pair<std::string, std::string>(sourceStr,targetStr));
+        data->cachingPairs.insert(std::pair<std::string, std::string>(sourceStr,targetStr));
     }
 }
 
 void CachedResolverContext::RemoveCachingByKey(const std::string& sourceStr){
-    const auto &it = data->cachedPairs.find(sourceStr);
-    if (it != data->cachedPairs.end()){
-        data->cachedPairs.erase(it);
+    const auto &it = data->cachingPairs.find(sourceStr);
+    if (it != data->cachingPairs.end()){
+        data->cachingPairs.erase(it);
     }
 }
 
 void CachedResolverContext::RemoveCachingByValue(const std::string& targetStr){
-    for (auto it = data->cachedPairs.cbegin(); it != data->cachedPairs.cend();)
+    for (auto it = data->cachingPairs.cbegin(); it != data->cachingPairs.cend();)
     {
         if (it->second == targetStr)
         {
-            data->cachedPairs.erase(it++);
+            data->cachingPairs.erase(it++);
         }
         else
         {
@@ -224,7 +224,7 @@ const std::string CachedResolverContext::ResolveAndCachePair(const std::string& 
         
         int state = TfPyInvokeAndExtract(DEFINE_STRING(AR_CACHEDRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME),
                                          "ResolverContext.ResolveAndCache",
-                                         &pythonResult, assetPath, this);
+                                         &pythonResult, this, assetPath);
         if (!state) {
             std::cerr << "Failed to call Resolver.ResolveAndCache in " << DEFINE_STRING(AR_CACHEDRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME) << ".py. ";
             std::cerr << "Please verify that the python code is valid!" << std::endl;

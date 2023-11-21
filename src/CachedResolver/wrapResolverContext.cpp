@@ -36,7 +36,7 @@ wrapResolverContext()
 {
     using This = CachedResolverContext;
 
-    class_<CachedResolverContext>("ResolverContext", no_init)
+    class_<This>("ResolverContext", no_init)
         .def(init<>())
         .def(init<const std::string&>(args("mappingFile")))
         .def(self == self)
