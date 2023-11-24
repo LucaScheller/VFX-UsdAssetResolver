@@ -86,9 +86,7 @@ _ResolveAnchored(
 }
 
 CachedResolver::CachedResolver() {
-
     this->SetExposeRelativePathIdentifierState(TfGetenvBool(DEFINE_STRING(AR_EXPOSE_RELATIVE_PATH_IDENTIFIERS), false));
-
 };
 
 CachedResolver::~CachedResolver() = default;

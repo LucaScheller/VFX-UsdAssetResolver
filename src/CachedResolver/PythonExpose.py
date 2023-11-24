@@ -9,7 +9,7 @@ from pxr import Ar
 # Init logger
 logging.basicConfig(format="%(asctime)s %(message)s", datefmt="%Y/%m/%d %I:%M:%S%p")
 LOG = logging.getLogger("Python | {file_name}".format(file_name=__name__))
-LOG.setLevel(level=logging.DEBUG)
+LOG.setLevel(level=logging.INFO)
 
 
 def log_function_args(func):
@@ -44,10 +44,17 @@ class Resolver:
 
     @staticmethod
     @log_function_args
-    def CreateRelativePathIdentifier(resolver, anchoredAssetPath, assetPath, anchorAssetPath, ):
+    def CreateRelativePathIdentifier(resolver, anchoredAssetPath, assetPath, anchorAssetPath):
         """Returns an identifier for the asset specified by assetPath.
-        If anchorAssetPath is not empty, it is the resolved asset path
-        that assetPath should be anchored to if it is a relative path.
+
+        We have two options how to return relative identifiers:
+        - Make it absolute: Simply return the anchoredAssetPath. This means the relative identifier
+                            will not be passed through to ResolveAndCache.
+        - Make it non file based: Make sure the remapped identifier does not start with "./" or "../"
+                                  by putting some sort of prefix in front of it. The path will then be
+                                  passed through to ResolveAndCache, where you need to re-construct
+                                  it to an absolute path of your liking.
+
         Args:
             resolver (CachedResolver): The resolver
             anchoredAssetPath (str): The anchored asset path, this has to be used as the cached key.
@@ -57,12 +64,12 @@ class Resolver:
         Returns:
             str: The identifier.
         """
-        LOG.debug("::: Resolver.CreateRelativePathIdentifier")
+        LOG.debug("::: Resolver.CreateRelativePathIdentifier | {} | {} | {}".format(anchoredAssetPath, assetPath, anchorAssetPath))
         """The code below is only needed to verify that UnitTests work."""
         UnitTestHelper.create_relative_path_identifier_call_counter += 1
-        remappedRelativePathIdentifier = f"{assetPath[2:]}?{anchorAssetPath}"
-        resolver.AddCachedRelativePathIdentifierPair(anchoredAssetPath, anchoredAssetPath)
-        return anchoredAssetPath
+        remappedRelativePathIdentifier = f"relativePath|{assetPath}?{anchorAssetPath}"
+        resolver.AddCachedRelativePathIdentifierPair(anchoredAssetPath, remappedRelativePathIdentifier)
+        return remappedRelativePathIdentifier
 
 
 class ResolverContext:
@@ -99,11 +106,11 @@ class ResolverContext:
                  it will be resolved to an empty ArResolvedPath internally, but will
                  still count as a cache hit and be stored inside the cachedPairs dict.
         """
-        resolved_asset_path = "/some/path/to/a/file.usd"
-        context.AddCachingPair(assetPath, resolved_asset_path)
         LOG.debug(
             "::: ResolverContext.ResolveAndCache | {} | {}".format(assetPath, context.GetCachingPairs())
         )
+        resolved_asset_path = "/some/path/to/a/file.usd"
+        context.AddCachingPair(assetPath, resolved_asset_path)
         """
         To clear the context cache call:
         context.ClearCachingPairs()
@@ -116,4 +123,12 @@ class ResolverContext:
             asset_b_file_path = os.path.join(current_dir_path, "assetB.usd")
             context.AddCachingPair("assetA.usd", asset_a_file_path)
             context.AddCachingPair("assetB.usd", asset_b_file_path)
+        if assetPath.startswith("relativePath|"):
+            relative_path, anchor_path = assetPath.removeprefix("relativePath|").split("?")
+            if anchor_path[-1] == "/":
+                anchor_path = anchor_path[:-1]
+            else:
+                anchor_path = anchor_path[:anchor_path.rfind("/")]
+            resolved_asset_path = os.path.normpath(os.path.join(anchor_path, relative_path))
+            context.AddCachingPair(assetPath, resolved_asset_path)
         return resolved_asset_path

@@ -19,9 +19,6 @@ class TestArResolver(unittest.TestCase):
     def test_CreateIdentifier(self):
         resolver = Ar.GetResolver()
 
-        # Reset UnitTestHelper
-        #PythonExpose.UnitTestHelper.reset(current_directory_path=temp_dir_path)
-
         # Test for invalid paths
         self.assertEqual("", resolver.CreateIdentifier(""))
         self.assertEqual(
@@ -87,6 +84,132 @@ class TestArResolver(unittest.TestCase):
             ),
         )
 
+    def test_CreateRelativeIdentifier(self):
+        resolver = Ar.GetResolver()
+        cached_resolver = Ar.GetUnderlyingResolver()
+
+        # Test expose relative path identifier state and cache
+        self.assertEqual(cached_resolver.GetExposeRelativePathIdentifierState(), False)
+
+        cached_resolver.SetExposeRelativePathIdentifierState(True)
+        self.assertEqual(cached_resolver.GetExposeRelativePathIdentifierState(), True)
+
+        cached_resolver.AddCachedRelativePathIdentifierPair("/some/absolute/path.usd", "some/relative/path.usd?/some/absolute")
+        self.assertEqual(cached_resolver.GetCachedRelativePathIdentifierPairs(),
+                         {'/some/absolute/path.usd': 'some/relative/path.usd?/some/absolute'})
+        
+        cached_resolver.SetExposeRelativePathIdentifierState(True)
+        self.assertEqual(cached_resolver.GetCachedRelativePathIdentifierPairs(),
+                         {'/some/absolute/path.usd': 'some/relative/path.usd?/some/absolute'})
+
+        cached_resolver.SetExposeRelativePathIdentifierState(False)
+        self.assertEqual(cached_resolver.GetCachedRelativePathIdentifierPairs(), {})
+
+        cached_resolver.AddCachedRelativePathIdentifierPair("/some/absolute/path.usd", "some/relative/path.usd?/some/absolute")
+        cached_resolver.RemoveCachedRelativePathIdentifierByKey("/some/absolute/path.usd")
+        self.assertEqual(cached_resolver.GetCachedRelativePathIdentifierPairs(),{})
+        
+        cached_resolver.AddCachedRelativePathIdentifierPair("/some/absolute/path.usd", "some/relative/path.usd?/some/absolute")
+        cached_resolver.RemoveCachedRelativePathIdentifierByValue("some/relative/path.usd?/some/absolute")
+        self.assertEqual(cached_resolver.GetCachedRelativePathIdentifierPairs(),{})
+
+        cached_resolver.AddCachedRelativePathIdentifierPair("/some/absolute/path.usd", "some/relative/path.usd?/some/absolute")
+        cached_resolver.ClearCachedRelativePathIdentifierPairs()
+        self.assertEqual(cached_resolver.GetCachedRelativePathIdentifierPairs(),{})
+
+        # Reset UnitTestHelper
+        PythonExpose.UnitTestHelper.reset()
+        cached_resolver.SetExposeRelativePathIdentifierState(True)
+
+        # Test for invalid paths
+        self.assertEqual("", resolver.CreateIdentifier(""))
+        self.assertEqual(
+            "", resolver.CreateIdentifier("", Ar.ResolvedPath("some/relative/path.usd"))
+        )
+        self.assertEqual(
+            "",
+            resolver.CreateIdentifier("", Ar.ResolvedPath("/some/absolute/path.usd")),
+        )
+
+        # Test for valid paths
+        self.assertEqual(
+            "/some/absolute/path.usd",
+            resolver.CreateIdentifier(
+                "/some/absolute/path.usd", Ar.ResolvedPath("some/relative/path.usd")
+            ),
+        )
+        self.assertEqual(
+            "/some/absolute/path.usd",
+            resolver.CreateIdentifier(
+                "/some/absolute/path.usd", Ar.ResolvedPath("/some/absolute/path.usd")
+            ),
+        )
+
+        self.assertEqual(
+            "relativePath|./some/relative/path.usd?/some/absolute/",
+            resolver.CreateIdentifier(
+                "./some/relative/path.usd", Ar.ResolvedPath("/some/absolute/")
+            ),
+        )
+        self.assertEqual(
+            "relativePath|./some/relative/path.usd?/some/absolute/",
+            resolver.CreateIdentifier(
+                "./some/relative/path.usd", Ar.ResolvedPath("/some/absolute/path.usd")
+            ),
+        )
+        self.assertEqual(
+            PythonExpose.UnitTestHelper.create_relative_path_identifier_call_counter,
+            1
+        )
+
+        self.assertEqual(
+            "relativePath|./some/relative/path.usd?/some/other/absolute/path.usd",
+            resolver.CreateIdentifier(
+                "./some/relative/path.usd", Ar.ResolvedPath("/some/other/absolute/path.usd")
+            ),
+        )
+        self.assertEqual(
+            "relativePath|./some/relative/path.usd?/some/other/absolute/path.usd",
+            resolver.CreateIdentifier(
+                "./some/relative/path.usd", Ar.ResolvedPath("/some/other/absolute/path.usd")
+            ),
+        )
+        self.assertEqual(
+            PythonExpose.UnitTestHelper.create_relative_path_identifier_call_counter,
+            2
+        )
+
+        self.assertEqual(
+            "relativePath|../some/relative/path.usd?/some/absolute/",
+            resolver.CreateIdentifier(
+                "../some/relative/path.usd", Ar.ResolvedPath("/some/absolute/")
+            ),
+        )
+        self.assertEqual(
+            "relativePath|../some/relative/path.usd?/some/absolute/",
+            resolver.CreateIdentifier(
+                "../some/relative/path.usd", Ar.ResolvedPath("/some/absolute/path.usd")
+            ),
+        )
+
+        self.assertEqual(
+            "/other/relative/path.usd",
+            resolver.CreateIdentifier(
+                "/some/../other/relative/path.usd",
+                Ar.ResolvedPath("/some/absolute/path.usd"),
+            ),
+        )
+
+        self.assertEqual(
+            "project/assets/asset/path.usd",
+            resolver.CreateIdentifier(
+                "project/assets/asset/path.usd",
+                Ar.ResolvedPath("/some/absolute/path.usd"),
+            ),
+        )
+
+        cached_resolver.SetExposeRelativePathIdentifierState(False)
+
     def test_CreateIdentifierForNewAsset(self):
         resolver = Ar.GetResolver()
 
@@ -151,6 +274,95 @@ class TestArResolver(unittest.TestCase):
                 Ar.ResolvedPath("/some/absolute/path.usd"),
             ),
         )
+
+    def test_CreateRelativeIdentifierWithResolverCachingMechanism(self):
+        with tempfile.TemporaryDirectory() as temp_dir_path:
+            # Get resolver
+            resolver = Ar.GetResolver()
+            cached_resolver = Ar.GetUnderlyingResolver()
+            # Reset UnitTestHelper
+            PythonExpose.UnitTestHelper.reset(current_directory_path=temp_dir_path)
+            # Create files
+            asset_a_identifier = "assetA.usd"
+            asset_a_layer_file_path = os.path.join(temp_dir_path, asset_a_identifier)
+            Sdf.Layer.CreateAnonymous().Export(asset_a_layer_file_path)
+            asset_b_identifier = "assetB.usd"
+            asset_b_layer_file_path = os.path.join(temp_dir_path, asset_b_identifier)
+            Sdf.Layer.CreateAnonymous().Export(asset_b_layer_file_path)
+            asset_c_identifier = "assetC.usd"
+            asset_c_layer_file_path = os.path.join(temp_dir_path, asset_c_identifier)
+            Sdf.Layer.CreateAnonymous().Export(asset_c_layer_file_path)
+            self.assertEqual(PythonExpose.UnitTestHelper.resolve_and_cache_call_counter, 0)
+
+            # Check that native relative file path resolving works
+            # cached_resolver.SetExposeRelativePathIdentifierState(False) # The default is False
+            asset_a_relative_layer = Sdf.Layer.FindOrOpenRelativeToLayer(Sdf.Layer.FindOrOpen(asset_b_layer_file_path), "./" + asset_a_identifier)
+            self.assertEqual(asset_a_layer_file_path, asset_a_relative_layer.identifier)
+
+            # Create context
+            ctx = CachedResolver.ResolverContext()
+            self.assertEqual(PythonExpose.UnitTestHelper.context_initialize_call_counter, 1)
+            self.assertEqual(PythonExpose.UnitTestHelper.resolve_and_cache_call_counter, 0)
+            resolver = Ar.GetResolver()
+            with Ar.ResolverContextBinder(ctx):
+                # Resolve
+                layer_identifier = "layer.usd"
+                resolver.Resolve(layer_identifier)
+                self.assertEqual(PythonExpose.UnitTestHelper.resolve_and_cache_call_counter, 1)
+                # See PythonExpose.py for more info
+                layer_identifier = "unittest.usd"
+                resolver.Resolve(layer_identifier)
+                self.assertEqual(PythonExpose.UnitTestHelper.resolve_and_cache_call_counter, 2)
+                # Our unittest.usd resolve call caches these test paths,
+                # see PythonExpose.py for more info
+                resolver.Resolve(layer_identifier)
+                self.assertEqual(PythonExpose.UnitTestHelper.resolve_and_cache_call_counter, 2)
+                self.assertEqual(ctx.GetCachingPairs(),
+                                 {'assetA.usd': asset_a_layer_file_path,
+                                  'assetB.usd': asset_b_layer_file_path,
+                                  'layer.usd': '/some/path/to/a/file.usd',
+                                  'unittest.usd': '/some/path/to/a/file.usd',
+                                  'shot.usd': '/some/path/to/a/file.usd'})
+                # Verify that mapping pairs have higher loading priority than
+                # caching pairs.
+                ctx.AddCachingPair(asset_c_identifier, asset_c_layer_file_path)
+                self.assertEqual(resolver.Resolve(asset_c_identifier), asset_c_layer_file_path)
+                self.assertEqual(PythonExpose.UnitTestHelper.resolve_and_cache_call_counter, 2)
+                ctx.AddMappingPair(asset_c_identifier, asset_a_layer_file_path)
+                self.assertEqual(resolver.Resolve(asset_c_identifier), asset_a_layer_file_path)
+                self.assertEqual(PythonExpose.UnitTestHelper.resolve_and_cache_call_counter, 2)
+                ctx.RemoveMappingByKey(asset_c_identifier)
+                self.assertEqual(resolver.Resolve(asset_c_identifier), asset_c_layer_file_path)
+                self.assertEqual(PythonExpose.UnitTestHelper.resolve_and_cache_call_counter, 2)
+                # Check that re-init works
+                mapping_file_path = os.path.join(temp_dir_path, "mapping.usd")
+                mapping_layer = Sdf.Layer.CreateAnonymous()
+                mapping_pairs = {
+                    asset_a_identifier: asset_c_layer_file_path,
+                }
+                mapping_array = []
+                for source_path, target_path in mapping_pairs.items():
+                    mapping_array.extend([source_path, target_path])
+                mapping_layer.customLayerData = {
+                    CachedResolver.Tokens.mappingPairs: Vt.StringArray(mapping_array)
+                }
+                mapping_layer.Export(mapping_file_path)
+                ctx.SetMappingFilePath(mapping_file_path)
+                ctx.ClearAndReinitialize()
+                self.assertEqual(ctx.GetMappingPairs(), {asset_a_identifier: asset_c_layer_file_path})
+                self.assertEqual(PythonExpose.UnitTestHelper.context_initialize_call_counter, 2)
+
+                # Check that exposed relative file path resolving works
+                ctx.SetMappingFilePath("")
+                ctx.ClearAndReinitialize()
+                cached_resolver.SetExposeRelativePathIdentifierState(True)
+                self.assertEqual(PythonExpose.UnitTestHelper.create_relative_path_identifier_call_counter, 0)
+                self.assertEqual(PythonExpose.UnitTestHelper.resolve_and_cache_call_counter, 2)
+                asset_a_relative_layer = Sdf.Layer.FindOrOpenRelativeToLayer(Sdf.Layer.FindOrOpen(asset_b_layer_file_path), "./" + asset_a_identifier)
+                self.assertEqual(PythonExpose.UnitTestHelper.create_relative_path_identifier_call_counter, 1)
+                self.assertEqual(PythonExpose.UnitTestHelper.resolve_and_cache_call_counter, 3)
+                self.assertEqual(asset_a_relative_layer, Sdf.Layer.FindOrOpen(asset_a_layer_file_path))
+                cached_resolver.SetExposeRelativePathIdentifierState(False)
 
     def test_Resolve(self):
         with tempfile.TemporaryDirectory() as temp_dir_path:
