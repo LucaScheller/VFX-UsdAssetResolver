@@ -1,16 +1,18 @@
 # Example Usd files and mapping pair files
 
+```admonish warning
+These examples currently work with the [File Resolver](../FileResolver/overview.md) and [Python Resolver](../PythonResolver/overview.md).
+
+For resolver specific examples, see the corresponding resolver section.
+```
+
 ## Simple Example
 
 A very simple setup can be found in In the <REPO_ROOT>/files folder. 
 
-```admonish info
-These examples currently work with the [File Resolver](../FileResolver/overview.md) and [Python Resolver](../PythonResolver/overview.md)
-```
-
 Before launching a Usd related software, you'll have to set these env vars:
 ```bash
-export AR_SEARCH_PATHS=${REPO_ROOT}/files
+export AR_SEARCH_PATHS=${REPO_ROOT}/files/generic
 export AR_SEARCH_REGEX_EXPRESSION="(bo)"
 export AR_SEARCH_REGEX_FORMAT="Bo"
 ```
@@ -31,7 +33,7 @@ A larger example scene setup might looks as follows:
 
 In the <REPO_ROOT>/files folder you can also find this setup. To run it, you must set the `AR_SEARCH_PATHS` env var as follows.
 ```bash
-export AR_SEARCH_PATHS=${REPO_ROOT}/files/workspace/shots:${REPO_ROOT}/files/workspace/assets
+export AR_SEARCH_PATHS=${REPO_ROOT}/files/generic/workspace/shots:${REPO_ROOT}/files/generic/workspace/assets
 ```
 And then open up the `shots/shotA/shotA.usd` file and set the resolver context mapping file path to `shots/shotA/shotA_mapping.usd`. 
 

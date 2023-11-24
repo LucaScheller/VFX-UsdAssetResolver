@@ -11,6 +11,44 @@ Tokens can be found in CachedResolver.Tokens:
 CachedResolver.Tokens.mappingPairs
 ```
 
+## Resolver
+We optionally can also hook into relative path identifier creation via Python. 
+
+This can be enabled by setting the `AR_CACHEDRESOLVER_ENV_EXPOSE_RELATIVE_PATH_IDENTIFIERS` environment variable to `1` or by calling `pxr.Ar.GetUnderlyingResolver().SetExposeRelativePathIdentifierState(True)`.
+
+We then have access in our `PythonExpose.py` -> `Resolver.CreateRelativePathIdentifier` method. Here we can then return a non file path (anything that doesn't start with "/"/"./"/"../") identifier for our relative path, which then also gets passed to our `PythonExpose.py` -> `ResolverContext.ResolveAndCache` method.
+
+This allows us to also redirect relative paths to our liking for example when implementing special pinning/mapping behaviours.
+
+For more info check out our [production example](./example.md) section.
+
+As with our mapping and caching pairs, the result is cached in C++ to enable faster lookups on consecutive calls.
+
+As identifiers are context independent, the cache is stored on the resolver itself. See below on how to modify and inspect the cache.
+
+```python
+from pxr import Ar, Usd
+from usdAssetResolver import CachedResolver
+
+# Enable relative identifier modification
+cached_resolver = Ar.GetUnderlyingResolver()
+cached_resolver.SetExposeRelativePathIdentifierState(True)
+print("Resolver is currently exposing relative path identifiers to Python | {}".format(cached_resolver.GetExposeRelativePathIdentifierState()))
+# Or set the "AR_CACHEDRESOLVER_ENV_EXPOSE_RELATIVE_PATH_IDENTIFIERS" environment variable to 1.
+# This can't be done via Python, as it has to happen before the resolver is loaded.
+cached_resolver.GetExposeRelativePathIdentifierState() # Get the state of exposing relative path identifiers
+cached_resolver.SetExposeRelativePathIdentifierState() # Set the state of exposing relative path identifiers
+
+# We can also inspect and edit our relative identifiers via the following methods on the resolver.
+# You'll usually only want to use these outside of the Resolver.CreateRelativePathIdentifier method only for debugging.
+# The identifier cache is not context dependent (as identifiers are not).
+cached_resolver.GetCachedRelativePathIdentifierPairs()       # Returns all cached relative path identifier pairs as a dict
+cached_resolver.AddCachedRelativePathIdentifierPair()        # Add a cached relative path identifier pair
+cached_resolver.RemoveCachedRelativePathIdentifierByKey()    # Remove a cached relative path identifier pair by key
+cached_resolver.RemoveCachedRelativePathIdentifierByValue()  # Remove a cached relative path identifier pair by value
+cached_resolver.ClearCachedRelativePathIdentifierPairs()     # Clear all cached relative path identifier pairs
+```
+
 ## Resolver Context
 You can manipulate the resolver context (the object that holds the configuration the resolver uses to resolve paths) via Python in the following ways:
 
@@ -136,6 +174,41 @@ def log_function_args(func):
 ...code...
 ```
 
+#### Resolver
+
+```python
+class Resolver:
+
+    @staticmethod
+    @log_function_args
+    def CreateRelativePathIdentifier(resolver, anchoredAssetPath, assetPath, anchorAssetPath):
+        """Returns an identifier for the asset specified by assetPath.
+        It is very important that the anchoredAssetPath is used as the cache key, as this
+        is what is used in C++ to do the cache lookup.
+
+        We have two options how to return relative identifiers:
+        - Make it absolute: Simply return the anchoredAssetPath. This means the relative identifier
+                            will not be passed through to ResolverContext.ResolveAndCache.
+        - Make it non file based: Make sure the remapped identifier does not start with "/", "./" or"../"
+                                  by putting some sort of prefix in front of it. The path will then be
+                                  passed through to ResolverContext.ResolveAndCache, where you need to re-construct
+                                  it to an absolute path of your liking. Make sure you don't use a "<somePrefix>:",
+                                  to avoid mixups with URI based resolvers.
+
+        Args:
+            resolver (CachedResolver): The resolver
+            anchoredAssetPath (str): The anchored asset path, this has to be used as the cached key.
+            assetPath (str): An unresolved asset path.
+            anchorAssetPath (Ar.ResolvedPath): A resolved anchor path.
+
+        Returns:
+            str: The identifier.
+        """
+        remappedRelativePathIdentifier = f"relativePath|{assetPath}?{anchorAssetPath}"
+        resolver.AddCachedRelativePathIdentifierPair(anchoredAssetPath, remappedRelativePathIdentifier)
+        return remappedRelativePathIdentifier
+```
+
 #### Resolver Context
 
 ```python
@@ -158,12 +231,12 @@ class ResolverContext:
         context.AddCachingPair("identifier", "/some/path/to/a/file.usd")
 
     @staticmethod
-    def ResolveAndCache(assetPath, context):
+    def ResolveAndCache(context, assetPath):
         """Return the resolved path for the given assetPath or an empty
         ArResolvedPath if no asset exists at that path.
         Args:
-            assetPath (str): An unresolved asset path.
             context (CachedResolverContext): The active context.
+            assetPath (str): An unresolved asset path.
         Returns:
             str: The resolved path string. If it points to a non-existent file,
                  it will be resolved to an empty ArResolvedPath internally, but will

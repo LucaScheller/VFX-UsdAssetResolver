@@ -18,7 +18,7 @@ then
     export LD_LIBRARY_PATH=${REPO_ROOT}/dist/${RESOLVER_NAME}/lib:${LD_LIBRARY_PATH}
     alias  usdpython="$HFS/python/bin/python $@"
     # Configure resolver
-    export AR_SEARCH_PATHS=${REPO_ROOT}/files
+    export AR_SEARCH_PATHS=${REPO_ROOT}/files/generic
     export AR_SEARCH_REGEX_EXPRESSION="(bo)"
     export AR_SEARCH_REGEX_FORMAT="Bo"
     # Debug

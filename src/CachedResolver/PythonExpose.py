@@ -45,15 +45,18 @@ class Resolver:
     @staticmethod
     @log_function_args
     def CreateRelativePathIdentifier(resolver, anchoredAssetPath, assetPath, anchorAssetPath):
-        """Returns an identifier for the asset specified by assetPath.
+        """Returns an identifier for the asset specified by assetPath and anchor asset path.
+        It is very important that the anchoredAssetPath is used as the cache key, as this
+        is what is used in C++ to do the cache lookup.
 
         We have two options how to return relative identifiers:
         - Make it absolute: Simply return the anchoredAssetPath. This means the relative identifier
-                            will not be passed through to ResolveAndCache.
-        - Make it non file based: Make sure the remapped identifier does not start with "./" or "../"
+                            will not be passed through to ResolverContext.ResolveAndCache.
+        - Make it non file based: Make sure the remapped identifier does not start with "/", "./" or"../"
                                   by putting some sort of prefix in front of it. The path will then be
-                                  passed through to ResolveAndCache, where you need to re-construct
-                                  it to an absolute path of your liking.
+                                  passed through to ResolverContext.ResolveAndCache, where you need to re-construct
+                                  it to an absolute path of your liking. Make sure you don't use a "<somePrefix>:",
+                                  to avoid mixups with URI based resolvers.
 
         Args:
             resolver (CachedResolver): The resolver

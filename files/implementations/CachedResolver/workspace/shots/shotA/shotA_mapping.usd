@@ -1,0 +1,6 @@
+#usda 1.0
+(
+    customLayerData = {
+        string[] mappingPairs = ["assetA/assetA.usd", "assetA/assetA_v002.usd"]
+    }
+)
