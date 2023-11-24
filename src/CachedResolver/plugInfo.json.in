@@ -5,7 +5,8 @@
                 "Types": {
                     "@AR_CACHEDRESOLVER_USD_CXX_CLASS_NAME@": {
                         "bases": ["ArResolver"],
-                        "implementsContexts" : true
+                        "implementsContexts" : true,
+                        "uriSchemes": ["rdojson"]
                     }
                 }
             },
