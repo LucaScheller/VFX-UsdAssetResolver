@@ -19,6 +19,9 @@ class TestArResolver(unittest.TestCase):
     def test_CreateIdentifier(self):
         resolver = Ar.GetResolver()
 
+        # Reset UnitTestHelper
+        #PythonExpose.UnitTestHelper.reset(current_directory_path=temp_dir_path)
+
         # Test for invalid paths
         self.assertEqual("", resolver.CreateIdentifier(""))
         self.assertEqual(

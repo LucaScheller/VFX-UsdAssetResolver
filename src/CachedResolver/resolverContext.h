@@ -85,7 +85,6 @@ public:
 
 private:
     std::shared_ptr<CachedResolverContextInternalData> data = std::make_shared<CachedResolverContextInternalData>();
-    std::string emptyString{""};
     bool _GetMappingPairsFromUsdFile(const std::string& filePath);
 };
 

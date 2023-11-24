@@ -9,7 +9,7 @@ from pxr import Ar
 # Init logger
 logging.basicConfig(format="%(asctime)s %(message)s", datefmt="%Y/%m/%d %I:%M:%S%p")
 LOG = logging.getLogger("Python | {file_name}".format(file_name=__name__))
-LOG.setLevel(level=logging.INFO)
+LOG.setLevel(level=logging.DEBUG)
 
 
 def log_function_args(func):
@@ -27,12 +27,14 @@ def log_function_args(func):
 
 
 class UnitTestHelper:
+    create_relative_path_identifier_call_counter = 0
     context_initialize_call_counter = 0
     resolve_and_cache_call_counter = 0
     current_directory_path = ""
 
     @classmethod
     def reset(cls, current_directory_path=""):
+        cls.create_relative_path_identifier_call_counter = 0
         cls.context_initialize_call_counter = 0
         cls.resolve_and_cache_call_counter = 0
         cls.current_directory_path = current_directory_path
@@ -55,9 +57,12 @@ class Resolver:
         Returns:
             str: The identifier.
         """
+        LOG.debug("::: Resolver.CreateRelativePathIdentifier")
+        """The code below is only needed to verify that UnitTests work."""
+        UnitTestHelper.create_relative_path_identifier_call_counter += 1
         remappedRelativePathIdentifier = f"{assetPath[2:]}?{anchorAssetPath}"
-        resolver.AddCachedRelativePathIdentifierPair(anchoredAssetPath, remappedRelativePathIdentifier)
-        return remappedRelativePathIdentifier
+        resolver.AddCachedRelativePathIdentifierPair(anchoredAssetPath, anchoredAssetPath)
+        return anchoredAssetPath
 
 
 class ResolverContext:

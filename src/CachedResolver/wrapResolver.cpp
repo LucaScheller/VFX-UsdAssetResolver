@@ -18,7 +18,7 @@ wrapResolver()
 
     class_<This, bases<ArResolver>, AR_BOOST_NAMESPACE::noncopyable>
         ("Resolver", no_init)
-        .def("GetCachedRelativePathIdentifierPairs", &This::AddCachedRelativePathIdentifierPair, return_value_policy<return_by_value>(), "Returns all cached relative path identifier pairs as a dict")
+        .def("GetCachedRelativePathIdentifierPairs", &This::GetCachedRelativePathIdentifierPairs, return_value_policy<return_by_value>(), "Returns all cached relative path identifier pairs as a dict")
         .def("AddCachedRelativePathIdentifierPair", &This::AddCachedRelativePathIdentifierPair, "Remove a cached relative path identifier pair by value")
         .def("RemoveCachedRelativePathIdentifierByKey", &This::RemoveCachedRelativePathIdentifierByKey, "Add a cached relative path identifier pair")
         .def("RemoveCachedRelativePathIdentifierByValue", &This::RemoveCachedRelativePathIdentifierByValue, "Remove a cached relative path identifier pair by key")

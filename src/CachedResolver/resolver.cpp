@@ -85,7 +85,11 @@ _ResolveAnchored(
     return TfPathExists(resolvedPath) ? ArResolvedPath(TfAbsPath(resolvedPath)) : ArResolvedPath();
 }
 
-CachedResolver::CachedResolver() = default;
+CachedResolver::CachedResolver() {
+
+    this->SetExposeRelativePathIdentifierState(TfGetenvBool(DEFINE_STRING(AR_EXPOSE_RELATIVE_PATH_IDENTIFIERS), false));
+
+};
 
 CachedResolver::~CachedResolver() = default;
 
@@ -138,19 +142,11 @@ CachedResolver::_CreateIdentifier(
     }
 
     const std::string anchoredAssetPath = _AnchorRelativePath(anchorAssetPath, assetPath);
-    // Anchor non file path based identifiers and see if a file exists.
-    // This is mostly for debugging as it allows us to add a file relative to our
-    // anchor directory that has a higher priority than our (usually unanchored) 
-    // resolved asset path.
-    if (_IsNotFilePath(assetPath) && Resolve(anchoredAssetPath).empty()) {
-        return TfNormPath(assetPath);
-    }
-
     // Re-direct to Python to allow optional re-routing of relative paths
     // through the resolver.
-    if (true) {
+    if (this->exposeRelativePathIdentifierState) {
         if (_IsFileRelativePath(assetPath)) {
-            auto cache_find = this->cachedRelativePathIdentifierPairs.find(anchorAssetPath);
+            auto cache_find = this->cachedRelativePathIdentifierPairs.find(anchoredAssetPath);
             if(cache_find != this->cachedRelativePathIdentifierPairs.end()){
                 return cache_find->second;
             }else{
@@ -177,6 +173,13 @@ CachedResolver::_CreateIdentifier(
                 return pythonResult;
             }
         }
+    }
+    // Anchor non file path based identifiers and see if a file exists.
+    // This is mostly for debugging as it allows us to add a file relative to our
+    // anchor directory that has a higher priority than our (usually unanchored) 
+    // resolved asset path.
+    if (_IsNotFilePath(assetPath) && Resolve(anchoredAssetPath).empty()) {
+        return TfNormPath(assetPath);
     }
     return TfNormPath(anchoredAssetPath);
 }
