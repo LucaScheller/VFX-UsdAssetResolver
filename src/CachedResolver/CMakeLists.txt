@@ -68,9 +68,9 @@ add_library(${AR_CACHEDRESOLVER_TARGET_PYTHON}
     SHARED
         module.cpp
         moduleDeps.cpp
-        #resolver.cpp
-        #resolverTokens.cpp
-        #resolverContext.cpp
+        resolver.cpp
+        resolverTokens.cpp
+        resolverContext.cpp
         wrapResolver.cpp
         wrapResolverContext.cpp
         wrapResolverTokens.cpp
