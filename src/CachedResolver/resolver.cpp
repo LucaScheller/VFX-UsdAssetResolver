@@ -86,7 +86,7 @@ _ResolveAnchored(
 }
 
 CachedResolver::CachedResolver() {
-    this->SetExposeRelativePathIdentifierState(TfGetenvBool(DEFINE_STRING(AR_EXPOSE_RELATIVE_PATH_IDENTIFIERS), false));
+    this->SetExposeRelativePathIdentifierState(TfGetenvBool(DEFINE_STRING(AR_CACHEDRESOLVER_ENV_EXPOSE_RELATIVE_PATH_IDENTIFIERS), false));
 };
 
 CachedResolver::~CachedResolver() = default;
@@ -309,7 +309,7 @@ CachedResolver::_CreateDefaultContextForAsset(
             return ArResolverContext(map_iter->second.ctx);
         }else{
             TF_DEBUG(CACHEDRESOLVER_RESOLVER_CONTEXT).Msg("Resolver::_CreateDefaultContextForAsset('%s') - Reusing context on different stage, reloading due to changed timestamp\n", assetPath.c_str());
-            map_iter->second.ctx.RefreshFromMappingFilePath();
+            map_iter->second.ctx.ClearAndReinitialize();
             return ArResolverContext(map_iter->second.ctx);
         }
     }

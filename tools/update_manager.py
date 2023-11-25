@@ -486,6 +486,13 @@ class UpdateManager(object):
                 "PXR_PLUGINPATH_NAME": os.path.join(resolver_dir_path, "resources"),
                 "PYTHONPATH": os.path.join(resolver_dir_path, "lib", "python"),
             }
+            if resolver_name in ["PythonResolver", "CachedResolver"]:
+                env.update({
+                    "AR_ENV_SEARCH_PATHS": "{}{}{}".format("/change/this/path/to/shots", os.pathsep, "/change/this/path/to/assets"),
+                    "AR_ENV_SEARCH_REGEX_EXPRESSION": "(v\d\d\d)",
+                    "AR_ENV_SEARCH_REGEX_FORMAT": "v000"
+                })
+
             if platform_name == "linux":
                 env["LD_LIBRARY_PATH"] = os.path.join(resolver_dir_path, "lib")
                 launch_file_path = os.path.join(directory_path, "launch.sh")

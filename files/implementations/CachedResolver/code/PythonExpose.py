@@ -1,16 +1,24 @@
 import inspect
 import logging
 import os
+import re
 from functools import wraps
-
-from pxr import Ar
-
 
 # Init logger
 logging.basicConfig(format="%(asctime)s %(message)s", datefmt="%Y/%m/%d %I:%M:%S%p")
 LOG = logging.getLogger("Python | {file_name}".format(file_name=__name__))
 LOG.setLevel(level=logging.INFO)
 
+# Globals
+ROOT_DIR_PATH = os.path.dirname(os.path.dirname(__file__))
+SHOTS_DIR_PATH = os.path.join(ROOT_DIR_PATH, "workspace", "shots")
+ASSETS_DIR_PATH = os.path.join(ROOT_DIR_PATH, "workspace", "assets")
+ENTITY_TYPE_TO_DIR_PATH = {
+    "shots": SHOTS_DIR_PATH,
+    "assets": ASSETS_DIR_PATH
+}
+RELATIVE_PATH_IDENTIFIER_PREFIX = "relativeIdentifier|"
+REGEX_VERSION = re.compile("(v\d\d\d)")
 
 def log_function_args(func):
     """Decorator to print function call details."""
@@ -24,20 +32,6 @@ def log_function_args(func):
         return func(*args, **kwargs)
 
     return wrapper
-
-
-class UnitTestHelper:
-    create_relative_path_identifier_call_counter = 0
-    context_initialize_call_counter = 0
-    resolve_and_cache_call_counter = 0
-    current_directory_path = ""
-
-    @classmethod
-    def reset(cls, current_directory_path=""):
-        cls.create_relative_path_identifier_call_counter = 0
-        cls.context_initialize_call_counter = 0
-        cls.resolve_and_cache_call_counter = 0
-        cls.current_directory_path = current_directory_path
 
 
 class Resolver:
@@ -68,11 +62,24 @@ class Resolver:
             str: The identifier.
         """
         LOG.debug("::: Resolver.CreateRelativePathIdentifier | {} | {} | {}".format(anchoredAssetPath, assetPath, anchorAssetPath))
-        """The code below is only needed to verify that UnitTests work."""
-        UnitTestHelper.create_relative_path_identifier_call_counter += 1
-        remappedRelativePathIdentifier = f"relativePath|{assetPath}?{anchorAssetPath}"
-        resolver.AddCachedRelativePathIdentifierPair(anchoredAssetPath, remappedRelativePathIdentifier)
-        return remappedRelativePathIdentifier
+        # For this example, we assume all identifier are anchored to the shot and asset directories.
+        # We remove the version from the identifier, so that our mapping files can target a version-less identifier.
+        anchor_path = anchorAssetPath.GetPathString()
+        anchor_path = anchor_path[:-1] if anchor_path[-1] == "/" else anchor_path[:anchor_path.rfind("/")]
+        entity_type = os.path.basename(os.path.dirname(anchor_path))
+        entity_identifier = os.path.basename(anchor_path)
+        entity_element = os.path.basename(assetPath).split("_")[0]
+        entity_version = REGEX_VERSION.search(os.path.basename(assetPath)).groups()[0]
+
+        remapped_relative_path_identifier = f"{RELATIVE_PATH_IDENTIFIER_PREFIX}{entity_type}/{entity_identifier}?{entity_element}-{entity_version}"
+        resolver.AddCachedRelativePathIdentifierPair(anchoredAssetPath, remapped_relative_path_identifier)
+
+        # If you don't want this identifier to be passed through to ResolverContext.ResolveAndCache
+        # or the mapping/caching mechanism, return this:
+        # resolver.AddCachedRelativePathIdentifierPair(anchoredAssetPath, anchoredAssetPath)
+        # return anchoredAssetPath
+
+        return remapped_relative_path_identifier
 
 
 class ResolverContext:
@@ -91,9 +98,7 @@ class ResolverContext:
             context (CachedResolverContext): The active context.
         """
         LOG.debug("::: ResolverContext.Initialize")
-        """The code below is only needed to verify that UnitTests work."""
-        UnitTestHelper.context_initialize_call_counter += 1
-        context.AddCachingPair("shot.usd", "/some/path/to/a/file.usd")
+        # context.AddCachingPair("assets/assetA", os.path.join(ASSETS_DIR_PATH, "assetA/assetA_v002.usd"))
         return
 
     @staticmethod
@@ -112,23 +117,30 @@ class ResolverContext:
         LOG.debug(
             "::: ResolverContext.ResolveAndCache | {} | {}".format(assetPath, context.GetCachingPairs())
         )
-        resolved_asset_path = "/some/path/to/a/file.usd"
+        resolved_asset_path = ""
+        if assetPath.startswith(RELATIVE_PATH_IDENTIFIER_PREFIX):
+            base_identifier = assetPath.removeprefix(RELATIVE_PATH_IDENTIFIER_PREFIX)
+            anchor_path, entity_element = base_identifier.split("?")
+            entity_type, entity_identifier = anchor_path.split("/")
+            entity_element, entity_version = entity_element.split("-")
+            # Here you would add your custom relative path resolve logic.
+            # We can test our mapping pairs to see if the version is pinned, otherwise we fallback to the original intent.
+            versionless_identifier = f"{RELATIVE_PATH_IDENTIFIER_PREFIX}{entity_type}/{entity_identifier}?{entity_element}"
+            mapping_pairs = context.GetMappingPairs()
+            mapping_hit = mapping_pairs.get(versionless_identifier)
+            print(">>>>>>>", mapping_pairs)
+            if mapping_hit:
+                resolved_asset_path = mapping_hit
+            else:
+                resolved_asset_path = os.path.normpath(os.path.join(ENTITY_TYPE_TO_DIR_PATH[entity_type],
+                                                                    entity_identifier,
+                                                                    "elements", f"{entity_element}_{entity_version}.usd"))
+        else:
+            entity_type, entity_identifier = assetPath.split("/")
+            # Here you would add your custom "latest version" query.
+            resolved_asset_path = os.path.join(ENTITY_TYPE_TO_DIR_PATH[entity_type],
+                                                entity_identifier,
+                                                f"{entity_identifier}_v002.usd")
+        # Cache result
         context.AddCachingPair(assetPath, resolved_asset_path)
-        """
-        To clear the context cache call:
-        context.ClearCachingPairs()
-        """
-        """The code below is only needed to verify that UnitTests work."""
-        UnitTestHelper.resolve_and_cache_call_counter += 1
-        if assetPath == "unittest.usd":
-            current_dir_path = UnitTestHelper.current_directory_path
-            asset_a_file_path = os.path.join(current_dir_path, "assetA.usd")
-            asset_b_file_path = os.path.join(current_dir_path, "assetB.usd")
-            context.AddCachingPair("assetA.usd", asset_a_file_path)
-            context.AddCachingPair("assetB.usd", asset_b_file_path)
-        if assetPath.startswith("relativePath|"):
-            relative_path, anchor_path = assetPath.removeprefix("relativePath|").split("?")
-            anchor_path = anchor_path[:-1] if anchor_path[-1] == "/" else anchor_path[:anchor_path.rfind("/")]
-            resolved_asset_path = os.path.normpath(os.path.join(anchor_path, relative_path))
-            context.AddCachingPair(assetPath, resolved_asset_path)
         return resolved_asset_path

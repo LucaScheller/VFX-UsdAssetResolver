@@ -23,4 +23,4 @@
             - [Python API](./resolvers/PythonResolver/PythonAPI.md)
     - [Proof Of Concept Resolvers](./resolvers/proofofconcept.md)
         - [Http Resolver ('arHttp' by @charlesfleche)](./resolvers/HttpResolver/overview.md)
-    - [Example Setup (File/PythonResolver)](./resolvers/ExampleSetup/overview.md)
+    - [Example Setup (File/PythonResolver)](./tutorials/ExampleSetup/overview.md)

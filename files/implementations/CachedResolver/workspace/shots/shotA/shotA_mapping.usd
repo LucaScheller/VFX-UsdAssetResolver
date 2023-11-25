@@ -1,6 +1,9 @@
 #usda 1.0
 (
     customLayerData = {
-        string[] mappingPairs = ["assetA/assetA.usd", "assetA/assetA_v002.usd"]
+        string[] mappingPairs = [
+            "assets/assetA", "<Change/This/Path/To/Be/Absolute>/files/implementations/CachedResolver/workspace/assets/assetA/assetA_v002.usd",
+            "relativeIdentifier|assets/assetA?surface", "<Change/This/Path/To/Be/Absolute>/files/implementations/CachedResolver/workspace/assets/assetA/elements/surface_v001.usd"
+        ]
     }
 )

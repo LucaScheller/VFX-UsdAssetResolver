@@ -84,7 +84,7 @@ cachedResolver_context = context_collection.Get()[0]
 # Make edits as described below to the context.
 cachedResolver_context.AddMappingPair("identifier.usd", "/absolute/file/path/destination.usd")
 # Trigger Refresh (Some DCCs, like Houdini, additionally require node re-cooks.)
-stage.RefreshContext(context_collection)
+resolver.RefreshContext(context_collection)
 ```
 
 ### Editing the Resolver Context
@@ -108,7 +108,7 @@ cachedResolver_context.SetMappingFilePath("/some/mapping/file.usd")
 cachedResolver_context.ClearAndReinitialize()
 
 # Trigger Refresh (Some DCCs, like Houdini, additionally require node re-cooks.)
-stage.RefreshContext(context_collection)
+resolver.RefreshContext(context_collection)
 ```
 When the context is initialized for the first time, it runs the `ResolverContext.Initialize` method as described below. Here you can add any mapping and/or cached pairs as you see fit.
 
@@ -192,7 +192,7 @@ class Resolver:
         - Make it non file based: Make sure the remapped identifier does not start with "/", "./" or"../"
                                   by putting some sort of prefix in front of it. The path will then be
                                   passed through to ResolverContext.ResolveAndCache, where you need to re-construct
-                                  it to an absolute path of your liking. Make sure you don't use a "<somePrefix>:",
+                                  it to an absolute path of your liking. Make sure you don't use a "<somePrefix>:" syntax,
                                   to avoid mixups with URI based resolvers.
 
         Args:

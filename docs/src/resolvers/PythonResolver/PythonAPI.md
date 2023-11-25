@@ -51,7 +51,7 @@ pythonResolver_context = context_collection.Get()[0]
 # Make edits as described below to the context.
 pythonResolver_context.SetData("{'mappingPairs': {'source.usd': 'destination.usd'}, 'searchPaths': ['/path/A']}")
 # Trigger Refresh (Some DCCs, like Houdini, additionally require node re-cooks.)
-stage.RefreshContext(context_collection)
+resolver.RefreshContext(context_collection)
 ```
 
 ### Editing the Resolver Context
@@ -70,7 +70,7 @@ data[PythonResolver.Tokens.mappingPairs]["sourceAdd.usd"] = "targetAdd.usd"
 # Set context
 pythonResolver_context.SetData(json.dumps(data))
 # Trigger Refresh (Some DCCs, like Houdini, additionally require node re-cooks.)
-stage.RefreshContext(context_collection)
+resolver.RefreshContext(context_collection)
 ```
 
 When the context is initialized for the first time, it runs the `ResolverContext.LoadOrRefreshData` method as described below. After that is is just a serialized .json dict with at minimum the `PythonResolver.Tokens.mappingPairs`and `PythonResolver.Tokens.searchPaths` tokens being set.

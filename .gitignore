@@ -6,3 +6,4 @@ dist
 docs/book
 temp
 venv
+__pycache__

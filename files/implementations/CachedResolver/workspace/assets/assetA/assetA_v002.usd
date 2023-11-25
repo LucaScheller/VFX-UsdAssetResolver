@@ -1,4 +1,7 @@
 #usda 1.0
-def Cylinder "asset" ()
+
+def Xform "asset" (
+    prepend references = [@./elements/model_v002.usd@</asset>, @./elements/surface_v002.usd@</asset>]
+)
 {
 }
