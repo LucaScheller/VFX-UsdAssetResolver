@@ -128,7 +128,6 @@ class ResolverContext:
             versionless_identifier = f"{RELATIVE_PATH_IDENTIFIER_PREFIX}{entity_type}/{entity_identifier}?{entity_element}"
             mapping_pairs = context.GetMappingPairs()
             mapping_hit = mapping_pairs.get(versionless_identifier)
-            print(">>>>>>>", mapping_pairs)
             if mapping_hit:
                 resolved_asset_path = mapping_hit
             else:

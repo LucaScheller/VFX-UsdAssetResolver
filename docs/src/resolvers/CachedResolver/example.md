@@ -211,8 +211,7 @@ class ResolverContext:
 ### Summary
 And that's all folks! We encourage you to also play around with the code or adjusting the mapping files to see how everything works.
 
-One last note, you might need to refresh the context if you are not seeing live updates:
-
+If you make live adjustments via the API, don't forget to refresh the context as described in our [Python API](./PythonAPI.md#refreshing-the-resolver-context) section.
 
 
 ## Content Structure
