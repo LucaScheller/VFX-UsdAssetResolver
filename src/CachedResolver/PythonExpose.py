@@ -51,7 +51,9 @@ class UnitTestHelper:
 
 
 class ResolverContext:
-
+    
+    RDOJSON_PREFIX = "rdojson:"
+    
     @staticmethod
     @log_function_args
     def Initialize(context):
@@ -84,11 +86,13 @@ class ResolverContext:
                  it will be resolved to an empty ArResolvedPath internally, but will
                  still count as a cache hit and be stored inside the cachedPairs dict.
         """
-
-        if assetPath.startswith('rdojson:'):
-            resolved_asset_path = ResolverContext._getPublishedFilePathFromJsonAsset(assetPath)
-        else:
-            resolved_asset_path = assetPath
+        
+        resolved_asset_path = ""
+        if assetPath.startswith(ResolverContext.RDOJSON_PREFIX):
+            try:
+                resolved_asset_path = ResolverContext._getPublishedFilePathFromJsonAsset(assetPath) or ""
+            except Exception as err:
+                LOG.error(str(err))
 
         context.AddCachingPair(assetPath, resolved_asset_path)
         LOG.debug(
@@ -120,16 +124,34 @@ class ResolverContext:
         Returns:
             str: The resolved path string.
         """
-        # strip 'rdojson:'
-        arDict = json.loads(assetPath[8:])
-        publish = manager.Publish.fromString(arDict["publish"])
-        version = arDict["version"]
-        if not isinstance(version, int):
-            version = getattr(manager.version, arDict.get("version", "latestApprovedOrLatest"))
-
-        publishedFile = publish.version(version)
-        if publishedFile:
-            subdir = arDict.get("subdir")
-            if subdir:
-                return publishedFile.path.asDict().get(subdir)[0]
-            return publishedFile.path[0]
+        json_str = assetPath[len(ResolverContext.RDOJSON_PREFIX):]
+        try:
+            json_data = json.loads(json_str)
+        except ValueError:
+            LOG.error("Invalid JSON: %s", json_str)
+            return
+        
+        publish_str = json_data.get("publish", "")
+        try:
+            publish = manager.Publish.fromString(publish_str)
+        except ValueError:
+            LOG.error("Invalid publish: %s", publish_str)
+            return
+        
+        if publish:
+                
+            version = json_data.get("version", "latestApprovedOrLatest")
+            if not isinstance(version, int):
+                try:
+                    version = getattr(manager.version, version)
+                except AttributeError:
+                    LOG.error("Invalid version string: %s", version)
+                    return
+            
+            published_file = publish.version(version)
+            if published_file:
+                subdir = json_data.get("subdir")
+                if subdir:
+                    return published_file.path.asDict().get(subdir)[0]            
+                return published_file.path[0]
+        
