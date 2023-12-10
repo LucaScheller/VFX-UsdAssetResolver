@@ -121,7 +121,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
-          name: UsdAssetResolver-Windows-${{ matrix.houdini_version }}
+          name: UsdAssetResolver-Windows-Houdini-${{ matrix.houdini_version }}
           path: artifacts/*.zip
 
   deploy:
@@ -141,7 +141,7 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@v3
         with:
-          name: UsdAssetResolver-${{ matrix.os }}-${{ matrix.houdini_version }}
+          name: UsdAssetResolver-${{ matrix.os }}-Houdini-${{ matrix.houdini_version }}
           path: artifacts
       - name: Upload artifacts as release assets
         run: |
