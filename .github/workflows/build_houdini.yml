@@ -16,6 +16,9 @@ jobs:
   build_linux:
     runs-on: ubuntu-latest
     environment: houdini
+    strategy:
+      matrix:
+        houdini_version: [19.5, 20.0]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -45,7 +48,7 @@ jobs:
           SIDEFX_CLIENT_ID: '${{ secrets.SIDEFX_CLIENT_ID }}'
           SIDEFX_CLIENT_SECRET_KEY: '${{ secrets.SIDEFX_CLIENT_SECRET_KEY }}'
         run: |
-          sudo --preserve-env python3 .github/scripts/houdini.py --install
+          sudo --preserve-env python3 .github/scripts/houdini.py --install --install_version ${{ matrix.houdini_version }}
       - name: Build USD File Resolver
         run: |
           .github/scripts/houdini_build.sh fileResolver
@@ -71,6 +74,9 @@ jobs:
   build_windows:
     runs-on: windows-2019
     environment: houdini
+    strategy:
+      matrix:
+        houdini_version: [19.5, 20.0]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -96,7 +102,7 @@ jobs:
           SIDEFX_CLIENT_ID: '${{ secrets.SIDEFX_CLIENT_ID }}'
           SIDEFX_CLIENT_SECRET_KEY: '${{ secrets.SIDEFX_CLIENT_SECRET_KEY }}'
         run: |
-          python3 .github\scripts\houdini.py --install
+          python3 .github\scripts\houdini.py --install --install_version ${{ matrix.houdini_version }}
       - name: Build USD File Resolver
         run: |
           .\.github\scripts\houdini_build.bat fileResolver
