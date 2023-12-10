@@ -124,7 +124,7 @@ endif()
 set(AR_BOOST_INCLUDE_DIR ${AR_HOUDINI_INCLUDE_DIR}/${AR_BOOST_NAMESPACE})
 
 ### Init ###
-cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.19 FATAL_ERROR)
 project(${AR_PROJECT_NAME} VERSION 1.0.0 LANGUAGES CXX)
 
 ### CPP Settings ###
@@ -137,7 +137,14 @@ else()
     # Notes:
     # Houdini 20 - Switched to the new C++11 ABI for Linux https://www.sidefx.com/docs/houdini/news/20/platforms.html
     # For Houdini versions that use gcc 9.3, please set this to _GLIBCXX_USE_CXX11_ABI=0
-    add_compile_definitions(_GLIBCXX_USE_CXX11_ABI=1)
+    file(REAL_PATH ${AR_HOUDINI_ROOT} AR_HOUDINI_ROOT_RESOLVED)
+    string(FIND ${AR_HOUDINI_ROOT_RESOLVED} "19.5" AR_HOUDINI_ROOT_IS_H195)
+    if (${AR_HOUDINI_ROOT_IS_H195} STREQUAL "-1")
+        add_compile_definitions(_GLIBCXX_USE_CXX11_ABI=1)
+    else()
+        message("Houdini 19.5 detected, switching to _GLIBCXX_USE_CXX11_ABI=0")
+        add_compile_definitions(_GLIBCXX_USE_CXX11_ABI=0)
+    endif()
 endif()
 # Compiler Options
 # This is the same as set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DHBOOST_ALL_NO_LIB -D_GLIBCXX_USE_CXX11_ABI=0")
