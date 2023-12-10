@@ -37,13 +37,13 @@ set RESOLVER_NAME=fileResolver
 To run the build, run:
 
 ~~~admonish warning title="Houdini GCC ABI Change"
-Starting with Houdini 20, SideFX is offering gcc 11 builds. Our automatic GitHub builds make use of this starting Houdini 20 and upwards.
-To make our CMake script still work with H19.5, we automatically switch to gcc 9, if the Houdini version 19.5 is in the Houdini root folder path.
+Starting with Houdini 20, SideFX is offering gcc 11 builds that don't use the old Lib C ABI. Our automatic GitHub builds make use of this starting Houdini 20 and upwards.
+To make our CMake script still work with H19.5, we automatically switch to use the old ABI, if the Houdini version 19.5 is in the Houdini root folder path.
 
-If you want to still build against gcc 9 with Houdini 20 and upwards, you'll need to set `_GLIBCXX_USE_CXX11_ABI=0` as described below and make sure you have the right Houdini build installed.
+If you want to still build against gcc 9 (with the old Lib C ABI) with Houdini 20 and upwards, you'll need to set `_GLIBCXX_USE_CXX11_ABI=0` as described below and make sure you have the right Houdini build installed.
 
 If you want to enforce it manually, you'll need to update the line below in our main CMakeLists.txt file. 
-For gcc 9 builds, you'll need to set it to `_GLIBCXX_USE_CXX11_ABI=0`, for gcc 11 to `_GLIBCXX_USE_CXX11_ABI=1`.
+For gcc 9 builds Houdini uses the old Lib C ABI, so you'll need to set it to `_GLIBCXX_USE_CXX11_ABI=0`, for gcc 11 to `_GLIBCXX_USE_CXX11_ABI=1`.
 
 See the official [Release Notes](https://www.sidefx.com/docs/houdini/news/20/platforms.html) for more information.
 ```bash
