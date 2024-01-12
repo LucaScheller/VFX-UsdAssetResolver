@@ -20,7 +20,7 @@ LOG.setLevel(level=logging.INFO)
 class ResolverContext:
 
     RDOJSON_PREFIX = "rdojson:"
-    ENABLE_ENV_VAR = "RDO_USD_CACHED_RESOLVER_ENABLE_SHOTGRID"
+    DISABLE_ENV_VAR = "RDO_USD_CACHED_RESOLVER_DISABLE_SHOTGRID"
 
     @staticmethod
     def Initialize(context):  # pylint: disable=unused-argument
@@ -59,10 +59,10 @@ class ResolverContext:
             )
             return ""
 
-        if os.environ.get(ResolverContext.ENABLE_ENV_VAR) != "1":
+        if os.environ.get(ResolverContext.DISABLE_ENV_VAR) == "1":
             LOG.warning(
-                "ShotGrid query is not enabled. export %s=1",
-                ResolverContext.ENABLE_ENV_VAR,
+                "ShotGrid query is disabled via environment variable: %s=1",
+                ResolverContext.DISABLE_ENV_VAR,
             )
             return ""
 
