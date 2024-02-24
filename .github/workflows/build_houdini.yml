@@ -18,7 +18,13 @@ jobs:
     environment: houdini
     strategy:
       matrix:
-        houdini_version: ["19.5", "20.0"]
+        houdini_product_name: ["houdini"]
+        houdini_product_version: ["19.5", "20.0"]
+        include:
+          - houdini_product_name: "houdini-py39"
+            houdini_product_version: "20.0"
+          - houdini_product_name: "houdini-py37"
+            houdini_product_version: "19.5"
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -48,7 +54,7 @@ jobs:
           SIDEFX_CLIENT_ID: '${{ secrets.SIDEFX_CLIENT_ID }}'
           SIDEFX_CLIENT_SECRET_KEY: '${{ secrets.SIDEFX_CLIENT_SECRET_KEY }}'
         run: |
-          sudo --preserve-env python3 .github/scripts/houdini.py --install --install_version ${{ matrix.houdini_version }}
+          sudo --preserve-env python3 .github/scripts/houdini.py --install --install_houdini_product_name ${{ matrix.houdini_product_name }} --install_houdini_product_version ${{ matrix.houdini_product_version }}
       - name: Build USD File Resolver
         run: |
           .github/scripts/houdini_build.sh fileResolver
@@ -64,11 +70,11 @@ jobs:
       - name: Create single .zip archive
         run: |
           repo_root=$(cd .; pwd)
-          python3 .github/scripts/houdini.py --artifact --artifact_src=$repo_root/dist --artifact_dst=$repo_root/artifacts --artifact_prefix=UsdAssetResolver
+          python3 .github/scripts/houdini.py --artifact --artifact_src=$repo_root/dist --artifact_dst=$repo_root/artifacts --artifact_prefix=UsdAssetResolver --artifact_product_name ${{ matrix.houdini_product_name }}
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
-          name: UsdAssetResolver-Linux-Houdini-${{ matrix.houdini_version }}
+          name: UsdAssetResolver-linux-${{ matrix.houdini_product_name }}-${{ matrix.houdini_product_version }}
           path: artifacts/*.zip
 
   build_windows:
@@ -76,7 +82,13 @@ jobs:
     environment: houdini
     strategy:
       matrix:
-        houdini_version: ["19.5", "20.0"]
+        houdini_product_name: ["houdini"]
+        houdini_product_version: ["19.5", "20.0"]
+        include:
+          - houdini_product_name: "houdini-py39"
+            houdini_product_version: "20.0"
+          - houdini_product_name: "houdini-py37"
+            houdini_product_version: "19.5"
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -102,7 +114,7 @@ jobs:
           SIDEFX_CLIENT_ID: '${{ secrets.SIDEFX_CLIENT_ID }}'
           SIDEFX_CLIENT_SECRET_KEY: '${{ secrets.SIDEFX_CLIENT_SECRET_KEY }}'
         run: |
-          python3 .github\scripts\houdini.py --install --install_version ${{ matrix.houdini_version }}
+          python3 .github\scripts\houdini.py --install --install_houdini_product_name ${{ matrix.houdini_product_name }} --install_houdini_product_version ${{ matrix.houdini_product_version }}
       - name: Build USD File Resolver
         run: |
           .\.github\scripts\houdini_build.bat fileResolver
@@ -117,11 +129,11 @@ jobs:
           .\.github\scripts\houdini_build.bat httpResolver
       - name: Create single .zip archive
         run: |
-          & python $pwd\.github\scripts\houdini.py --artifact --artifact_src=$pwd\dist --artifact_dst=$pwd\artifacts --artifact_prefix=UsdAssetResolver
+          & python $pwd\.github\scripts\houdini.py --artifact --artifact_src=$pwd\dist --artifact_dst=$pwd\artifacts --artifact_prefix=UsdAssetResolver --artifact_product_name ${{ matrix.houdini_product_name }}
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
-          name: UsdAssetResolver-Windows-Houdini-${{ matrix.houdini_version }}
+          name: UsdAssetResolver-windows-${{ matrix.houdini_product_name }}-${{ matrix.houdini_product_version }}
           path: artifacts/*.zip
 
   deploy:
@@ -131,8 +143,14 @@ jobs:
     needs: [build_linux, build_windows]
     strategy:
       matrix:
-        os: ["Linux", "Windows"]
-        houdini_version: ["19.5", "20.0"]
+        os: ["linux", "windows"]
+        houdini_product_name: ["houdini"]
+        houdini_product_version: ["19.5", "20.0"]
+        include:
+          - houdini_product_name: "houdini-py39"
+            houdini_product_version: "20.0"
+          - houdini_product_name: "houdini-py37"
+            houdini_product_version: "19.5"
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -141,7 +159,7 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@v3
         with:
-          name: UsdAssetResolver-${{ matrix.os }}-Houdini-${{ matrix.houdini_version }}
+          name: UsdAssetResolver-${{ matrix.os }}-${{ matrix.houdini_product_name }}-${{ matrix.houdini_product_version }}
           path: artifacts
       - name: Upload artifacts as release assets
         run: |

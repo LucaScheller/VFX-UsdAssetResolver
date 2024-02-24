@@ -80,21 +80,23 @@ def download_sidefx_product_release(dir_path, release):
     return download_file_path
 
 
-def install_sidefx_houdini(houdini_version):
+def install_sidefx_product(product, version):
     """Install the latest production release of Houdini
     Args:
-        houdini_version (str): The target Houdini version (e.g. 20.0, 19.5, etc.)
+        product (str): The target product name (e.g. houdini, houdini-py39, etc.)
+        version (str|None): The target product version (e.g. 20.0, 19.5, etc.)
     """
     # Connect to SideFX API
     logging.info("Connecting to SideFX API")
     sidefx_service = create_sidefx_service(SIDEFX_CLIENT_ID, SIDEFX_CLIENT_SECRET_KEY)
     sidefx_platform = get_sidefx_platform()
-    sidefx_product = "houdini"
+    sidefx_product_name = product
+    sidefx_product_version = version
 
     # Get release data
     releases_list = sidefx_service.download.get_daily_builds_list(
-        product=sidefx_product,
-        version=houdini_version,
+        product=sidefx_product_name,
+        version=sidefx_product_version,
         platform=sidefx_platform,
         only_production=True,
     )
@@ -230,7 +232,7 @@ def install_sidefx_houdini(houdini_version):
     os.symlink(hfs_dir_path, hfs_symlink_dir_path)
 
 
-def create_sidefx_houdini_artifact(artifact_src, artifact_dst, artifact_prefix):
+def create_sidefx_houdini_artifact(artifact_src, artifact_dst, artifact_prefix, artifact_product_name):
     """Create a .zip artifact based on the source directory content.
     The output name will have will end in the houdini build name.
 
@@ -238,6 +240,8 @@ def create_sidefx_houdini_artifact(artifact_src, artifact_dst, artifact_prefix):
         artifact_src (str): The source directory
         artifact_dst (str): The target directory
         artifact_prefix (str): The file name prefix, the suffix will be the Houdini build name
+        artifact_product_name (str): The file name product name. 
+                                     This defines the Houdini product name, e.g. like houdini-py39
     Returns:
         str: The artifact file path
     """
@@ -256,7 +260,7 @@ def create_sidefx_houdini_artifact(artifact_src, artifact_dst, artifact_prefix):
         )
     hfs_build_name = re_digitdot.sub("", hfs_build_name)
     artifact_file_path = os.path.join(
-        artifact_dst, f"{artifact_prefix}_houdini-{hfs_build_name}-{sidefx_platform}"
+        artifact_dst, f"{artifact_prefix}_{artifact_product_name}-{hfs_build_name}-{sidefx_platform}"
     )
     artifact_dir_path = os.path.dirname(artifact_file_path)
     if not os.path.exists(artifact_dir_path):
@@ -269,20 +273,26 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--install", action="store_true", help="Install Houdini")
     parser.add_argument(
-        "--install_version",
-        help="Houdini version to install. If not provided, fallback to the latest version.",
+        "--install_houdini_product_name",
+        help="Houdini product name to install. If not provided, fallback to the default.",
+    )
+    parser.add_argument(
+        "--install_houdini_product_version",
+        help="Houdini product version to install. If not provided, fallback to the latest version.",
     )
     parser.add_argument("--artifact", action="store_true", help="Create artifact")
     parser.add_argument("--artifact_src", help="Artifact source directory")
     parser.add_argument("--artifact_dst", help="Artifact target directory")
     parser.add_argument("--artifact_prefix", help="Artifact name prefix")
+    parser.add_argument("--artifact_product_name", help="Artifact product name")
     args = parser.parse_args()
     # Execute
     # Install Houdini
     if args.install:
-        install_sidefx_houdini(args.install_version)
+        install_sidefx_product(args.install_houdini_product_name,
+                               args.install_houdini_product_version)
     # Create artifact tagged with Houdini build name (expects Houdini to be installed via the above install command)
     if args.artifact:
         create_sidefx_houdini_artifact(
-            args.artifact_src, args.artifact_dst, args.artifact_prefix
+            args.artifact_src, args.artifact_dst, args.artifact_prefix, args.artifact_product_name
         )
