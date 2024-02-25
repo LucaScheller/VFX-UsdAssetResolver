@@ -5,10 +5,12 @@ import platform
 import re
 import shutil
 import ssl
+import sys
 import tempfile
 import urllib
 import zipfile
 from urllib import request
+
 
 from PySide2 import QtCore, QtGui, QtWidgets
 
@@ -22,7 +24,7 @@ run_houdini()
 
 REPO_URL = "https://api.github.com/repos/lucascheller/VFX-UsdAssetResolver"
 RELEASE_ASSET_ELEMENTS_REGEX = re.compile(
-    "UsdAssetResolver_(houdini)-([0-9.]+)-(linux|win64).zip"
+    "UsdAssetResolver_(houdini)(-py[0-9]+)?-([0-9.]+)-(linux|win64).zip"
 )
 RELEASE_INSTALL_DIRECTORY_PREFIX = "UsdAssetResolver_v"
 ENV_USD_ASSET_RESOLVER = "USD_ASSET_RESOLVER"
@@ -213,8 +215,8 @@ class UpdateManagerUI(QtWidgets.QDialog):
         resolve_name = self.resolver_combobox.currentText()
         self.update_manager.install_release(
             self.update_manager.platform,
-            self.update_manager.software_name,
-            self.update_manager.software_version,
+            self.update_manager.product_name,
+            self.update_manager.product_version,
             download_url,
             install_dir_path,
             resolve_name,
@@ -257,15 +259,16 @@ class UpdateManagerUI(QtWidgets.QDialog):
 class UpdateManager(object):
     def __init__(self):
         self.platform = ""
-        self.software_name = ""
-        self.software_version = ""
+        self.product_name = ""
+        self.product_version = ""
+        self.product_python_version = ""
         self.releases = []
 
     def initialize(self):
         self.platform = self.get_platform()
-        self.software_name, self.software_version = self.get_software()
+        self.product_name, self.product_version, self.product_python_version = self.get_software()
         self.releases = self.get_release_data(
-            self.get_platform(), self.software_name, self.software_version
+            self.get_platform(), self.product_name, self.product_version, self.product_python_version
         )
 
     def get_platform(self):
@@ -288,18 +291,22 @@ class UpdateManager(object):
         Returns:
             str: The active software name
             str: The active software version
+            str: The active software python version
         """
-        software_name = "<undefined>"
-        software_version = "<undefined>"
+        product_name = "<undefined>"
+        product_version = "<undefined>"
+        product_python_version = "<undefined>"
         if os.environ.get("HFS"):
             try:
                 import hou
 
-                software_name = "houdini"
-                software_version = hou.applicationVersionString()
+                product_name = "houdini"
+                product_version = hou.applicationVersionString()
+                product_python_version = "-py{}{}".format(sys.version_info.major,
+                                                          str(sys.version_info.minor)[:1])
             except ImportError:
                 pass
-        return software_name, software_version
+        return product_name, product_version, product_python_version
 
     def get_software_houdini_version_match(self, active_version, target_version):
         """Check if the active version is compatible with the target version.
@@ -323,13 +330,14 @@ class UpdateManager(object):
         #     return False
         return True
 
-    def get_release_data(self, platform_name, software_name, software_version):
+    def get_release_data(self, platform_name, product_name, product_version, product_python_version):
         """Get release data via GitHub API
         Args:
             platform_name(str): The OS ('linux' or 'win64')
-            software_name(str): The software name ('houdini')
-            software_version(str): The software version string.
-                                Only exact matches and major version matches are considered.
+            product_name(str): The software name ('houdini' or 'houdini-py3')
+            product_version(str): The software version string.
+                                  Only exact matches and major version matches are considered.
+            product_python_version (str): The python version string in the form of '-py39', '-py37', etc.
         Returns:
             list: A list of release dicts ({"name": "v0.1", "resolvers": ["fileResolver"], "url": "https://download.zip"}) that match the input query
         """
@@ -346,11 +354,12 @@ class UpdateManager(object):
             data = []
 
         # Extract relevant data
-        filtered_data = []
+        filtered_data = {}
         for release in data:
             # Skip pre releases
             if release["prerelease"]:
                 continue
+            resolvers = None
             for asset in release["assets"]:
                 if asset["content_type"] != "application/zip":
                     continue
@@ -359,17 +368,18 @@ class UpdateManager(object):
                 if not asset_name_elements:
                     continue
                 (
-                    asset_software_name,
-                    asset_software_version,
+                    asset_product_name,
+                    asset_product_python_version,
+                    asset_product_version,
                     asset_platform,
                 ) = asset_name_elements.groups()
                 if asset_platform != platform_name:
                     continue
-                elif asset_software_name != software_name:
+                elif asset_product_name != product_name:
                     continue
-                if software_name == "houdini":
+                if product_name == "houdini":
                     if not self.get_software_houdini_version_match(
-                        software_version, asset_software_version
+                        product_version, asset_product_version
                     ):
                         continue
                 else:
@@ -379,27 +389,37 @@ class UpdateManager(object):
                 # Since we don't track via metadata what resolvers are stored per release,
                 # we have to inspect each release.
                 # ToDo Refactor this to use release message or other mechanism.
-                with tempfile.TemporaryDirectory() as tmp_dir_path:
-                    asset_file_path = os.path.join(tmp_dir_path, asset_name)
-                    asset_file_content = request.urlopen(
-                        asset_url, context=ssl._create_unverified_context()
-                    )
-                    with open(asset_file_path, "wb") as asset_file:
-                        asset_file.write(asset_file_content.read())
-                    # Inspect archive
-                    with zipfile.ZipFile(asset_file_path, "r") as asset_zip_file:
-                        resolvers = []
-                        for asset_zip_path in zipfile.Path(asset_zip_file).iterdir():
-                            resolvers.append(asset_zip_path.name)
+                # We only parse this once per release as each release has the same resolvers.
+                if resolvers is None:
+                    with tempfile.TemporaryDirectory() as tmp_dir_path:
+                        asset_file_path = os.path.join(tmp_dir_path, asset_name)
+                        asset_file_content = request.urlopen(
+                            asset_url, context=ssl._create_unverified_context()
+                        )
+                        with open(asset_file_path, "wb") as asset_file:
+                            asset_file.write(asset_file_content.read())
+                        # Inspect archive
+                        with zipfile.ZipFile(asset_file_path, "r") as asset_zip_file:
+                            resolvers = []
+                            for asset_zip_path in zipfile.Path(asset_zip_file).iterdir():
+                                resolvers.append(asset_zip_path.name)
                 if not resolvers:
+                    resolvers = None
                     continue
                 # Only collect the first possible match
-                filtered_data.append(
-                    {"name": release["name"], "resolvers": resolvers, "url": asset_url}
-                )
-                break
-
-        return filtered_data
+                filtered_data.setdefault(release["name"], {})
+                filtered_data[release["name"]].setdefault(asset_product_version, {})
+                filtered_data[release["name"]][asset_product_version][asset_product_python_version or "__default__"] = {"name": release["name"], "resolvers": resolvers, "url": asset_url,
+                                                                                                                        "product_python_version": asset_product_python_version, "product_version": asset_product_version}
+                
+        # Prefer exact Python version matches over inferred matches
+        latest_filtered_data = []
+        for release_name, release_product_versions in filtered_data.items():
+            latest_release_product_version = release_product_versions[sorted(release_product_versions.keys(), reverse=True)[0]]
+            latest_filtered_data.append(
+                latest_release_product_version.get(product_python_version, latest_release_product_version["__default__"])
+            )
+        return latest_filtered_data
 
     def download_file(self, url, file_path):
         """Download file at the given url to the given file path
@@ -454,8 +474,8 @@ class UpdateManager(object):
     def install_release(
         self,
         platform_name,
-        software_name,
-        software_version,
+        product_name,
+        product_version,
         download_url,
         directory_path,
         resolver_name,
@@ -464,14 +484,14 @@ class UpdateManager(object):
         # ToDo Instead of using 'HFS' for the Houdini install directory, use the software version input arg.
         Args:
             platform_name(str): The active platform
-            software_name(str): The software name
-            software_version(str): The software version
+            product_name(str): The software name
+            product_version(str): The software version
             download_url(str): The download url
             directory_path(str): The directory to download the resolvers to
             resolver_name(str): The resolver name to initialize
         """
 
-        if software_name == "houdini":
+        if product_name == "houdini":
             download_file_path = self.download_file(
                 download_url, "{}.{}".format(directory_path, "zip")
             )
@@ -571,11 +591,11 @@ class UpdateManager(object):
             # # ToDo Find a platform agnostic way to do this
             # # if platform_name == "win64":
             # #     hou_user_pref_dir_path = os.path.join(os.path.expanduser("~"), "Documents",
-            # #                                           "houdini{}".format(".".join(software_version.split("."[:2]))))
+            # #                                           "houdini{}".format(".".join(product_version.split("."[:2]))))
             # #     hou_packages_dir_path = os.path.join(hou_user_pref_dir_path, "packages")
             # # elif platform_name == "linux":
             # #     hou_user_pref_dir_path = os.path.join(os.path.expanduser("~"),
-            # #                                           "houdini{}".format(".".join(software_version.split("."[:2]))))
+            # #                                           "houdini{}".format(".".join(product_version.split("."[:2]))))
             # #     hou_packages_dir_path = os.path.join(hou_user_pref_dir_path, "packages")
             # # else:
             # #     raise Exception("Platform {} is currently not supported!".format(platform))
@@ -586,7 +606,7 @@ class UpdateManager(object):
         else:
             raise Exception(
                 "The application '{}' is currently not supported by the installer.".format(
-                    software_name
+                    product_name
                 )
             )
 
