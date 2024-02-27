@@ -70,7 +70,7 @@ class Resolver:
         LOG.debug("::: Resolver.CreateRelativePathIdentifier | {} | {} | {}".format(anchoredAssetPath, assetPath, anchorAssetPath))
         """The code below is only needed to verify that UnitTests work."""
         UnitTestHelper.create_relative_path_identifier_call_counter += 1
-        remappedRelativePathIdentifier = f"relativePath|{assetPath}?{anchorAssetPath}"
+        remappedRelativePathIdentifier = f"relativePath|{assetPath}?{anchorAssetPath}".replace("\\", "/")
         resolver.AddCachedRelativePathIdentifierPair(anchoredAssetPath, remappedRelativePathIdentifier)
         return remappedRelativePathIdentifier
 
