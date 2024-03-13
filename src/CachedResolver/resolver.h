@@ -17,7 +17,11 @@ PXR_NAMESPACE_OPEN_SCOPE
 
 struct CachedResolverContextRecord
 {
-    ArTimestamp timestamp;
+    #if AR_SPEC_VERSION == 2
+        ArTimestamp timestamp;
+    #elif AR_SPEC_VERSION == 1
+        double timestamp;
+    #endif
     CachedResolverContext ctx;
 };
 
@@ -52,6 +56,7 @@ public:
     AR_CACHEDRESOLVER_API
     void ClearCachedRelativePathIdentifierPairs() { cachedRelativePathIdentifierPairs.clear(); }
 protected:
+    #if AR_SPEC_VERSION == 2
     AR_CACHEDRESOLVER_API
     std::string _CreateIdentifier(
         const std::string& assetPath,
@@ -88,7 +93,8 @@ protected:
     std::shared_ptr<ArWritableAsset> _OpenAssetForWrite(
         const ArResolvedPath& resolvedPath,
         WriteMode writeMode) const final;
-    
+    #endif
+
 private:
     const CachedResolverContext* _GetCurrentContextPtr() const;
     CachedResolverContext _fallbackContext;

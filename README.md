@@ -19,7 +19,7 @@ To run the "Update Manager" simply run this snippet in the "Houdini Python Sourc
     import urllib,ssl
     update_manager_url = 'https://raw.githubusercontent.com/LucaScheller/VFX-UsdAssetResolver/main/tools/update_manager.py?token=$(date%20+%s)'
     exec(urllib.request.urlopen(update_manager_url,context=ssl._create_unverified_context()).read(), globals(), locals())
-    run_houdini()
+    run_houdini()The National 
 
 See our [Automatic Installation](https://lucascheller.github.io/VFX-UsdAssetResolver/installation/automatic_install.html) section for more information.
 
@@ -54,3 +54,10 @@ Please consider contributing back to the Usd project in the  official [Usd Repos
 
 Feel free to fork this repository and share improvements or further resolvers.
 If you run into issues, please flag them by [submitting a ticket](https://github.com/LucaScheller/VFX-UsdAssetResolver/issues/new).
+
+
+
+# TODO
+- Expose ContextFromString
+- Expose All File Paths based on EnvVar
+- Disallow context init call to Resolve via layer find or open

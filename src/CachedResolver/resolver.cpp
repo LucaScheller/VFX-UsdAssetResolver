@@ -13,7 +13,9 @@
 #include "pxr/usd/sdf/layer.h"
 #include "pxr/usd/ar/defineResolver.h"
 #include "pxr/usd/ar/filesystemAsset.h"
-#include "pxr/usd/ar/filesystemWritableAsset.h"
+#if AR_SPEC_VERSION == 2
+    #include "pxr/usd/ar/filesystemWritableAsset.h"
+#endif
 #include "pxr/usd/ar/notice.h"
 
 #include <fstream>
@@ -123,6 +125,7 @@ void CachedResolver::RemoveCachedRelativePathIdentifierByValue(const std::string
     }
 }
 
+#if AR_SPEC_VERSION == 2
 std::string
 CachedResolver::_CreateIdentifier(
     const std::string& assetPath,

@@ -8,7 +8,7 @@ then
     export RESOLVER_NAME=cachedResolver
     export RESOLVER_NAME_UPPERCASE=$(echo ${RESOLVER_NAME} | tr '[:lower:]' '[:upper:]')
     # Source Houdini (This defines what Houdini version to compile against)
-    pushd /opt/hfs20.0 > /dev/null
+    pushd /opt/hfs19.0 > /dev/null
     source houdini_setup
     popd > /dev/null
     export HOUDINI_LMINFO_VERBOSE=1
