@@ -273,20 +273,8 @@ def create_autodesk_maya_artifact(artifact_src, artifact_dst, artifact_prefix, a
     """
     re_digitdot = re.compile("[^0-9.]")
     autodesk_platform = get_autodesk_platform()
-    if autodesk_platform == "linux":
-        hfs_build_name = os.path.basename(pathlib.Path("/opt/hfs").resolve())
-    elif autodesk_platform == "win64":
-        hfs_build_name = os.path.basename(
-            pathlib.Path("C:\Program Files\Side Effects Software\Houdini").resolve()
-        )
-    else:
-        raise Exception(
-            "Platform {platform} is currently not"
-            "supported!".format(platform=platform)
-        )
-    hfs_build_name = re_digitdot.sub("", hfs_build_name)
     artifact_file_path = os.path.join(
-        artifact_dst, f"{artifact_prefix}_{artifact_product_name}-{hfs_build_name}-{sidefx_platform}"
+        artifact_dst, f"{artifact_prefix}_{artifact_product_name}-debug-{autodesk_platform}"
     )
     artifact_dir_path = os.path.dirname(artifact_file_path)
     if not os.path.exists(artifact_dir_path):

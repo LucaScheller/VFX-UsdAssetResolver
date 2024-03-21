@@ -39,7 +39,8 @@ jobs:
           sudo pip3 install requests
       - name: Install maya
         run: |
-          sudo --preserve-env python3 .github/scripts/maya.py --install --install_maya_product_name ${{ matrix.maya_product_name }} --install_maya_product_version ${{ matrix.maya_product_version }}
+          repo_root=$(cd .; pwd)
+          sudo --preserve-env python3 .github/scripts/maya.py --install --install_maya_product_name ${{ matrix.maya_product_name }} --install_maya_product_version ${{ matrix.maya_product_version }} --install_directory $repo_root/dependency
       - name: Build USD File Resolver
         run: |
           .github/scripts/maya_build.sh fileResolver
@@ -84,7 +85,7 @@ jobs:
           pip3 install requests
       - name: Install Maya
         run: |
-          python3 .github\scripts\maya.py --install --install_maya_product_name ${{ matrix.maya_product_name }} --install_maya_product_version ${{ matrix.maya_product_version }}
+          python3 .github\scripts\maya.py --install --install_maya_product_name ${{ matrix.maya_product_name }} --install_maya_product_version ${{ matrix.maya_product_version }} --install_directory $pwd\dependency
       - name: Build USD File Resolver
         run: |
           .\.github\scripts\maya_build.bat fileResolver
