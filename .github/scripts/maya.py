@@ -136,34 +136,36 @@ def install_autodesk_product(product, version, install_dir_path):
 
     # Directories
     download_dir_path = os.path.join(install_dir_path, "download")
-    dependency_dir_path = os.path.join(install_dir_path, "install")
+    install_dir_path = os.path.join(install_dir_path, "install")
     tmp_dir_path = os.path.join(install_dir_path, "tmp")
     if os.path.exists(download_dir_path):
         shutil.rmtree(download_dir_path)
-    if os.path.exists(dependency_dir_path):
-        shutil.rmtree(dependency_dir_path)
+    if os.path.exists(install_dir_path):
+        shutil.rmtree(install_dir_path)
     if os.path.exists(tmp_dir_path):
         shutil.rmtree(tmp_dir_path)
     os.makedirs(download_dir_path)
-    os.makedirs(dependency_dir_path)
+    os.makedirs(install_dir_path)
     os.makedirs(tmp_dir_path)
 
     sevenZip_dir_name = "7zip"
     sevenZip_download_dir_path = os.path.join(download_dir_path, sevenZip_dir_name)
-    sevenZip_install_dir_path = os.path.join(dependency_dir_path, sevenZip_dir_name)
+    sevenZip_install_dir_path = os.path.join(install_dir_path, sevenZip_dir_name)
 
     python_dir_name = "python"
     python_download_dir_path = os.path.join(download_dir_path, python_dir_name)
     python_extract_dir_path = os.path.join(tmp_dir_path, python_dir_name)
-    python_install_dir_path = os.path.join(dependency_dir_path, python_dir_name)
+    python_install_dir_path = os.path.join(install_dir_path, python_dir_name)
 
     maya_usd_sdk_dir_name = "maya_usd_sdk"
     maya_usd_sdk_download_dir_path = os.path.join(download_dir_path, maya_usd_sdk_dir_name)
     maya_usd_sdk_extract_dir_path = os.path.join(tmp_dir_path, maya_usd_sdk_dir_name)
-    maya_usd_sdk_install_dir_path = os.path.join(dependency_dir_path, maya_usd_sdk_dir_name)
+    maya_usd_sdk_install_dir_path = os.path.join(install_dir_path, maya_usd_sdk_dir_name)
 
     maya_usd_sdk_devkit_dir_name = "maya_usd_sdk_devkit"
-    maya_usd_sdk_devkit_install_dir_path = os.path.join(dependency_dir_path, maya_usd_sdk_devkit_dir_name)
+    maya_usd_sdk_devkit_install_dir_path = os.path.join(install_dir_path, maya_usd_sdk_devkit_dir_name)
+
+    config_file_path = os.path.join(install_dir_path, "config.json")
 
     autodesk_platform = get_autodesk_platform()
     if autodesk_platform == "Linux":
@@ -257,8 +259,17 @@ def install_autodesk_product(product, version, install_dir_path):
         with zipfile.ZipFile(maya_usd_sdk_devkit_zip_file_path, 'r') as zip_file:
             zip_file.extractall(maya_usd_sdk_devkit_install_dir_path)
 
+    # Store configuration
+    with open(config_file_path, "w") as config_file:
+        config = {
+            "python": python_version,
+            "maya": autodesk_maya_version,
+            "maya_usd_sdk": maya_usd_sdk_version,
+        }
+        json.dump(config, config_file)
 
-def create_autodesk_maya_artifact(artifact_src, artifact_dst, artifact_prefix, artifact_product_name, artifact_product_version):
+
+def create_autodesk_maya_artifact(artifact_src, artifact_dst, artifact_prefix, artifact_product_name, dependency_dir_path):
     """Create a .zip artifact based on the source directory content.
     The output name will have will end in the houdini build name.
 
@@ -268,15 +279,20 @@ def create_autodesk_maya_artifact(artifact_src, artifact_dst, artifact_prefix, a
         artifact_prefix (str): The file name prefix, the suffix will be the Houdini build name
         artifact_product_name (str): The file name product name. 
                                      This defines the Maya product name, e.g. like 'maya'
-        artifact_product_version (str): The file name product version. 
-                                        This defines the Maya product version, e.g. like '2024.2'
+        dependency_dir_path (str): The dependency install directory path.
     Returns:
         str: The artifact file path
     """
-    re_digitdot = re.compile("[^0-9.]")
+    install_dir_path = os.path.join(dependency_dir_path, "install")
+    config_file_path = os.path.join(install_dir_path, "config.json")
+    with open(config_file_path, "w") as config_file:
+        config = json.load(config_file)
+
+    maya_version = config["maya"]
+    maya_usd_sdk_version = config["maya_usd_sdk"]
     autodesk_platform = get_autodesk_platform()
     artifact_file_path = os.path.join(
-        artifact_dst, f"{artifact_prefix}_{artifact_product_name}-{artifact_product_version}-{autodesk_platform}"
+        artifact_dst, f"{artifact_prefix}_{artifact_product_name}-{maya_version}-USD-SDK-{maya_usd_sdk_version}-{autodesk_platform}"
     )
     artifact_dir_path = os.path.dirname(artifact_file_path)
     if not os.path.exists(artifact_dir_path):
@@ -305,7 +321,6 @@ if __name__ == "__main__":
     parser.add_argument("--artifact_dst", help="Artifact target directory")
     parser.add_argument("--artifact_prefix", help="Artifact name prefix")
     parser.add_argument("--artifact_product_name", help="Artifact product name")
-    parser.add_argument("--artifact_product_version", help="Artifact product version")
     args = parser.parse_args()
     # Execute
     # Install Maya USD SDK
@@ -316,5 +331,5 @@ if __name__ == "__main__":
     # Create artifact tagged with Maya build name (expects Maya USD SDK to be installed via the above install command)
     if args.artifact:
         create_autodesk_maya_artifact(
-            args.artifact_src, args.artifact_dst, args.artifact_prefix, args.artifact_product_name, args.artifact_product_version
+            args.artifact_src, args.artifact_dst, args.artifact_prefix, args.artifact_product_name, args.artifact_product_version, args.install_directory
         )
