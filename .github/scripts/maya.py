@@ -285,7 +285,7 @@ def create_autodesk_maya_artifact(artifact_src, artifact_dst, artifact_prefix, a
     """
     install_dir_path = os.path.join(dependency_dir_path, "install")
     config_file_path = os.path.join(install_dir_path, "config.json")
-    with open(config_file_path, "w") as config_file:
+    with open(config_file_path, "r") as config_file:
         config = json.load(config_file)
 
     maya_version = config["maya"]
