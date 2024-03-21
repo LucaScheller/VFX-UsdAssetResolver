@@ -81,7 +81,7 @@ def download_sidefx_product_release(dir_path, release):
 
 
 def install_sidefx_product(product, version):
-    """Install the latest production release of Houdini
+    """Install a production release of Houdini
     Args:
         product (str): The target product name (e.g. houdini, houdini-py39, etc.)
         version (str|None): The target product version (e.g. 20.0, 19.5, etc.)

@@ -1,0 +1,135 @@
+name: Build USD Asset Resolvers against Maya
+
+on:
+  release:
+    types: [released]
+  schedule:
+      - cron: '0 12 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: "build"
+  cancel-in-progress: false
+
+jobs:
+
+  build_linux:
+    runs-on: ubuntu-latest
+    environment: maya
+    strategy:
+      matrix:
+        maya_product_name: ["maya"]
+        maya_product_version: ["2024.2"]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - name: Switch to latest release tag
+        run: |
+          git fetch --all --tags --force
+          latest_release_tag=$(git tag -l --sort=-version:refname  v* | head -1)
+          git checkout tags/$latest_release_tag
+      - name: Install system packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y zip
+          sudo apt-get install -y build-essential cmake
+          sudo apt-get install -y python3 python3-pip
+          sudo pip3 install requests
+      - name: Install maya
+        run: |
+          sudo --preserve-env python3 .github/scripts/maya.py --install --install_maya_product_name ${{ matrix.maya_product_name }} --install_maya_product_version ${{ matrix.maya_product_version }}
+      - name: Build USD File Resolver
+        run: |
+          .github/scripts/maya_build.sh fileResolver
+      - name: Build USD Python Resolver
+        run: |
+          .github/scripts/maya_build.sh pythonResolver
+      - name: Build USD Cached Resolver
+        run: |
+          .github/scripts/maya_build.sh cachedResolver
+      - name: Build USD Http Resolver
+        run: |
+          .github/scripts/maya_build.sh httpResolver
+      - name: Create single .zip archive
+        run: |
+          repo_root=$(cd .; pwd)
+          python3 .github/scripts/maya.py --artifact --artifact_src=$repo_root/dist --artifact_dst=$repo_root/artifacts --artifact_prefix=UsdAssetResolver --artifact_product_name ${{ matrix.maya_product_name }}
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: UsdAssetResolver-linux-${{ matrix.maya_product_name }}-${{ matrix.maya_product_version }}
+          path: artifacts/*.zip
+
+  build_windows:
+    runs-on: windows-2019
+    environment: maya
+    strategy:
+      matrix:
+        maya_product_name: ["maya"]
+        maya_product_version: ["2024.2"]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - name: Switch to latest release tag
+        run: |
+          git fetch --all --tags --force
+          $latest_release_tag=git tag -l --sort=-version:refname v* | select -first 1
+          git checkout tags/$latest_release_tag
+      - name: Install system packages
+        run: |
+          pip3 install requests
+      - name: Install Maya
+        run: |
+          python3 .github\scripts\maya.py --install --install_maya_product_name ${{ matrix.maya_product_name }} --install_maya_product_version ${{ matrix.maya_product_version }}
+      - name: Build USD File Resolver
+        run: |
+          .\.github\scripts\maya_build.bat fileResolver
+      - name: Build USD Python Resolver
+        run: |
+          .\.github\scripts\maya_build.bat pythonResolver
+      - name: Build USD Cached Resolver
+        run: |
+          .\.github\scripts\maya_build.bat cachedResolver
+      - name: Build USD Http Resolver
+        run: |
+          .\.github\scripts\maya_build.bat httpResolver
+      - name: Create single .zip archive
+        run: |
+          & python $pwd\.github\scripts\maya.py --artifact --artifact_src=$pwd\dist --artifact_dst=$pwd\artifacts --artifact_prefix=UsdAssetResolver --artifact_product_name ${{ matrix.maya_product_name }}
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: UsdAssetResolver-windows-${{ matrix.maya_product_name }}-${{ matrix.maya_product_version }}
+          path: artifacts/*.zip
+
+  deploy:
+    runs-on: ubuntu-latest
+    permissions: 
+      contents: write
+    needs: [build_linux, build_windows]
+    strategy:
+      matrix:
+        os: ["linux", "windows"]
+        maya_product_name: ["maya"]
+        maya_product_version: ["2024.2"]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: UsdAssetResolver-${{ matrix.os }}-${{ matrix.maya_product_name }}-${{ matrix.maya_product_version }}
+          path: artifacts
+      - name: Upload artifacts as release assets
+        run: |
+          git fetch --all --tags --force
+          latest_release_tag=$(git tag -l --sort=-version:refname  v* | head -1)
+          gh release upload $latest_release_tag artifacts/*.zip --clobber
+        env:
+          GITHUB_TOKEN: ${{ github.TOKEN }}

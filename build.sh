@@ -3,7 +3,9 @@ clear
 # Source environment (Uncomment lines starting with "export" if you current env does not have these defined.)
 # export HFS=/opt/<InsertHoudiniVersion>
 # Define Resolver > Has to be one of 'fileResolver'/'pythonResolver'/'cachedResolver'/'httpResolver'
-# export RESOLVER_NAME=cachedResolver
+# export AR_RESOLVER_NAME=cachedResolver
+# Define App
+# export AR_DCC_NAME=HOUDINI
 # Clear existing build data and invoke cmake
 rm -R build
 rm -R dist
