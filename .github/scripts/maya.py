@@ -208,7 +208,7 @@ def install_autodesk_product(product, version, install_dir_path):
         os.rename(maya_usd_sdk_extract_usd_dir_path, maya_usd_sdk_install_dir_path)
         os.chmod(maya_usd_sdk_install_dir_path, 0o777)
         # Maya USD SDK devkit
-        maya_usd_sdk_devkit_zip_file_path = glob.glob("{root_dir}{sep}**{sep}devkit.zip".format(root_dir=maya_usd_sdk_extract_dir_path, sep=os.path.sep), recursive=True)
+        maya_usd_sdk_devkit_zip_file_path = glob.glob("{root_dir}{sep}**{sep}devkit.zip".format(root_dir=maya_usd_sdk_install_dir_path, sep=os.path.sep), recursive=True)
         maya_usd_sdk_devkit_zip_file_path = os.path.join(maya_usd_sdk_install_dir_path, maya_usd_sdk_devkit_zip_file_path[0])
         with zipfile.ZipFile(maya_usd_sdk_devkit_zip_file_path, 'r') as zip_file:
             zip_file.extractall(maya_usd_sdk_devkit_install_dir_path)
