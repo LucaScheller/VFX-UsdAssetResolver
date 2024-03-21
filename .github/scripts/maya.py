@@ -201,7 +201,7 @@ def install_autodesk_product(product, version, install_dir_path):
         maya_usd_sdk_extract_rpm_file_path = os.path.join(maya_usd_sdk_extract_dir_path, maya_usd_sdk_extract_rpm_file_name)
         # command = ["rpm", "-e", maya_usd_sdk_extract_rpm_file_name.replace(".rpm", "")]
         # process = subprocess.check_call(command, cwd=maya_usd_sdk_extract_dir_path)
-        command = ["rpm", "-i", "--prefix", maya_usd_sdk_extract_dir_path, maya_usd_sdk_extract_rpm_file_path]
+        command = ["rpm", "-i", "--nodeps","--prefix", maya_usd_sdk_extract_dir_path, maya_usd_sdk_extract_rpm_file_path]
         process = subprocess.check_call(command, cwd=maya_usd_sdk_extract_dir_path)
         maya_usd_sdk_extract_usd_dir_path = glob.glob("{root_dir}{sep}**{sep}mayausd{sep}USD".format(root_dir=maya_usd_sdk_extract_dir_path, sep=os.path.sep), recursive=True)[0]
         maya_usd_sdk_extract_usd_dir_path = os.path.join(maya_usd_sdk_extract_dir_path, maya_usd_sdk_extract_usd_dir_path)
