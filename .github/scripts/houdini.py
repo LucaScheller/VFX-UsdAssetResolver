@@ -241,7 +241,7 @@ def create_sidefx_houdini_artifact(artifact_src, artifact_dst, artifact_prefix, 
         artifact_dst (str): The target directory
         artifact_prefix (str): The file name prefix, the suffix will be the Houdini build name
         artifact_product_name (str): The file name product name. 
-                                     This defines the Houdini product name, e.g. like houdini-py39
+                                     This defines the Houdini product name, e.g. like 'houdini-py39'
     Returns:
         str: The artifact file path
     """

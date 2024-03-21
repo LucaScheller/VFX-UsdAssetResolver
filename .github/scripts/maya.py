@@ -258,7 +258,7 @@ def install_autodesk_product(product, version, install_dir_path):
             zip_file.extractall(maya_usd_sdk_devkit_install_dir_path)
 
 
-def create_autodesk_maya_artifact(artifact_src, artifact_dst, artifact_prefix, artifact_product_name):
+def create_autodesk_maya_artifact(artifact_src, artifact_dst, artifact_prefix, artifact_product_name, artifact_product_version):
     """Create a .zip artifact based on the source directory content.
     The output name will have will end in the houdini build name.
 
@@ -267,14 +267,16 @@ def create_autodesk_maya_artifact(artifact_src, artifact_dst, artifact_prefix, a
         artifact_dst (str): The target directory
         artifact_prefix (str): The file name prefix, the suffix will be the Houdini build name
         artifact_product_name (str): The file name product name. 
-                                     This defines the Houdini product name, e.g. like houdini-py39
+                                     This defines the Maya product name, e.g. like 'maya'
+        artifact_product_version (str): The file name product version. 
+                                        This defines the Maya product version, e.g. like '2024.2'
     Returns:
         str: The artifact file path
     """
     re_digitdot = re.compile("[^0-9.]")
     autodesk_platform = get_autodesk_platform()
     artifact_file_path = os.path.join(
-        artifact_dst, f"{artifact_prefix}_{artifact_product_name}-debug-{autodesk_platform}"
+        artifact_dst, f"{artifact_prefix}_{artifact_product_name}-{artifact_product_version}-{autodesk_platform}"
     )
     artifact_dir_path = os.path.dirname(artifact_file_path)
     if not os.path.exists(artifact_dir_path):
@@ -303,6 +305,7 @@ if __name__ == "__main__":
     parser.add_argument("--artifact_dst", help="Artifact target directory")
     parser.add_argument("--artifact_prefix", help="Artifact name prefix")
     parser.add_argument("--artifact_product_name", help="Artifact product name")
+    parser.add_argument("--artifact_product_version", help="Artifact product version")
     args = parser.parse_args()
     # Execute
     # Install Maya USD SDK
@@ -313,5 +316,5 @@ if __name__ == "__main__":
     # Create artifact tagged with Maya build name (expects Maya USD SDK to be installed via the above install command)
     if args.artifact:
         create_autodesk_maya_artifact(
-            args.artifact_src, args.artifact_dst, args.artifact_prefix, args.artifact_product_name
+            args.artifact_src, args.artifact_dst, args.artifact_prefix, args.artifact_product_name, args.artifact_product_version
         )
