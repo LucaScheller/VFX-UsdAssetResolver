@@ -331,5 +331,5 @@ if __name__ == "__main__":
     # Create artifact tagged with Maya build name (expects Maya USD SDK to be installed via the above install command)
     if args.artifact:
         create_autodesk_maya_artifact(
-            args.artifact_src, args.artifact_dst, args.artifact_prefix, args.artifact_product_name, args.artifact_product_version, args.install_directory
+            args.artifact_src, args.artifact_dst, args.artifact_prefix, args.artifact_product_name, args.install_directory
         )
