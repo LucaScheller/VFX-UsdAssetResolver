@@ -478,7 +478,6 @@ class UpdateManager(object):
                             asset_file.write(asset_file_content.read())
                         # Inspect archive
                         with zipfile.ZipFile(asset_file_path, "r") as asset_zip_file:
-                            print(asset_file_path)
                             resolvers = []
                             for asset_zip_path in zipfile.Path(
                                 asset_zip_file
