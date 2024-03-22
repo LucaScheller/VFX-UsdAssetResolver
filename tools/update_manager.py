@@ -11,7 +11,6 @@ import urllib
 import zipfile
 from urllib import request
 
-
 from PySide2 import QtCore, QtGui, QtWidgets
 
 # To run, execute this in the Houdini Python Source Editor
@@ -19,24 +18,28 @@ from PySide2 import QtCore, QtGui, QtWidgets
 import urllib,ssl
 update_manager_url = 'https://raw.githubusercontent.com/LucaScheller/VFX-UsdAssetResolver/main/tools/update_manager.py?token=$(date +%s)'
 exec(urllib.request.urlopen(update_manager_url,context=ssl._create_unverified_context()).read(), globals(), locals())
-run_houdini()
+run_dcc()
 """
 
 REPO_URL = "https://api.github.com/repos/lucascheller/VFX-UsdAssetResolver"
-RELEASE_ASSET_ELEMENTS_REGEX = re.compile(
-    "UsdAssetResolver_(houdini)(-py[0-9]+)?-([0-9.]+)-(linux|win64).zip"
-)
 RELEASE_INSTALL_DIRECTORY_PREFIX = "UsdAssetResolver_v"
 ENV_USD_ASSET_RESOLVER = "USD_ASSET_RESOLVER"
-HOU_PACKAGE_FILE_NAME = "UsdAssetResolver.json"
+HOUDINI_PACKAGE_FILE_NAME = "UsdAssetResolver.json"
+HOUDINI_RELEASE_ASSET_ELEMENTS_REGEX = re.compile(
+    "UsdAssetResolver_(houdini)(-py[0-9]+)?-([0-9.]+)-(linux|win64).zip"
+)
+MAYA_RELEASE_ASSET_ELEMENTS_REGEX = re.compile(
+    "UsdAssetResolver_(maya)-([0-9.]+)-USD-SDK-([0-9.]+)-(Linux|Windows).zip"
+)
 QT_WINDOW_TITLE = "USD Asset Resolver - Update Manager"
 QT_ROLE_RELEASE = QtCore.Qt.UserRole + 1001
 
 
 class ZipFileWithPermissions(zipfile.ZipFile):
-    """ Custom ZipFile class handling file permissions.
+    """Custom ZipFile class handling file permissions.
     See https://stackoverflow.com/questions/39296101/python-zipfile-removes-execute-permissions-from-binaries
     """
+
     def _extract_member(self, member, target_path, pwd):
         if not isinstance(member, zipfile.ZipInfo):
             member = self.getinfo(member)
@@ -48,8 +51,8 @@ class ZipFileWithPermissions(zipfile.ZipFile):
 
 
 class UpdateManagerUI(QtWidgets.QDialog):
-    def __init__(self, parent):
-        super(UpdateManagerUI, self).__init__(parent)
+    def __init__(self):
+        super(UpdateManagerUI, self).__init__()
 
         # Window settings
         self.setWindowTitle(QT_WINDOW_TITLE)
@@ -253,7 +256,7 @@ class UpdateManagerUI(QtWidgets.QDialog):
                 QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.Cancel,
             )
             if answer == QtWidgets.QMessageBox.Yes:
-                run_houdini()
+                run_dcc()
 
 
 class UpdateManager(object):
@@ -266,9 +269,14 @@ class UpdateManager(object):
 
     def initialize(self):
         self.platform = self.get_platform()
-        self.product_name, self.product_version, self.product_python_version = self.get_software()
+        self.product_name, self.product_version, self.product_python_version = (
+            self.get_software()
+        )
         self.releases = self.get_release_data(
-            self.get_platform(), self.product_name, self.product_version, self.product_python_version
+            self.platform,
+            self.product_name,
+            self.product_version,
+            self.product_python_version,
         )
 
     def get_platform(self):
@@ -278,13 +286,40 @@ class UpdateManager(object):
         """
         current_platform = platform.system()
         if current_platform == "Windows" or current_platform.startswith("CYGWIN"):
-            return "win64"
+            return "windows"
         elif current_platform == "Darwin":
             return "macos"
         elif current_platform == "Linux":
             return "linux"
         else:
             return ""
+
+    def get_dcc_name(self):
+        """Get the active dcc
+        Returns:
+            str: The active dcc
+        """
+        # Houdini
+        try:
+            import hou
+
+            if not hou.isUIAvailable():
+                raise ImportError
+            return "houdini"
+        except ImportError:
+            pass
+        # Maya
+        try:
+            import pymel
+
+            return "maya"
+        except ImportError:
+            pass
+
+        raise Exception(
+            "This function can only be run in an active DCC session."
+            "Currently support are Houdini and Maya."
+        )
 
     def get_software(self):
         """Get the active software
@@ -296,16 +331,22 @@ class UpdateManager(object):
         product_name = "<undefined>"
         product_version = "<undefined>"
         product_python_version = "<undefined>"
-        if os.environ.get("HFS"):
-            try:
-                import hou
+        dcc_name = self.get_dcc_name()
+        if dcc_name == "houdini":
+            import hou
 
-                product_name = "houdini"
-                product_version = hou.applicationVersionString()
-                product_python_version = "-py{}{}".format(sys.version_info.major,
-                                                          str(sys.version_info.minor)[:1])
-            except ImportError:
-                pass
+            product_name = "houdini"
+            product_version = hou.applicationVersionString()
+            product_python_version = "-py{}{}".format(
+                sys.version_info.major, str(sys.version_info.minor)[:1]
+            )
+        elif dcc_name == "maya":
+            import pymel
+
+            product_name = "maya"
+            product_version = pymel.versions.shortName
+            product_python_version = ""
+
         return product_name, product_version, product_python_version
 
     def get_software_houdini_version_match(self, active_version, target_version):
@@ -330,11 +371,28 @@ class UpdateManager(object):
         #     return False
         return True
 
-    def get_release_data(self, platform_name, product_name, product_version, product_python_version):
+    def get_software_maya_version_match(self, active_version, target_version):
+        """Check if the active version is compatible with the target version.
+        Currently this just assumes that major/minor release versions use are USD API/ABI compatible.
+        Args:
+            active_version(str): The active software version string
+            target_version(str): The target software version string
+        Returns:
+            bool: The match state
+        """
+        target_version = target_version.split(".")[0]
+        # Major version
+        if active_version != target_version:
+            return False
+        return True
+
+    def get_release_data(
+        self, platform_name, product_name, product_version, product_python_version
+    ):
         """Get release data via GitHub API
         Args:
-            platform_name(str): The OS ('linux' or 'win64')
-            product_name(str): The software name ('houdini' or 'houdini-py3')
+            platform_name(str): The OS.
+            product_name(str): The software name ('houdini' or 'maya')
             product_version(str): The software version string.
                                   Only exact matches and major version matches are considered.
             product_python_version (str): The python version string in the form of '-py39', '-py37', etc.
@@ -353,6 +411,11 @@ class UpdateManager(object):
         except Exception:
             data = []
 
+        dcc_vendor_platform_mapping = {
+            "houdini": {"windows": "win64", "macos": "macos", "linux": "linux"},
+            "maya": {"windows": "Windows", "macos": "MacOS", "linux": "Linux"},
+        }
+
         # Extract relevant data
         filtered_data = {}
         for release in data:
@@ -364,26 +427,41 @@ class UpdateManager(object):
                 if asset["content_type"] != "application/zip":
                     continue
                 asset_name = asset["name"]
-                asset_name_elements = RELEASE_ASSET_ELEMENTS_REGEX.match(asset_name)
-                if not asset_name_elements:
-                    continue
-                (
-                    asset_product_name,
-                    asset_product_python_version,
-                    asset_product_version,
-                    asset_platform,
-                ) = asset_name_elements.groups()
-                if asset_platform != platform_name:
-                    continue
-                elif asset_product_name != product_name:
+                asset_product_python_version = ""
+                asset_product_sdk_version = ""
+                if product_name == "houdini":
+                    asset_name_elements = HOUDINI_RELEASE_ASSET_ELEMENTS_REGEX.match(asset_name)
+                    if not asset_name_elements:
+                        continue
+                    (
+                        asset_product_name,
+                        asset_product_python_version,
+                        asset_product_version,
+                        asset_platform,
+                    ) = asset_name_elements.groups()
+                elif product_name == "maya":
+                    asset_name_elements = MAYA_RELEASE_ASSET_ELEMENTS_REGEX.match(asset_name)
+                    if not asset_name_elements:
+                        continue
+                    (
+                        asset_product_name,
+                        asset_product_version,
+                        asset_product_sdk_version,
+                        asset_platform,
+                    ) = asset_name_elements.groups()
+                if asset_platform != dcc_vendor_platform_mapping[product_name][platform_name]:
                     continue
                 if product_name == "houdini":
                     if not self.get_software_houdini_version_match(
                         product_version, asset_product_version
                     ):
                         continue
+                elif product_name == "maya":
+                    if not self.get_software_maya_version_match(
+                        product_version, asset_product_version
+                    ):
+                        continue
                 else:
-                    # We currently only support Houdini
                     continue
                 asset_url = asset["browser_download_url"]
                 # Since we don't track via metadata what resolvers are stored per release,
@@ -400,8 +478,11 @@ class UpdateManager(object):
                             asset_file.write(asset_file_content.read())
                         # Inspect archive
                         with zipfile.ZipFile(asset_file_path, "r") as asset_zip_file:
+                            print(asset_file_path)
                             resolvers = []
-                            for asset_zip_path in zipfile.Path(asset_zip_file).iterdir():
+                            for asset_zip_path in zipfile.Path(
+                                asset_zip_file
+                            ).iterdir():
                                 resolvers.append(asset_zip_path.name)
                 if not resolvers:
                     resolvers = None
@@ -409,15 +490,28 @@ class UpdateManager(object):
                 # Only collect the first possible match
                 filtered_data.setdefault(release["name"], {})
                 filtered_data[release["name"]].setdefault(asset_product_version, {})
-                filtered_data[release["name"]][asset_product_version][asset_product_python_version or "__default__"] = {"name": release["name"], "resolvers": resolvers, "url": asset_url,
-                                                                                                                        "product_python_version": asset_product_python_version, "product_version": asset_product_version}
-                
+                filtered_data[release["name"]][asset_product_version][
+                    asset_product_python_version or "__default__"
+                ] = {
+                    "name": release["name"],
+                    "resolvers": resolvers,
+                    "url": asset_url,
+                    "product_python_version": asset_product_python_version,
+                    "product_sdk_version": asset_product_sdk_version,
+                    "product_version": asset_product_version,
+                }
+
         # Prefer exact Python version matches over inferred matches
         latest_filtered_data = []
         for release_name, release_product_versions in filtered_data.items():
-            latest_release_product_version = release_product_versions[sorted(release_product_versions.keys(), reverse=True)[0]]
+            latest_release_product_version = release_product_versions[
+                sorted(release_product_versions.keys(), reverse=True)[0]
+            ]
             latest_filtered_data.append(
-                latest_release_product_version.get(product_python_version, latest_release_product_version["__default__"])
+                latest_release_product_version.get(
+                    product_python_version,
+                    latest_release_product_version["__default__"],
+                )
             )
         return latest_filtered_data
 
@@ -459,7 +553,9 @@ class UpdateManager(object):
             )
             if not os.path.exists(dir_path):
                 os.makedirs(dir_path)
-            with ZipFileWithPermissions(file_path, "r", zipfile.ZIP_DEFLATED) as archive:
+            with ZipFileWithPermissions(
+                file_path, "r", zipfile.ZIP_DEFLATED
+            ) as archive:
                 archive.extractall(dir_path)
             os.remove(file_path)
         else:
@@ -490,50 +586,55 @@ class UpdateManager(object):
             directory_path(str): The directory to download the resolvers to
             resolver_name(str): The resolver name to initialize
         """
-
-        if product_name == "houdini":
-            download_file_path = self.download_file(
-                download_url, "{}.{}".format(directory_path, "zip")
-            )
-            directory_path = self.uncompress_file(download_file_path)
-            resolver_dir_path = os.path.join(directory_path, resolver_name)
-            # Cleanup other resolvers
-            for dir_name in os.listdir(directory_path):
-                if dir_name != resolver_name:
-                    shutil.rmtree(os.path.join(directory_path, dir_name))
-            # Build launcher
-            env = {
-                "PXR_PLUGINPATH_NAME": os.path.join(resolver_dir_path, "resources"),
-                "PYTHONPATH": os.path.join(resolver_dir_path, "lib", "python"),
-            }
-            if resolver_name in ["PythonResolver", "CachedResolver"]:
-                env.update({
-                    "AR_ENV_SEARCH_PATHS": "{}{}{}".format("/change/this/path/to/shots", os.pathsep, "/change/this/path/to/assets"),
+        download_file_path = self.download_file(
+            download_url, "{}.{}".format(directory_path, "zip")
+        )
+        directory_path = self.uncompress_file(download_file_path)
+        resolver_dir_path = os.path.join(directory_path, resolver_name)
+        # Cleanup other resolvers
+        for dir_name in os.listdir(directory_path):
+            if dir_name != resolver_name:
+                shutil.rmtree(os.path.join(directory_path, dir_name))
+        # Build launcher
+        env = {
+            "PXR_PLUGINPATH_NAME": os.path.join(resolver_dir_path, "resources"),
+            "PYTHONPATH": os.path.join(resolver_dir_path, "lib", "python"),
+        }
+        if resolver_name in ["PythonResolver", "CachedResolver"]:
+            env.update(
+                {
+                    "AR_ENV_SEARCH_PATHS": "{}{}{}".format(
+                        "/change/this/path/to/shots",
+                        os.pathsep,
+                        "/change/this/path/to/assets",
+                    ),
                     "AR_ENV_SEARCH_REGEX_EXPRESSION": "(v\d\d\d)",
-                    "AR_ENV_SEARCH_REGEX_FORMAT": "v000"
-                })
+                    "AR_ENV_SEARCH_REGEX_FORMAT": "v000",
+                }
+            )
 
-            if platform_name == "linux":
-                env["LD_LIBRARY_PATH"] = os.path.join(resolver_dir_path, "lib")
-                launch_file_path = os.path.join(directory_path, "launch.sh")
-                with open(launch_file_path, "w") as launch_file:
-                    lines = []
-                    lines.append("#!/bin/bash")
-                    # Environment
-                    lines.append("# Setup environment")
-                    # UpdateManager
+        if platform_name == "linux":
+            env["LD_LIBRARY_PATH"] = os.path.join(resolver_dir_path, "lib")
+            launch_file_path = os.path.join(directory_path, "launch.sh")
+            with open(launch_file_path, "w") as launch_file:
+                lines = []
+                lines.append("#!/bin/bash")
+                # Environment
+                lines.append("# Setup environment")
+                # UpdateManager
+                lines.append(
+                    "export {}={}".format(ENV_USD_ASSET_RESOLVER, directory_path)
+                )
+                # Debug
+                lines.append("export {}={}".format("TF_DEBUG", "AR_RESOLVER_INIT"))
+                # Env
+                for env_name, env_value in sorted(env.items(), key=lambda k: k[0]):
                     lines.append(
-                        "export {}={}".format(ENV_USD_ASSET_RESOLVER, directory_path)
-                    )
-                    # Debug
-                    lines.append("export {}={}".format("TF_DEBUG", "AR_RESOLVER_INIT"))
-                    # Env
-                    for env_name, env_value in sorted(env.items(), key=lambda k: k[0]):
-                        lines.append(
-                            "export {env_name}={env_value}{sep}${env_name}".format(
-                                env_name=env_name, env_value=env_value, sep=os.pathsep
-                            )
+                        "export {env_name}={env_value}{sep}${env_name}".format(
+                            env_name=env_name, env_value=env_value, sep=os.pathsep
                         )
+                    )
+                if product_name == "houdini":
                     # App
                     lines.append("# Launch Houdini")
                     lines.append(
@@ -544,71 +645,77 @@ class UpdateManager(object):
                     # Command
                     lines.append('houdini -foreground "$@"')
                     launch_file.writelines(line + "\n" for line in lines)
-                # Make executable
-                os.chmod(launch_file_path, 0o0777)
-            elif platform_name == "win64":
-                env["PATH"] = os.path.join(resolver_dir_path, "lib")
-                launch_file_path = os.path.join(directory_path, "launch.bat")
-                with open(launch_file_path, "w") as launch_file:
-                    lines = []
-                    # Environment
-                    lines.append("REM Setup environment")
-                    # UpdateManager
+                elif product_name == "maya":
+                    # App
+                    lines.append("# Launch Maya")
+                    # Command
+                    lines.append('{} "$@"'.format(os.path.join(os.environ["MAYA_LOCATION"], "bin", "maya")))
+                    launch_file.writelines(line + "\n" for line in lines)
+            # Make executable
+            os.chmod(launch_file_path, 0o0777)
+        elif platform_name == "windows":
+            env["PATH"] = os.path.join(resolver_dir_path, "lib")
+            launch_file_path = os.path.join(directory_path, "launch.bat")
+            with open(launch_file_path, "w") as launch_file:
+                lines = []
+                # Environment
+                lines.append("REM Setup environment")
+                # UpdateManager
+                lines.append(
+                    "set {}={}".format(ENV_USD_ASSET_RESOLVER, directory_path)
+                )
+                # Debug
+                lines.append("set {}={}".format("TF_DEBUG", "AR_RESOLVER_INIT"))
+                # Env
+                for env_name, env_value in sorted(env.items(), key=lambda k: k[0]):
                     lines.append(
-                        "set {}={}".format(ENV_USD_ASSET_RESOLVER, directory_path)
-                    )
-                    # Debug
-                    lines.append("set {}={}".format("TF_DEBUG", "AR_RESOLVER_INIT"))
-                    # Env
-                    for env_name, env_value in sorted(env.items(), key=lambda k: k[0]):
-                        lines.append(
-                            "set {env_name}={env_value}{sep}%{env_name}%".format(
-                                env_name=env_name, env_value=env_value, sep=os.pathsep
-                            )
+                        "set {env_name}={env_value}{sep}%{env_name}%".format(
+                            env_name=env_name, env_value=env_value, sep=os.pathsep
                         )
-                    # App & command
+                    )
+                # App & command
+                if product_name == "houdini":
                     lines.append("REM Launch Houdini")
                     lines.append(os.path.join(os.environ["HFS"], "bin", "houdini"))
                     launch_file.writelines(line + "\n" for line in lines)
-                # Make executable
-                os.chmod(launch_file_path, 0o0777)
-            else:
-                raise Exception(
-                    "Platform {} is currently not supported!".format(platform_name)
-                )
-            # # This currently doesn't work because packages are processed after startup (after USD is initialized)
-            # package_content = { "env" : [{ ENV_USD_ASSET_RESOLVER : directory_path},
-            #                              { "PXR_PLUGINPATH_NAME" : os.path.join(resolver_dir_path, "resources")},
-            #                              { "PYTHONPATH" : os.path.join(resolver_dir_path, "lib", "python")},
-            #                              { "LD_LIBRARY_PATH" : os.path.join(resolver_dir_path, "lib")},
-            #                              { "TF_DEBUG" : "AR_RESOLVER_INIT"}]}
-            # if platform_name == "win64":
-            #     package_content["env"].append({"PATH": os.path.join(resolver_dir_path, "lib")})
-            # hou_user_pref_dir_path = os.environ["HOUDINI_USER_PREF_DIR"]
-            # hou_packages_dir_path = os.path.join(hou_user_pref_dir_path, "packages")
-            # hou_package_file_path = os.path.join(hou_packages_dir_path, HOU_PACKAGE_FILE_NAME)
-            # # This doesn't work for language specific user folders
-            # # ToDo Find a platform agnostic way to do this
-            # # if platform_name == "win64":
-            # #     hou_user_pref_dir_path = os.path.join(os.path.expanduser("~"), "Documents",
-            # #                                           "houdini{}".format(".".join(product_version.split("."[:2]))))
-            # #     hou_packages_dir_path = os.path.join(hou_user_pref_dir_path, "packages")
-            # # elif platform_name == "linux":
-            # #     hou_user_pref_dir_path = os.path.join(os.path.expanduser("~"),
-            # #                                           "houdini{}".format(".".join(product_version.split("."[:2]))))
-            # #     hou_packages_dir_path = os.path.join(hou_user_pref_dir_path, "packages")
-            # # else:
-            # #     raise Exception("Platform {} is currently not supported!".format(platform))
-            # if not os.path.exists(hou_packages_dir_path):
-            #     os.makedirs(hou_packages_dir_path)
-            # with open(hou_package_file_path, "w") as hou_package_file:
-            #     json.dump(package_content, hou_package_file, indent=4)
+                elif product_name == "maya":
+                    lines.append("REM Launch Maya")
+                    lines.append(os.path.join(os.environ["MAYA_LOCATION"], "bin", "maya"))
+                    launch_file.writelines(line + "\n" for line in lines)
+            # Make executable
+            os.chmod(launch_file_path, 0o0777)
         else:
             raise Exception(
-                "The application '{}' is currently not supported by the installer.".format(
-                    product_name
-                )
+                "Platform {} is currently not supported!".format(platform_name)
             )
+        # Houdini Packages
+        # # This currently doesn't work because packages are processed after startup (after USD is initialized)
+        # package_content = { "env" : [{ ENV_USD_ASSET_RESOLVER : directory_path},
+        #                              { "PXR_PLUGINPATH_NAME" : os.path.join(resolver_dir_path, "resources")},
+        #                              { "PYTHONPATH" : os.path.join(resolver_dir_path, "lib", "python")},
+        #                              { "LD_LIBRARY_PATH" : os.path.join(resolver_dir_path, "lib")},
+        #                              { "TF_DEBUG" : "AR_RESOLVER_INIT"}]}
+        # if platform_name == "win64":
+        #     package_content["env"].append({"PATH": os.path.join(resolver_dir_path, "lib")})
+        # hou_user_pref_dir_path = os.environ["HOUDINI_USER_PREF_DIR"]
+        # hou_packages_dir_path = os.path.join(hou_user_pref_dir_path, "packages")
+        # hou_package_file_path = os.path.join(hou_packages_dir_path, HOUDINI_PACKAGE_FILE_NAME)
+        # # This doesn't work for language specific user folders
+        # # ToDo Find a platform agnostic way to do this
+        # # if platform_name == "win64":
+        # #     hou_user_pref_dir_path = os.path.join(os.path.expanduser("~"), "Documents",
+        # #                                           "houdini{}".format(".".join(product_version.split("."[:2]))))
+        # #     hou_packages_dir_path = os.path.join(hou_user_pref_dir_path, "packages")
+        # # elif platform_name == "linux":
+        # #     hou_user_pref_dir_path = os.path.join(os.path.expanduser("~"),
+        # #                                           "houdini{}".format(".".join(product_version.split("."[:2]))))
+        # #     hou_packages_dir_path = os.path.join(hou_user_pref_dir_path, "packages")
+        # # else:
+        # #     raise Exception("Platform {} is currently not supported!".format(platform))
+        # if not os.path.exists(hou_packages_dir_path):
+        #     os.makedirs(hou_packages_dir_path)
+        # with open(hou_package_file_path, "w") as hou_package_file:
+        #     json.dump(package_content, hou_package_file, indent=4)
 
         # This protects against running the updated multiple times in the same session.
         os.environ[ENV_USD_ASSET_RESOLVER] = directory_path
@@ -622,15 +729,8 @@ class UpdateManager(object):
         del os.environ[ENV_USD_ASSET_RESOLVER]
 
 
-def run_houdini():
-    """Run the Update Manager in Houdini"""
-    try:
-        import hou
+def run_dcc():
+    """Run the Update Manager in a DCC"""
 
-        if not hou.isUIAvailable():
-            raise ImportError
-    except ImportError:
-        raise Exception("This function can only be run in an active Houdini session.")
-
-    dialog = UpdateManagerUI(hou.ui.mainQtWindow())
+    dialog = UpdateManagerUI()
     dialog.exec_()

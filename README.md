@@ -9,17 +9,17 @@ This repository holds reference implementations for [Usd](https://openusd.org/re
 To build the various resolvers, follow the instructions in the [install guide](https://lucascheller.github.io/VFX-UsdAssetResolver/installation/requirements.html). 
 
 > [!NOTE]
-> This guide currently covers compiling against Houdini on Linux and Windows. Alternatively you can also download a pre-compiled builds on our [release page](https://github.com/LucaScheller/VFX-UsdAssetResolver/releases). To load the resolver, you must specify a few environment variables, see our [environment variables](https://lucascheller.github.io/VFX-UsdAssetResolver/resolvers/overview.html#environment-variables) section for more details.
+> This guide currently covers compiling against Houdini/Maya on Linux and Windows. Alternatively you can also download a pre-compiled builds on our [release page](https://github.com/LucaScheller/VFX-UsdAssetResolver/releases). To load the resolver, you must specify a few environment variables, see our [environment variables](https://lucascheller.github.io/VFX-UsdAssetResolver/resolvers/overview.html#environment-variables) section for more details.
 
 > [!IMPORTANT]
-> We also offer a quick install method for Houdini that does the download of the compiled resolvers and environment variable setup for you. This is ideal if you want to get your hands dirty right away and you don't have any C++ knowledge or extensive USD developer knowledge. If you are a small studio, you can jump right in and play around with our resolvers and prototype them further to make it fit your production needs.
+> We also offer a quick install method for Houdini/Maya that does the download of the compiled resolvers and environment variable setup for you. This is ideal if you want to get your hands dirty right away and you don't have any C++ knowledge or extensive USD developer knowledge. If you are a small studio, you can jump right in and play around with our resolvers and prototype them further to make it fit your production needs.
 
-To run the "Update Manager" simply run this snippet in the "Houdini Python Source Editor" panel:
+To run the "Update Manager" simply run this snippet in the Houdini "Python Source Editor" or Maya "Script Editor" panel:
 
     import urllib,ssl
     update_manager_url = 'https://raw.githubusercontent.com/LucaScheller/VFX-UsdAssetResolver/main/tools/update_manager.py?token=$(date%20+%s)'
     exec(urllib.request.urlopen(update_manager_url,context=ssl._create_unverified_context()).read(), globals(), locals())
-    run_houdini()
+    run_dcc()
 
 See our [Automatic Installation](https://lucascheller.github.io/VFX-UsdAssetResolver/installation/automatic_install.html) section for more information.
 

@@ -1,11 +1,11 @@
 # Building
-Currently we support building against Houdini on Linux and Windows. If you don't want to self-compile, you can also download pre-compiled builds on our [release page](https://github.com/LucaScheller/VFX-UsdAssetResolver/releases). To load the resolver, you must specify a few environment variables, see our [Resolvers > Environment Variables](../resolvers/overview.md#environment-variables) section for more details. 
+Currently we support building against Houdini and Maya on Linux and Windows. If you don't want to self-compile, you can also download pre-compiled builds on our [release page](https://github.com/LucaScheller/VFX-UsdAssetResolver/releases). To load the resolver, you must specify a few environment variables, see our [Resolvers > Environment Variables](../resolvers/overview.md#environment-variables) section for more details. 
 
 ## Setting up our build environment
 After installing the [requirements](./requirements.md), we first need to set a couple of environment variables that our cmake file depends on.
 
 ### Using our convenience setup script
-On Linux we provide a bash script that you can source that sets up our development environment. This sets a few environment variables needed to build the resolver as well as for Houdini to load it.
+On Linux we provide a bash script that you can source that sets up our development environment. This sets a few environment variables needed to build the resolver as well as for Houdini/Maya to load it.
 This can be done by running the following from the source directory:
 ~~~admonish info title=""
 ```bash
@@ -13,7 +13,7 @@ source setup.sh
 ```
 ~~~
 
-In the [setup.sh](https://github.com/LucaScheller/VFX-UsdAssetResolver/blob/main/setup.sh) file you can define what resolver to compile by setting the `RESOLVER_NAME` variable to one of the resolvers listed in [resolvers](../resolvers/overview.md) in camelCase syntax (for example `fileResolver` or `pythonResolver`). Here you'll also have to define what Houdini version to compile against.
+In the [setup.sh](https://github.com/LucaScheller/VFX-UsdAssetResolver/blob/main/setup.sh) file you can define what resolver to compile by setting the `RESOLVER_NAME` variable to one of the resolvers listed in [resolvers](../resolvers/overview.md) in camelCase syntax (for example `fileResolver` or `pythonResolver`). Here you'll also have to define what Houdini/Maya version to compile against.
 
 It will then automatically set the `PATH`, `PYTHONPATH`, `PXR_PLUGINPATH_NAME` and `LD_LIBRARY_PATH` environment variables to the correct paths so that after your run the compile, the resolver will be loaded correctly (e.g. if you launch Houdini via `houdinifx`, it will load everything correctly). The build process also logs this information again.
 
@@ -25,11 +25,28 @@ If you don't want to use our convenience script, you can also setup the environm
 ~~~admonish info title=""
 ```bash
 # Linux
+## Houdini
+export AR_DCC_NAME=houdini
 export HFS=<PathToHoudiniRoot> # For example "/opt/hfs<HoudiniVersion>"
-export RESOLVER_NAME=fileResolver
+## Maya
+export AR_DCC_NAME=maya
+export MAYA_USD_SDK_ROOT="/path/to/maya/usd/sdk/root/.../mayausd/USD"
+export MAYA_USD_SDK_DEVKIT_ROOT="/path/to/maya/usd/sdk/root/.../content/of/devkit.zip"
+export PYTHON_ROOT="/path/to/python/root"
+## Resolver
+export AR_RESOLVER_NAME=fileResolver
+
 # Windows
+## Houdini
+set AR_DCC_NAME=houdini
 set HFS=<PathToHoudiniRoot> # For example "C:\Program Files\Side Effects Software\<HoudiniVersion>"
-set RESOLVER_NAME=fileResolver
+## Maya
+set AR_DCC_NAME=maya
+set MAYA_USD_SDK_ROOT="/path/to/maya/usd/sdk/root/.../mayausd/USD"
+set MAYA_USD_SDK_DEVKIT_ROOT="/path/to/maya/usd/sdk/root/.../content/of/devkit.zip"
+set PYTHON_ROOT="/path/to/python/root"
+## Resolver
+set AR_RESOLVER_NAME=fileResolver
 ```
 ~~~
 
@@ -65,9 +82,9 @@ build.bat
 The `build.sh/.bat` files also contain (commented out) the environment definition part above, so alternatively just comment out the lines and you are good to go.
 
 ## Testing the build
-Unit tests are automatically run post-build on Linux using the Houdini version you are using. You can find each resolvers tests in its respective src/<ResolverName>/testenv folder.
+Unit tests are automatically run post-build on Linux using the Houdini/Maya version you are using. You can find each resolvers tests in its respective src/<ResolverName>/testenv folder.
 
-Alternatively you can run Houdini and check if the resolver executes correctly. If you didn't use our convenience script as noted above, you'll have to specify a few environment variables, so that our plugin is correctly detected by USD.
+Alternatively you can run Houdini/Maya and check if the resolver executes correctly. If you didn't use our convenience script as noted above, you'll have to specify a few environment variables, so that our plugin is correctly detected by USD.
 
 Head over to our [Resolvers > Environment Variables](../resolvers/overview.md#environment-variables) section on how to do this.
 
