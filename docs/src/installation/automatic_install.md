@@ -4,7 +4,7 @@
 We offer a quick install method that does the download of the compiled resolvers and environment variable setup for you. This is ideal if you want to get your hands dirty right away and you don't have any C++ knowledge or extensive USD developer knowledge. If you are a small studio, you can jump right in and play around with our resolvers and prototype them further to make it fit your production needs.
 ```
 
-Currently we only support doing this in Houdini.
+Currently we only support doing this in Houdini and Maya.
 
 ## Update Manager
 Installing is done via the "USD Asset Resolver - Update Manager". Depending on the application, running the installer is a bit different, for more information check the specific app instructions below.
