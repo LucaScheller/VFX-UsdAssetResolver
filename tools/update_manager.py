@@ -7,17 +7,16 @@ import shutil
 import ssl
 import sys
 import tempfile
-import urllib
 import zipfile
 from urllib import request
 
 from PySide2 import QtCore, QtGui, QtWidgets
 
-# To run, execute this in the Houdini Python Source Editor
+# To run, execute this in the Houdini/Maya
 """
-import urllib,ssl
+import ssl; from urllib import request
 update_manager_url = 'https://raw.githubusercontent.com/LucaScheller/VFX-UsdAssetResolver/main/tools/update_manager.py?token=$(date +%s)'
-exec(urllib.request.urlopen(update_manager_url,context=ssl._create_unverified_context()).read(), globals(), locals())
+exec(request.urlopen(update_manager_url,context=ssl._create_unverified_context()).read(), globals(), locals())
 run_dcc()
 """
 
@@ -341,10 +340,10 @@ class UpdateManager(object):
                 sys.version_info.major, str(sys.version_info.minor)[:1]
             )
         elif dcc_name == "maya":
-            import pymel
+            from pymel import versions as pymel_versions
 
             product_name = "maya"
-            product_version = pymel.versions.shortName
+            product_version = pymel_versions.shortName
             product_python_version = ""
 
         return product_name, product_version, product_python_version
@@ -526,7 +525,7 @@ class UpdateManager(object):
         if not os.path.exists(dir_path):
             os.makedirs(dir_path)
         try:
-            file_content = urllib.request.urlopen(
+            file_content = request.urlopen(
                 url, context=ssl._create_unverified_context()
             )
             with open(file_path, "wb") as output:
