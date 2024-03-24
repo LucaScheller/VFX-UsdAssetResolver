@@ -6,6 +6,7 @@
 
 #include "pxr/base/arch/systemInfo.h"
 #include "pxr/base/tf/fileUtils.h"
+#include "pxr/base/tf/getenv.h"
 #include "pxr/base/tf/pathUtils.h"
 #include "pxr/base/tf/pyInvoke.h"
 #include "pxr/base/tf/staticTokens.h"
@@ -86,6 +87,7 @@ _ResolveAnchored(
 }
 
 CachedResolver::CachedResolver() {
+    this->SetExposeAbsolutePathIdentifierState(TfGetenvBool(DEFINE_STRING(AR_CACHEDRESOLVER_ENV_EXPOSE_ABSOLUTE_PATH_IDENTIFIERS), false));
     this->SetExposeRelativePathIdentifierState(TfGetenvBool(DEFINE_STRING(AR_CACHEDRESOLVER_ENV_EXPOSE_RELATIVE_PATH_IDENTIFIERS), false));
 };
 
@@ -327,6 +329,9 @@ CachedResolver::_IsContextDependentPath(
     const std::string& assetPath) const
 {
     TF_DEBUG(CACHEDRESOLVER_RESOLVER_CONTEXT).Msg("Resolver::_IsContextDependentPath()\n");
+    if (this->exposeAbsolutePathIdentifierState){
+        return true;
+    }
     return _IsNotFilePath(assetPath);
 }
 

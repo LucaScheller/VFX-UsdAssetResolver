@@ -6,7 +6,6 @@
 #include "resolverContext.h"
 
 #include "pxr/pxr.h"
-#include "pxr/base/tf/getenv.h"
 #include "pxr/usd/ar/resolver.h"
 
 #include <memory>
@@ -32,6 +31,14 @@ public:
     virtual ~CachedResolver();
 
     AR_CACHEDRESOLVER_API
+    bool GetExposeAbsolutePathIdentifierState(){ return this->exposeAbsolutePathIdentifierState; }
+    AR_CACHEDRESOLVER_API
+    void SetExposeAbsolutePathIdentifierState(const bool state){
+        if (state != this->exposeAbsolutePathIdentifierState){
+            this->exposeAbsolutePathIdentifierState = state;
+        }
+    }
+    AR_CACHEDRESOLVER_API
     bool GetExposeRelativePathIdentifierState(){ return this->exposeRelativePathIdentifierState; }
     AR_CACHEDRESOLVER_API
     void SetExposeRelativePathIdentifierState(const bool state){
@@ -40,7 +47,6 @@ public:
             this->ClearCachedRelativePathIdentifierPairs();
         }
     }
-
     AR_CACHEDRESOLVER_API
     void AddCachedRelativePathIdentifierPair(const std::string& sourceStr, const std::string& targetStr);
     AR_CACHEDRESOLVER_API
@@ -93,6 +99,7 @@ private:
     const CachedResolverContext* _GetCurrentContextPtr() const;
     CachedResolverContext _fallbackContext;
     const std::string emptyString{""};
+    bool exposeAbsolutePathIdentifierState{false};
     bool exposeRelativePathIdentifierState{false};
     std::map<std::string, std::string> cachedRelativePathIdentifierPairs;
 };

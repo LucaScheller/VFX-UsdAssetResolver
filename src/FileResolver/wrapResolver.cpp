@@ -18,5 +18,7 @@ wrapResolver()
 
     class_<This, bases<ArResolver>, AR_BOOST_NAMESPACE::noncopyable>
         ("Resolver", no_init)
+        .def("GetExposeAbsolutePathIdentifierState", &This::GetExposeAbsolutePathIdentifierState, return_value_policy<return_by_value>(), "Get the state of exposing absolute path identifiers")
+        .def("SetExposeAbsolutePathIdentifierState", &This::SetExposeAbsolutePathIdentifierState, "Set the state of exposing absolute path identifiers")
     ;
 }

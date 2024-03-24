@@ -11,6 +11,24 @@ Tokens can be found in FileResolver.Tokens:
 ```python
 FileResolver.Tokens.mappingPairs
 ```
+## Resolver
+We also have the opt-in feature to expose any identifier, regardless of absolute/relative/search path based formatting to be run through our mapped pairs mapping by setting the `AR_CACHEDRESOLVER_ENV_EXPOSE_ABSOLUTE_PATH_IDENTIFIERS` environment variable to `1` or by calling `pxr.Ar.GetUnderlyingResolver().SetExposeAbsolutePathIdentifierState(True)`. This then forwards any path to be run through our mapped pairs mapping, regardless of how the identifier is formatted. 
+
+```python
+from pxr import Ar, Usd
+from usdAssetResolver import FileResolver
+
+file_resolver = Ar.GetUnderlyingResolver()
+
+# Enable absolute identifier resolving
+file_resolver.SetExposeAbsolutePathIdentifierState(True)
+print("Resolver is currently exposing absolute path identifiers to the mapping pairs | {}".format(file_resolver.GetExposeAbsolutePathIdentifierState()))
+# Or set the "AR_FILERESOLVER_ENV_EXPOSE_ABSOLUTE_PATH_IDENTIFIERS" environment variable to 1.
+# This can't be done via Python, as it has to happen before the resolver is loaded.
+file_resolver.GetExposeAbsolutePathIdentifierState() # Get the state of exposing absolute path identifiers
+file_resolver.SetExposeAbsolutePathIdentifierState() # Set the state of exposing absolute path identifiers
+```
+
 ## Resolver Context
 You can manipulate the resolver context (the object that holds the configuration the resolver uses to resolve paths) via Python in the following ways:
 

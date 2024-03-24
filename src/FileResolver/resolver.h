@@ -31,6 +31,15 @@ public:
     AR_FILERESOLVER_API
     virtual ~FileResolver();
 
+    AR_FILERESOLVER_API
+    bool GetExposeAbsolutePathIdentifierState(){ return this->exposeAbsolutePathIdentifierState; }
+    AR_FILERESOLVER_API
+    void SetExposeAbsolutePathIdentifierState(const bool state){
+        if (state != this->exposeAbsolutePathIdentifierState){
+            this->exposeAbsolutePathIdentifierState = state;
+        }
+    }
+
 protected:
     AR_FILERESOLVER_API
     std::string _CreateIdentifier(
@@ -82,6 +91,7 @@ protected:
 private:
     const FileResolverContext* _GetCurrentContextPtr() const;
     FileResolverContext _fallbackContext;
+    bool exposeAbsolutePathIdentifierState{false};
 };
 
 PXR_NAMESPACE_CLOSE_SCOPE

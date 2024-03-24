@@ -170,6 +170,63 @@ class TestArResolver(unittest.TestCase):
                 resolved_path = resolver.Resolve(layer_file_path)
                 self.assertEqual(resolved_path.GetPathString(), layer_file_path)
 
+    def test_ResolveAbsoluteIdentifier(self):
+        with tempfile.TemporaryDirectory() as temp_dir_path:
+            # Get resolver
+            resolver = Ar.GetResolver()
+            cached_resolver = Ar.GetUnderlyingResolver()
+            # Create files
+            layer_a_identifier = "layer_a.usd"
+            layer_a_file_path = os.path.join(temp_dir_path, layer_a_identifier)
+            Sdf.Layer.CreateAnonymous().Export(layer_a_file_path)
+            layer_b_identifier = "layer_b.usd"
+            layer_b_file_path = os.path.join(temp_dir_path, layer_b_identifier)
+            Sdf.Layer.CreateAnonymous().Export(layer_b_file_path)
+            layer_c_identifier = "layer_c.usd"
+            layer_c_file_path = os.path.join(temp_dir_path, layer_c_identifier)
+            Sdf.Layer.CreateAnonymous().Export(layer_c_file_path)
+            # Create context
+            ctx = FileResolver.ResolverContext()
+            ctx.SetCustomSearchPaths([temp_dir_path])
+            ctx.RefreshSearchPaths()
+            ctx.SetMappingRegexExpression("(v\d\d\d)")
+            ctx.SetMappingRegexFormat("v000")
+            ctx.AddMappingPair(layer_a_identifier, layer_a_identifier)
+            ctx.AddMappingPair(layer_b_identifier, layer_b_identifier)
+            ctx.AddMappingPair(layer_b_file_path, layer_a_file_path)
+            with Ar.ResolverContextBinder(ctx):
+                resolved_path = resolver.Resolve(layer_a_identifier)
+                self.assertEqual(resolved_path.GetPathString(), layer_a_file_path)
+                self.assertTrue(os.path.isabs(resolved_path.GetPathString()))
+                resolved_path = resolver.Resolve(layer_b_identifier)
+                self.assertEqual(resolved_path.GetPathString(), layer_b_file_path)
+                self.assertTrue(os.path.isabs(resolved_path.GetPathString()))
+                resolved_path = resolver.Resolve(layer_c_file_path)
+                self.assertEqual(resolved_path.GetPathString(), layer_c_file_path)
+                self.assertTrue(os.path.isabs(resolved_path.GetPathString()))
+                # Check that exposed absolute file path resolving works
+                resolved_path = resolver.Resolve(layer_b_file_path)
+                self.assertEqual(resolved_path.GetPathString(), layer_b_file_path)
+                self.assertTrue(os.path.isabs(resolved_path.GetPathString()))
+                cached_resolver.SetExposeAbsolutePathIdentifierState(True)
+                resolved_path = resolver.Resolve(layer_b_file_path)
+                self.assertEqual(resolved_path.GetPathString(), layer_a_file_path)
+                self.assertTrue(os.path.isabs(resolved_path.GetPathString()))
+                # Support special case of mapping absolute paths to search paths
+                ctx.AddMappingPair(layer_b_file_path, layer_c_identifier)
+                resolved_path = resolver.Resolve(layer_b_file_path)
+                self.assertEqual(resolved_path.GetPathString(), layer_c_file_path)
+                self.assertTrue(os.path.isabs(resolved_path.GetPathString()))
+                cached_resolver.SetExposeAbsolutePathIdentifierState(False)
+                # Make sure if the feature is off, absolute paths still get resolved as usual.
+                ctx.ClearMappingPairs()
+                resolved_path = resolver.Resolve(layer_a_file_path)
+                self.assertEqual(resolved_path.GetPathString(), layer_a_file_path)
+                self.assertTrue(os.path.isabs(resolved_path.GetPathString()))
+                resolved_path = resolver.Resolve(layer_b_file_path)
+                self.assertEqual(resolved_path.GetPathString(), layer_b_file_path)
+                self.assertTrue(os.path.isabs(resolved_path.GetPathString()))
+
     def test_ResolveForNewAsset(self):
         resolver = Ar.GetResolver()
 

@@ -1,8 +1,12 @@
+#define CONVERT_STRING(string) #string
+#define DEFINE_STRING(string) CONVERT_STRING(string)
+
 #include "resolver.h"
 #include "resolverContext.h"
 
 #include "pxr/base/arch/systemInfo.h"
 #include "pxr/base/tf/fileUtils.h"
+#include "pxr/base/tf/getenv.h"
 #include "pxr/base/tf/pathUtils.h"
 #include "pxr/base/tf/pyInvoke.h"
 #include "pxr/base/tf/staticTokens.h"
@@ -69,8 +73,11 @@ _ResolveAnchored(
     return TfPathExists(resolvedPath) ? ArResolvedPath(TfAbsPath(resolvedPath)) : ArResolvedPath();
 }
 
-FileResolver::FileResolver() = default;
+FileResolver::FileResolver() {
+    this->SetExposeAbsolutePathIdentifierState(TfGetenvBool(DEFINE_STRING(AR_FILERESOLVER_ENV_EXPOSE_ABSOLUTE_PATH_IDENTIFIERS), false));
 
+};
+    
 FileResolver::~FileResolver() = default;
 
 std::string
@@ -127,43 +134,48 @@ FileResolver::_Resolve(
     if (assetPath.empty()) {
         return ArResolvedPath();
     }
-    if (_IsRelativePath(assetPath)) {
-        if (this->_IsContextDependentPath(assetPath)) {
-            const FileResolverContext* contexts[2] = {this->_GetCurrentContextPtr(), &_fallbackContext};
-            for (const FileResolverContext* ctx : contexts) {
-                if (ctx) {
-                    auto &mappingPairs = ctx->GetMappingPairs();
-                    std::string mappedPath = assetPath;
-                    if (!mappingPairs.empty()){
-                        if (!ctx->GetMappingRegexExpressionStr().empty())
-                        {
-                            mappedPath = std::regex_replace(mappedPath,
-                                                            ctx->GetMappingRegexExpression(),
-                                                            ctx->GetMappingRegexFormat());
-                            TF_DEBUG(FILERESOLVER_RESOLVER_CONTEXT).Msg("Resolver::_CreateDefaultContextForAsset('%s')"
-                                                                        " - Mapped to '%s' via regex expression '%s' with formatting '%s'\n", 
-                                                                        assetPath.c_str(),
-                                                                        mappedPath.c_str(),
-                                                                        ctx->GetMappingRegexExpressionStr().c_str(),
-                                                                        ctx->GetMappingRegexFormat().c_str());
-                        }
+
+    if (this->_IsContextDependentPath(assetPath)) {
+        const FileResolverContext* contexts[2] = {this->_GetCurrentContextPtr(), &_fallbackContext};
+        for (const FileResolverContext* ctx : contexts) {
+            if (ctx) {
+                auto &mappingPairs = ctx->GetMappingPairs();
+                std::string mappedPath = assetPath;
+                if (!mappingPairs.empty()){
+                    if (!ctx->GetMappingRegexExpressionStr().empty())
+                    {
+                        mappedPath = std::regex_replace(mappedPath,
+                                                        ctx->GetMappingRegexExpression(),
+                                                        ctx->GetMappingRegexFormat());
+                        TF_DEBUG(FILERESOLVER_RESOLVER_CONTEXT).Msg("Resolver::_CreateDefaultContextForAsset('%s')"
+                                                                    " - Mapped to '%s' via regex expression '%s' with formatting '%s'\n", 
+                                                                    assetPath.c_str(),
+                                                                    mappedPath.c_str(),
+                                                                    ctx->GetMappingRegexExpressionStr().c_str(),
+                                                                    ctx->GetMappingRegexFormat().c_str());
                     }
-                    auto map_find = mappingPairs.find(mappedPath);
-                    if(map_find != mappingPairs.end()){
-                        mappedPath = map_find->second;
-                    }
-                    for (const auto& searchPath : ctx->GetSearchPaths()) {
-                        ArResolvedPath resolvedPath = _ResolveAnchored(searchPath, mappedPath);
-                        if (resolvedPath) {
-                            return resolvedPath;
-                        }
-                    }
-                    // Only try the first valid context.
-                    break;
                 }
+                auto map_find = mappingPairs.find(mappedPath);
+                if(map_find != mappingPairs.end()){
+                    mappedPath = map_find->second;
+                }
+
+                if (this->exposeAbsolutePathIdentifierState) {
+                    if (!_IsSearchPath(mappedPath)){
+                        return _ResolveAnchored(std::string(), mappedPath);;
+                    }
+                }
+
+                for (const auto& searchPath : ctx->GetSearchPaths()) {
+                    ArResolvedPath resolvedPath = _ResolveAnchored(searchPath, mappedPath);
+                    if (resolvedPath) {
+                        return resolvedPath;
+                    }
+                }
+                // Only try the first valid context.
+                break;
             }
         }
-        return ArResolvedPath();
     }
     return _ResolveAnchored(std::string(), assetPath);
 }
@@ -234,6 +246,9 @@ FileResolver::_IsContextDependentPath(
     const std::string& assetPath) const
 {
     TF_DEBUG(FILERESOLVER_RESOLVER_CONTEXT).Msg("Resolver::_IsContextDependentPath()\n");
+    if (this->exposeAbsolutePathIdentifierState){
+        return true;
+    }
     return _IsSearchPath(assetPath);
 }
 

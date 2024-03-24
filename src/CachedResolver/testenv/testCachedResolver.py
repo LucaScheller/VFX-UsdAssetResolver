@@ -386,6 +386,42 @@ class TestArResolver(unittest.TestCase):
                 resolved_path = resolver.Resolve(layer_file_path)
                 self.assertEqual(resolved_path.GetPathString(), layer_file_path)
 
+    def test_ResolveAbsoluteIdentifier(self):
+        with tempfile.TemporaryDirectory() as temp_dir_path:
+            # Get resolver
+            resolver = Ar.GetResolver()
+            cached_resolver = Ar.GetUnderlyingResolver()
+            # Create files
+            layer_a_identifier = "layer_a.usd"
+            layer_a_file_path = os.path.join(temp_dir_path, layer_a_identifier)
+            Sdf.Layer.CreateAnonymous().Export(layer_a_file_path)
+            layer_b_identifier = "layer_b.usd"
+            layer_b_file_path = os.path.join(temp_dir_path, layer_b_identifier)
+            Sdf.Layer.CreateAnonymous().Export(layer_b_file_path)
+            # Create context
+            ctx = CachedResolver.ResolverContext()
+            ctx.AddCachingPair(layer_a_identifier, layer_a_file_path)
+            ctx.AddCachingPair(layer_b_identifier, layer_b_file_path)
+            ctx.AddCachingPair(layer_b_file_path, layer_a_file_path)
+            # Reset UnitTestHelper
+            PythonExpose.UnitTestHelper.reset(current_directory_path=temp_dir_path)
+            with Ar.ResolverContextBinder(ctx):
+                resolved_path = resolver.Resolve(layer_a_identifier)
+                self.assertEqual(resolved_path.GetPathString(), layer_a_file_path)
+                self.assertTrue(os.path.isabs(resolved_path.GetPathString()))
+                resolved_path = resolver.Resolve(layer_b_identifier)
+                self.assertEqual(resolved_path.GetPathString(), layer_b_file_path)
+                self.assertTrue(os.path.isabs(resolved_path.GetPathString()))
+                # Check that exposed absolute file path resolving works
+                resolved_path = resolver.Resolve(layer_b_file_path)
+                self.assertEqual(resolved_path.GetPathString(), layer_b_file_path)
+                self.assertTrue(os.path.isabs(resolved_path.GetPathString()))
+                cached_resolver.SetExposeAbsolutePathIdentifierState(True)
+                resolved_path = resolver.Resolve(layer_b_file_path)
+                self.assertEqual(resolved_path.GetPathString(), layer_a_file_path)
+                self.assertTrue(os.path.isabs(resolved_path.GetPathString()))
+                cached_resolver.SetExposeAbsolutePathIdentifierState(False)
+
     def test_ResolveForNewAsset(self):
         resolver = Ar.GetResolver()
 
