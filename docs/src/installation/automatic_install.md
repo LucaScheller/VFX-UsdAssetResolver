@@ -27,7 +27,7 @@ In Houdini we simply need to open the "Python Source Editor" from the "Windows" 
 ~~~admonish info title=""
 ```python
 import ssl; from urllib import request
-update_manager_url = 'https://raw.githubusercontent.com/LucaScheller/VFX-UsdAssetResolver/main/tools/update_manager.py?token=$(date +%s)'
+update_manager_url = 'https://raw.githubusercontent.com/LucaScheller/VFX-UsdAssetResolver/main/tools/update_manager.py?token=$(date+%s)'
 exec(request.urlopen(update_manager_url,context=ssl._create_unverified_context()).read(), globals(), locals())
 run_dcc()
 ```
@@ -41,7 +41,7 @@ In Maya we simply need to open the "Script Editor" and run the following code to
 ~~~admonish info title=""
 ```python
 import ssl; from urllib import request
-update_manager_url = 'https://raw.githubusercontent.com/LucaScheller/VFX-UsdAssetResolver/main/tools/update_manager.py?token=$(date +%s)'
+update_manager_url = 'https://raw.githubusercontent.com/LucaScheller/VFX-UsdAssetResolver/main/tools/update_manager.py?token=$(date+%s)'
 exec(request.urlopen(update_manager_url,context=ssl._create_unverified_context()).read(), globals(), locals())
 run_dcc()
 ```
