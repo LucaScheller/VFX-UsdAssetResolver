@@ -305,14 +305,14 @@ class UpdateManager(object):
             if not hou.isUIAvailable():
                 raise ImportError
             return "houdini"
-        except ImportError:
+        except Exception:
             pass
         # Maya
         try:
-            import pymel
+            import pymel.core as pm
 
             return "maya"
-        except ImportError:
+        except Exception:
             pass
 
         raise Exception(
