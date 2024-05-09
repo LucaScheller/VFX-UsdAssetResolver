@@ -298,10 +298,20 @@ CachedResolver::_CreateDefaultContextForAsset(
     if (!TfPathExists(resolvedPath)){
         return ArResolverContext(_fallbackContext);
     }
-    std::string resolvedPathStr = resolvedPath.GetPathString();
-    if(this->_GetCurrentContextObject<CachedResolverContext>() != nullptr){
-        TF_DEBUG(CACHEDRESOLVER_RESOLVER_CONTEXT).Msg("Resolver::_CreateDefaultContextForAsset('%s') - Skipping on same stage\n", assetPath.c_str());
-        return ArResolverContext(_fallbackContext);
+    if (this->_GetCurrentContextPtr() != nullptr)
+    {
+        if (TfDebug::IsEnabled(CACHEDRESOLVER_RESOLVER_CONTEXT))
+        {
+            if (this->_GetCurrentContextPtr() == &_fallbackContext)
+            {
+                TF_DEBUG(CACHEDRESOLVER_RESOLVER_CONTEXT).Msg("Resolver::_CreateDefaultContextForAsset('%s') - Reusing already bound default context on same stage\n", assetPath.c_str());
+            }
+            else
+            {
+                TF_DEBUG(CACHEDRESOLVER_RESOLVER_CONTEXT).Msg("Resolver::_CreateDefaultContextForAsset('%s') - Reusing already bound context CachedResolverContext('%s') on same stage\n", assetPath.c_str(), this->_GetCurrentContextPtr()->GetMappingFilePath().c_str());
+            }
+        }
+        return ArResolverContext(*this->_GetCurrentContextPtr());
     }
     auto map_iter = _sharedContexts.find(resolvedPath);
     if(map_iter != _sharedContexts.end()){
@@ -317,9 +327,10 @@ CachedResolver::_CreateDefaultContextForAsset(
     }
     // Create new context
     TF_DEBUG(CACHEDRESOLVER_RESOLVER_CONTEXT).Msg("Resolver::_CreateDefaultContextForAsset('%s') - Constructing new context\n", assetPath.c_str());
-    struct CachedResolverContextRecord record;
-    record.timestamp = this->_GetModificationTimestamp(assetPath, resolvedPath);
-    record.ctx = CachedResolverContext(resolvedPath);
+    struct CachedResolverContextRecord record
+    {
+        this->_GetModificationTimestamp(assetPath, resolvedPath), CachedResolverContext(resolvedPath)
+    };
     _sharedContexts.insert(std::pair<std::string, CachedResolverContextRecord>(resolvedPath, record));
     return ArResolverContext(record.ctx);
 }

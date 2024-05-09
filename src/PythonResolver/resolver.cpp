@@ -134,10 +134,20 @@ PythonResolver::_CreateDefaultContextForAsset(
     if (!TfPathExists(resolvedPath)){
         return ArResolverContext(_fallbackContext);
     }
-    std::string resolvedPathStr = resolvedPath.GetPathString();
-    if(this->_GetCurrentContextObject<PythonResolverContext>() != nullptr){
-        TF_DEBUG(PYTHONRESOLVER_RESOLVER_CONTEXT).Msg("Resolver::_CreateDefaultContextForAsset('%s') - Skipping on same stage\n", assetPath.c_str());
-        return ArResolverContext(_fallbackContext);
+    if (this->_GetCurrentContextPtr() != nullptr)
+    {
+        if (TfDebug::IsEnabled(PYTHONRESOLVER_RESOLVER_CONTEXT))
+        {
+            if (this->_GetCurrentContextPtr() == &_fallbackContext)
+            {
+                TF_DEBUG(PYTHONRESOLVER_RESOLVER_CONTEXT).Msg("Resolver::_CreateDefaultContextForAsset('%s') - Reusing already bound default context on same stage\n", assetPath.c_str());
+            }
+            else
+            {
+                TF_DEBUG(PYTHONRESOLVER_RESOLVER_CONTEXT).Msg("Resolver::_CreateDefaultContextForAsset('%s') - Reusing already bound context CachedResolverContext('%s') on same stage\n", assetPath.c_str(), this->_GetCurrentContextPtr()->GetMappingFilePath().c_str());
+            }
+        }
+        return ArResolverContext(*this->_GetCurrentContextPtr());
     }
     auto map_iter = _sharedContexts.find(resolvedPath);
     if(map_iter != _sharedContexts.end()){
@@ -153,10 +163,12 @@ PythonResolver::_CreateDefaultContextForAsset(
     }
     // Create new context
     TF_DEBUG(PYTHONRESOLVER_RESOLVER_CONTEXT).Msg("Resolver::_CreateDefaultContextForAsset('%s') - Constructing new context\n", assetPath.c_str());
+    std::string resolvedPathStr = resolvedPath.GetPathString();
     std::string assetDir = TfGetPathName(TfAbsPath(resolvedPathStr));
-    struct PythonResolverContextRecord record;
-    record.timestamp = this->_GetModificationTimestamp(assetPath, resolvedPath);
-    record.ctx = PythonResolverContext(resolvedPath);
+    struct PythonResolverContextRecord record
+    {
+        this->_GetModificationTimestamp(assetPath, resolvedPath), PythonResolverContext(resolvedPath)
+    };
     _sharedContexts.insert(std::pair<std::string, PythonResolverContextRecord>(resolvedPath, record));
     return ArResolverContext(record.ctx);
 }
