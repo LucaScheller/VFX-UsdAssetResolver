@@ -309,7 +309,7 @@ class UpdateManager(object):
             pass
         # Maya
         try:
-            import pymel.core as pm
+            import maya.cmds as cmds
 
             return "maya"
         except Exception:
@@ -340,10 +340,10 @@ class UpdateManager(object):
                 sys.version_info.major, str(sys.version_info.minor)[:1]
             )
         elif dcc_name == "maya":
-            from pymel import versions as pymel_versions
+            import maya.cmds as cmds
 
             product_name = "maya"
-            product_version = pymel_versions.shortName
+            product_version = cmds.about(mjv=True)
             product_python_version = ""
 
         return product_name, product_version, product_python_version
