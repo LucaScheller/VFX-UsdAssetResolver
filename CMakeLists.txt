@@ -12,8 +12,8 @@ function(check_glibcxx_use_cxx11_abi dso_file result_var)
     )
 
     # Define patterns to match symbols that indicate the use of the new or old ABI
-    set(abi_new_pattern "_ZSt.*B5cxx11")
-    set(abi_old_pattern "_ZSt.*")
+    set(abi_new_pattern "B5cxx11")
+
 
     # Check if the symbols contain the new ABI pattern
     if (readelf_output MATCHES ${abi_new_pattern})
@@ -179,7 +179,7 @@ if ("${AR_DIST_NAME}" STREQUAL "houdini")
 else()
 
 	# Specify the DSO file to check
-	set(AR_DSO_FILE ${AR_PXR_LIB_DIR}/${AR_PXR_LIB_PREFIX}_ar.so)
+	set(AR_DSO_FILE ${AR_PXR_LIB_DIR}/lib${AR_PXR_LIB_PREFIX}ar.so)
 	
 		# Variable to store the result
 	set(USES_CXX11_ABI 0)
