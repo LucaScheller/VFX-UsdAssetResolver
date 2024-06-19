@@ -100,7 +100,9 @@ endif()
 
 # USD
 if ("${AR_DIST_NAME}" STREQUAL "houdini")
-	set(AR_HOUDINI_ROOT $ENV{HOUDINI_INSTALLATION_DIR} CACHE PATH "Houdini install directory")
+	
+	set(NETWORK_HOUDINI_DIR "/software/houdini/linux/hfs$ENV{REZ_HOUDINI_VERSION}")
+	set(AR_HOUDINI_ROOT ${NETWORK_HOUDINI_DIR} CACHE PATH "Houdini install directory")
 	set(AR_HOUDINI_INCLUDE_DIR ${AR_HOUDINI_ROOT}/toolkit/include)
 	set(AR_PXR_INCLUDE_DIR ${AR_HOUDINI_INCLUDE_DIR})
 	if (WIN32)
