@@ -2,6 +2,27 @@
 set(AR_PROJECT_NAME UsdAssetResolver)
 set(AR_RESOLVER_USD_PYTHON_MODULE_NAME usdAssetResolver)
 
+function(check_glibcxx_use_cxx11_abi dso_file result_var)
+    # Use the readelf command to list the symbols from the DSO file
+    execute_process(
+        COMMAND ${CMAKE_COMMAND} -E env LC_ALL=C readelf -Ws ${dso_file}
+        OUTPUT_VARIABLE readelf_output
+        ERROR_QUIET
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+
+    # Define patterns to match symbols that indicate the use of the new or old ABI
+    set(abi_new_pattern "B5cxx11")
+
+
+    # Check if the symbols contain the new ABI pattern
+    if (readelf_output MATCHES ${abi_new_pattern})
+        set(${result_var} 1 PARENT_SCOPE)
+    else ()
+        set(${result_var} 0 PARENT_SCOPE)
+    endif ()
+endfunction()
+
 if(DEFINED ENV{HOUDINI_INSTALLATION_DIR})
 	set(AR_DIST_NAME houdini)	
 else()
@@ -152,7 +173,23 @@ project(${AR_PROJECT_NAME} VERSION 1.0.0 LANGUAGES CXX)
 ### CPP Settings ###
 set(BUILD_SHARED_LIBS ON)
 # Preprocessor Defines (Same as #define)
-add_compile_definitions(_GLIBCXX_USE_CXX11_ABI=0 HBOOST_ALL_NO_LIB BOOST_ALL_NO_LIB)
+add_compile_definitions(HBOOST_ALL_NO_LIB BOOST_ALL_NO_LIB)
+if ("${AR_DIST_NAME}" STREQUAL "houdini")
+	add_compile_definitions(_GLIBCXX_USE_CXX11_ABI=0)	
+else()
+
+	# Specify the DSO file to check
+	set(AR_DSO_FILE ${AR_PXR_LIB_DIR}/lib${AR_PXR_LIB_PREFIX}ar.so)
+	
+		# Variable to store the result
+	set(USES_CXX11_ABI 0)
+	
+	# Call the function
+	check_glibcxx_use_cxx11_abi(${AR_DSO_FILE} USES_CXX11_ABI)
+
+	add_compile_definitions(_GLIBCXX_USE_CXX11_ABI=${USES_CXX11_ABI})
+endif()
+
 if (WIN32)
     add_compile_definitions(NOMINMAX)
 endif()
