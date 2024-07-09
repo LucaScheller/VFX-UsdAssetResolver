@@ -101,8 +101,7 @@ endif()
 # USD
 if ("${AR_DIST_NAME}" STREQUAL "houdini")
 	
-	set(NETWORK_HOUDINI_DIR "/software/houdini/linux/hfs$ENV{REZ_HOUDINI_VERSION}")
-	set(AR_HOUDINI_ROOT ${NETWORK_HOUDINI_DIR} CACHE PATH "Houdini install directory")
+	set(AR_HOUDINI_ROOT $ENV{HOUDINI_NETWORK_DIR} CACHE PATH "Houdini install directory")
 	set(AR_HOUDINI_INCLUDE_DIR ${AR_HOUDINI_ROOT}/toolkit/include)
 	set(AR_PXR_INCLUDE_DIR ${AR_HOUDINI_INCLUDE_DIR})
 	if (WIN32)
@@ -176,21 +175,12 @@ project(${AR_PROJECT_NAME} VERSION 1.0.0 LANGUAGES CXX)
 set(BUILD_SHARED_LIBS ON)
 # Preprocessor Defines (Same as #define)
 add_compile_definitions(HBOOST_ALL_NO_LIB BOOST_ALL_NO_LIB)
-if ("${AR_DIST_NAME}" STREQUAL "houdini")
-	add_compile_definitions(_GLIBCXX_USE_CXX11_ABI=0)	
-else()
 
-	# Specify the DSO file to check
-	set(AR_DSO_FILE ${AR_PXR_LIB_DIR}/lib${AR_PXR_LIB_PREFIX}ar.so)
-	
-		# Variable to store the result
-	set(USES_CXX11_ABI 0)
-	
-	# Call the function
-	check_glibcxx_use_cxx11_abi(${AR_DSO_FILE} USES_CXX11_ABI)
-
-	add_compile_definitions(_GLIBCXX_USE_CXX11_ABI=${USES_CXX11_ABI})
-endif()
+# check libusd_ar.so to see if was build with _GLIBCXX_USE_CXX11_ABI
+set(AR_DSO_FILE ${AR_PXR_LIB_DIR}/lib${AR_PXR_LIB_PREFIX}ar.so)		
+set(USES_CXX11_ABI 0)
+check_glibcxx_use_cxx11_abi(${AR_DSO_FILE} USES_CXX11_ABI)
+add_compile_definitions(_GLIBCXX_USE_CXX11_ABI=${USES_CXX11_ABI})
 
 if (WIN32)
     add_compile_definitions(NOMINMAX)
