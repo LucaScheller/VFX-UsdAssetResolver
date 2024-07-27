@@ -18,16 +18,24 @@ jobs:
     environment: houdini
     strategy:
       matrix:
-        houdini_product_name: ["houdini", "houdini-py39", "houdini-py37"]
-        houdini_product_version: ["19.5", "20.0"]
+        houdini_product_name: ["houdini", "houdini-py310", "houdini-py39", "houdini-py37"]
+        houdini_product_version: ["19.5", "20.0", "20.5"]
         exclude:
           - houdini_product_name: "houdini-py39"
             houdini_product_version: "19.5"
+          - houdini_product_name: "houdini-py310"
+            houdini_product_version: "19.5"
           - houdini_product_name: "houdini-py37"
             houdini_product_version: "20.0"
+          - houdini_product_name: "houdini-py310"
+            houdini_product_version: "20.0"
+          - houdini_product_name: "houdini-py37"
+            houdini_product_version: "20.5"
+          - houdini_product_name: "houdini-py39"
+            houdini_product_version: "20.5"
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: recursive
       - name: Switch to latest release tag
@@ -44,7 +52,7 @@ jobs:
           sudo pip3 install requests
       # - name: Cache Houdini
       #   id: cache-houdini-linux
-      #   uses: actions/cache@v3
+      #   uses: actions/cache@v4
       #   with:
       #     path: "/opt/hfs*"
       #     key: ${{ runner.os }}-houdini
@@ -72,7 +80,7 @@ jobs:
           repo_root=$(cd .; pwd)
           python3 .github/scripts/houdini.py --artifact --artifact_src=$repo_root/dist --artifact_dst=$repo_root/artifacts --artifact_prefix=UsdAssetResolver --artifact_product_name ${{ matrix.houdini_product_name }}
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: UsdAssetResolver-linux-${{ matrix.houdini_product_name }}-${{ matrix.houdini_product_version }}
           path: artifacts/*.zip
@@ -91,7 +99,7 @@ jobs:
             houdini_product_version: "20.0"
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: recursive
       - name: Switch to latest release tag
@@ -131,7 +139,7 @@ jobs:
         run: |
           & python $pwd\.github\scripts\houdini.py --artifact --artifact_src=$pwd\dist --artifact_dst=$pwd\artifacts --artifact_prefix=UsdAssetResolver --artifact_product_name ${{ matrix.houdini_product_name }}
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: UsdAssetResolver-windows-${{ matrix.houdini_product_name }}-${{ matrix.houdini_product_version }}
           path: artifacts/*.zip
@@ -153,11 +161,11 @@ jobs:
             houdini_product_version: "20.0"
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: recursive
       - name: Download artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: UsdAssetResolver-${{ matrix.os }}-${{ matrix.houdini_product_name }}-${{ matrix.houdini_product_version }}
           path: artifacts

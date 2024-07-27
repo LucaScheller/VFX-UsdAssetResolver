@@ -22,7 +22,7 @@ jobs:
         maya_product_version: ["2024.2"]
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: recursive
       - name: Switch to latest release tag
@@ -58,7 +58,7 @@ jobs:
           repo_root=$(cd .; pwd)
           python3 .github/scripts/maya.py --artifact --artifact_src=$repo_root/dist --artifact_dst=$repo_root/artifacts --artifact_prefix=UsdAssetResolver --artifact_product_name ${{ matrix.maya_product_name }} --install_directory $repo_root/dependency
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: UsdAssetResolver-linux-${{ matrix.maya_product_name }}-${{ matrix.maya_product_version }}
           path: artifacts/*.zip
@@ -72,7 +72,7 @@ jobs:
         maya_product_version: ["2024.2"]
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: recursive
       - name: Switch to latest release tag
@@ -102,7 +102,7 @@ jobs:
         run: |
           & python $pwd\.github\scripts\maya.py --artifact --artifact_src=$pwd\dist --artifact_dst=$pwd\artifacts --artifact_prefix=UsdAssetResolver --artifact_product_name ${{ matrix.maya_product_name }} --install_directory $pwd\dependency
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: UsdAssetResolver-windows-${{ matrix.maya_product_name }}-${{ matrix.maya_product_version }}
           path: artifacts/*.zip
@@ -119,11 +119,11 @@ jobs:
         maya_product_version: ["2024.2"]
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: recursive
       - name: Download artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: UsdAssetResolver-${{ matrix.os }}-${{ matrix.maya_product_name }}-${{ matrix.maya_product_version }}
           path: artifacts

@@ -11,7 +11,7 @@ then
     export AR_DCC_NAME=HOUDINI
     if [ "$AR_DCC_NAME" == "HOUDINI" ]; then
         # Source Houdini (This defines what Houdini version to compile against)
-        pushd /opt/hfs20.0 > /dev/null
+        pushd /opt/hfs20.5 > /dev/null
         source houdini_setup
         popd > /dev/null
     fi
