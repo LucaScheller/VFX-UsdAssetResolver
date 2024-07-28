@@ -197,6 +197,7 @@ cmake_minimum_required(VERSION 3.19 FATAL_ERROR)
 project(${AR_PROJECT_NAME} VERSION 1.0.0 LANGUAGES CXX)
 
 ### CPP Settings ###
+set(CMAKE_CXX_STANDARD 17)
 set(BUILD_SHARED_LIBS ON)
 # Preprocessor Defines (Same as #define)
 add_compile_definitions(HBOOST_ALL_NO_LIB BOOST_ALL_NO_LIB)

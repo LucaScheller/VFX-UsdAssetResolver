@@ -17,7 +17,7 @@ Since the Usd Asset Resolver API changed with the AR 2.0 standard proposed in th
 |------------------------|------------------------------------------------------------------------|----------------------|---------------|
 | gcc                    | [https://gcc.gnu.org](https://gcc.gnu.org/)                            | 11.2.1               | 13.1.1        |
 | cmake                  | [https://cmake.org](https://cmake.org/)                                | 3.26.4               | 3.26.4        |
-| SideFX Houdini         | [SideFX Houdini](https://www.sidefx.com)                               |  19.5                | 19.5          |
+| SideFX Houdini         | [SideFX Houdini](https://www.sidefx.com)                               |  19.5                | 20.5          |
 | Autodesk Maya          | [Autodesk Maya](https://www.autodesk.com/ca-en/products/maya/overview) |  2024                | 2024          |
 | Autodesk Maya USD SDK  | [Autodesk Maya USD SDK](https://github.com/Autodesk/maya-usd)          |  0.27.0              | 0.27.0        |
 ```
@@ -26,7 +26,8 @@ Since the Usd Asset Resolver API changed with the AR 2.0 standard proposed in th
 ```admonish success title=""
 | Software               | Website                                                                            | Min (Not Tested)     | Max (Tested)  |
 |------------------------|------------------------------------------------------------------------------------|----------------------|---------------|
-|Visual Studio 16 2019   | [https://visualstudio.microsoft.com/vs/](https://visualstudio.microsoft.com/vs/)   | 11.2.1               | 13.1.1        |
+|Visual Studio 16 2019   | [https://visualstudio.microsoft.com/vs/](https://visualstudio.microsoft.com/vs/)   | -                    | -             |
+|Visual Studio 17 2022   | [https://visualstudio.microsoft.com/vs/](https://visualstudio.microsoft.com/vs/)   | -                    | -             |
 | cmake                  | [https://cmake.org](https://cmake.org/)                                            | 3.26.4               | 3.26.4        |
 | SideFX Houdini         | [SideFX Houdini](https://www.sidefx.com)                                           |  19.5                | 19.5          |
 | Autodesk Maya          | [Autodesk Maya](https://www.autodesk.com/ca-en/products/maya/overview)             |  2024                | 2024          |

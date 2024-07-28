@@ -85,26 +85,18 @@ jobs:
           name: UsdAssetResolver-linux-${{ matrix.houdini_product_name }}-${{ matrix.houdini_product_version }}
           path: artifacts/*.zip
 
-  build_windows:
+  build_windows_2019:
     runs-on: windows-2019
     environment: houdini
     strategy:
       matrix:
-        houdini_product_name: ["houdini", "houdini-py310", "houdini-py39", "houdini-py37"]
-        houdini_product_version: ["19.5", "20.0", "20.5"]
+        houdini_product_name: ["houdini", "houdini-py39", "houdini-py37"]
+        houdini_product_version: ["19.5", "20.0"]
         exclude:
           - houdini_product_name: "houdini-py39"
             houdini_product_version: "19.5"
-          - houdini_product_name: "houdini-py310"
-            houdini_product_version: "19.5"
           - houdini_product_name: "houdini-py37"
             houdini_product_version: "20.0"
-          - houdini_product_name: "houdini-py310"
-            houdini_product_version: "20.0"
-          - houdini_product_name: "houdini-py37"
-            houdini_product_version: "20.5"
-          - houdini_product_name: "houdini-py39"
-            houdini_product_version: "20.5"
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -133,16 +125,16 @@ jobs:
           python3 .github\scripts\houdini.py --install --install_houdini_product_name ${{ matrix.houdini_product_name }} --install_houdini_product_version ${{ matrix.houdini_product_version }}
       - name: Build USD File Resolver
         run: |
-          .\.github\scripts\houdini_build.bat fileResolver
+          .\.github\scripts\houdini_build.bat fileResolver "Visual Studio 16 2019" "v142"
       - name: Build USD Python Resolver
         run: |
-          .\.github\scripts\houdini_build.bat pythonResolver
+          .\.github\scripts\houdini_build.bat pythonResolver "Visual Studio 16 2019" "v142"
       - name: Build USD Cached Resolver
         run: |
-          .\.github\scripts\houdini_build.bat cachedResolver
+          .\.github\scripts\houdini_build.bat cachedResolver "Visual Studio 16 2019" "v142"
       - name: Build USD Http Resolver
         run: |
-          .\.github\scripts\houdini_build.bat httpResolver
+          .\.github\scripts\houdini_build.bat httpResolver "Visual Studio 16 2019" "v142"
       - name: Create single .zip archive
         run: |
           & python $pwd\.github\scripts\houdini.py --artifact --artifact_src=$pwd\dist --artifact_dst=$pwd\artifacts --artifact_prefix=UsdAssetResolver --artifact_product_name ${{ matrix.houdini_product_name }}
@@ -152,11 +144,65 @@ jobs:
           name: UsdAssetResolver-windows-${{ matrix.houdini_product_name }}-${{ matrix.houdini_product_version }}
           path: artifacts/*.zip
 
+  build_windows_2022:
+    runs-on: windows-2022
+    environment: houdini
+    strategy:
+      matrix:
+        houdini_product_name: ["houdini", "houdini-py310"]
+        houdini_product_version: ["20.5"]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Switch to latest release tag
+        run: |
+          git fetch --all --tags --force
+          $latest_release_tag=git tag -l --sort=-version:refname v* | select -first 1
+          git checkout tags/$latest_release_tag
+      - name: Install system packages
+        run: |
+          pip3 install requests
+      # - name: Cache Houdini
+      #   id: cache-houdini-windows
+      #   uses: actions/cache@v3
+      #   with:
+      #     path: "C:\\Program Files\\Side Effects Software"
+      #     key: ${{ runner.os }}-houdini
+      - name: Install Houdini
+        # if: steps.cache-houdini-windows.outputs.cache-hit != 'true'
+        env:
+          SIDEFX_CLIENT_ID: '${{ secrets.SIDEFX_CLIENT_ID }}'
+          SIDEFX_CLIENT_SECRET_KEY: '${{ secrets.SIDEFX_CLIENT_SECRET_KEY }}'
+        run: |
+          python3 .github\scripts\houdini.py --install --install_houdini_product_name ${{ matrix.houdini_product_name }} --install_houdini_product_version ${{ matrix.houdini_product_version }}
+      - name: Build USD File Resolver
+        run: |
+          .\.github\scripts\houdini_build.bat fileResolver "Visual Studio 17 2022" "v143"
+      - name: Build USD Python Resolver
+        run: |
+          .\.github\scripts\houdini_build.bat pythonResolver "Visual Studio 17 2022" "v143"
+      - name: Build USD Cached Resolver
+        run: |
+          .\.github\scripts\houdini_build.bat cachedResolver "Visual Studio 17 2022" "v143"
+      - name: Build USD Http Resolver
+        run: |
+          .\.github\scripts\houdini_build.bat httpResolver "Visual Studio 17 2022" "v143"
+      - name: Create single .zip archive
+        run: |
+          & python $pwd\.github\scripts\houdini.py --artifact --artifact_src=$pwd\dist --artifact_dst=$pwd\artifacts --artifact_prefix=UsdAssetResolver --artifact_product_name ${{ matrix.houdini_product_name }}
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: UsdAssetResolver-windows-${{ matrix.houdini_product_name }}-${{ matrix.houdini_product_version }}
+          path: artifacts/*.zip
+          
   deploy:
     runs-on: ubuntu-latest
     permissions: 
       contents: write
-    needs: [build_linux, build_windows]
+    needs: [build_linux, build_windows_2019, build_windows_2022]
     strategy:
       matrix:
         os: ["linux", "windows"]
