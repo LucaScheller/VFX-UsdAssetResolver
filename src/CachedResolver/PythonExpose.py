@@ -84,7 +84,7 @@ class ResolverContext:
         Returns:
             str: The resolved path string.
         """
-        jsonStr = assetPath[len(ResolverContext.RDOJSON_PREFIX) :]
+        jsonStr = assetPath[len(ResolverContext.RDOJSON_PREFIX):]
         try:
             json_data = json.loads(jsonStr)
         except ValueError:
@@ -111,8 +111,12 @@ class ResolverContext:
             LOG.error("No published file for version: %s", version)
             return
 
+        relpath = json_data.get("relpath")
+        if relpath:
+            return os.path.join(published_file.path.rootDirectory, relpath)
+
         try:
-            subdir = json_data.get("subdir", "")
+            subdir = json_data.get("subdir")
             if subdir:
                 return published_file.path.asDict().get(subdir, [])[0]
             return published_file.path[0]
