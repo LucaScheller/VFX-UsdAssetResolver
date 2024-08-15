@@ -116,9 +116,7 @@ def install_sidefx_product(product, version):
 
     if not target_release:
         raise Exception(
-            "No Houdini version found for requested version | {}".format(
-                houdini_version
-            )
+            "No Houdini version found for requested version | {}".format(version)
         )
 
     target_release_download = sidefx_service.download.get_daily_build_download(

@@ -260,6 +260,11 @@ if(${AR_HTTPRESOLVER_BUILD})
 endif()
 
 # Status
+message(STATUS "--- Usd Resolver Build Info Start ---")
+message(NOTICE "Detected Libs:")
+message(NOTICE "- Python: ${AR_PYTHON_LIB}")
+message(NOTICE "- Boost: Python ${AR_BOOST_PYTHON_LIB}")
+message(STATUS "--- Usd Resolver Build Info End ---")
 message(STATUS "--- Usd Resolver Instructions Start ---")
 message(NOTICE "To use the compiled files, set the following environment variables:")
 message(NOTICE "export PYTHONPATH=${CMAKE_INSTALL_PREFIX}/<resolverName>/lib/python:$PYTHONPATH")
