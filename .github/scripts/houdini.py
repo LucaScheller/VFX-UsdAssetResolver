@@ -120,7 +120,7 @@ def install_sidefx_product(product, version):
         )
 
     target_release_download = sidefx_service.download.get_daily_build_download(
-        product="houdini",
+        product=target_release["product"],
         version=target_release["version"],
         build=target_release["build"],
         platform=sidefx_platform,
