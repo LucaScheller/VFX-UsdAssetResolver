@@ -185,7 +185,7 @@ class ResolverContext:
             re-applies the correct mapping. If the identifier is encountered again it will use the C++ cache, which means everything is kept fast.
             """
             #######
-            base_identifier = assetPath.removeprefix(RELATIVE_PATH_IDENTIFIER_PREFIX)
+            base_identifier = assetPath[len(RELATIVE_PATH_IDENTIFIER_PREFIX):]
             anchor_path, entity_element = base_identifier.split("?")
             entity_type, entity_identifier = anchor_path.split("/")
             entity_element, entity_version = entity_element.split("-")

@@ -119,7 +119,7 @@ class ResolverContext:
         )
         resolved_asset_path = ""
         if assetPath.startswith(RELATIVE_PATH_IDENTIFIER_PREFIX):
-            base_identifier = assetPath.removeprefix(RELATIVE_PATH_IDENTIFIER_PREFIX)
+            base_identifier = assetPath[len(RELATIVE_PATH_IDENTIFIER_PREFIX):]
             anchor_path, entity_element = base_identifier.split("?")
             entity_type, entity_identifier = anchor_path.split("/")
             entity_element, entity_version = entity_element.split("-")
