@@ -126,8 +126,11 @@ class ResolverContext:
             asset_b_file_path = os.path.join(current_dir_path, "assetB.usd")
             context.AddCachingPair("assetA.usd", asset_a_file_path)
             context.AddCachingPair("assetB.usd", asset_b_file_path)
-        if assetPath.startswith("relativePath|"):
-            relative_path, anchor_path = assetPath.removeprefix("relativePath|").split("?")
+        relative_path_prefix = "relativePath|"
+        if assetPath.startswith(relative_path_prefix):
+            relative_path, anchor_path = assetPath[len(relative_path_prefix) :].split(
+                "?"
+            )
             anchor_path = anchor_path[:-1] if anchor_path[-1] == "/" else anchor_path[:anchor_path.rfind("/")]
             resolved_asset_path = os.path.normpath(os.path.join(anchor_path, relative_path))
             context.AddCachingPair(assetPath, resolved_asset_path)
