@@ -12,7 +12,7 @@ Tokens can be found in FileResolver.Tokens:
 FileResolver.Tokens.mappingPairs
 ```
 ## Resolver
-We also have the opt-in feature to expose any identifier, regardless of absolute/relative/search path based formatting to be run through our mapped pairs mapping by setting the `AR_CACHEDRESOLVER_ENV_EXPOSE_ABSOLUTE_PATH_IDENTIFIERS` environment variable to `1` or by calling `pxr.Ar.GetUnderlyingResolver().SetExposeAbsolutePathIdentifierState(True)`. This then forwards any path to be run through our mapped pairs mapping, regardless of how the identifier is formatted. 
+We also have the opt-in feature to expose any identifier, regardless of absolute/relative/search path based formatting to be run through our mapped pairs mapping by setting the `AR_EXPOSE_ABSOLUTE_PATH_IDENTIFIERS` environment variable to `1` or by calling `pxr.Ar.GetUnderlyingResolver().SetExposeAbsolutePathIdentifierState(True)`. This then forwards any path to be run through our mapped pairs mapping, regardless of how the identifier is formatted. 
 
 ```python
 from pxr import Ar, Usd

@@ -14,7 +14,7 @@ CachedResolver.Tokens.mappingPairs
 ## Resolver
 We optionally can also hook into relative path identifier creation via Python. 
 
-This can be enabled by setting the `AR_CACHEDRESOLVER_ENV_EXPOSE_RELATIVE_PATH_IDENTIFIERS` environment variable to `1` or by calling `pxr.Ar.GetUnderlyingResolver().SetExposeRelativePathIdentifierState(True)`.
+This can be enabled by setting the `AR_EXPOSE_RELATIVE_PATH_IDENTIFIERS` environment variable to `1` or by calling `pxr.Ar.GetUnderlyingResolver().SetExposeRelativePathIdentifierState(True)`.
 
 We then have access in our `PythonExpose.py` -> `Resolver.CreateRelativePathIdentifier` method. Here we can then return a non file path (anything that doesn't start with "/"/"./"/"../") identifier for our relative path, which then also gets passed to our `PythonExpose.py` -> `ResolverContext.ResolveAndCache` method.
 
@@ -26,7 +26,7 @@ As with our mapping and caching pairs, the result is cached in C++ to enable fas
 
 As identifiers are context independent, the cache is stored on the resolver itself. See below on how to modify and inspect the cache.
 
-We also have the option to expose any identifier, regardless of absolute/relative/search path based formatting to our `PythonExpose.py` -> `ResolverContext.ResolveAndCache` method by setting the `AR_CACHEDRESOLVER_ENV_EXPOSE_ABSOLUTE_PATH_IDENTIFIERS` environment variable to `1` or by calling `pxr.Ar.GetUnderlyingResolver().SetExposeAbsolutePathIdentifierState(True)`. As this then runs all paths through the Python exposed section, make sure that paths are batch added/pre-cached as much as possible to keep the resolve efficient.
+We also have the option to expose any identifier, regardless of absolute/relative/search path based formatting to our `PythonExpose.py` -> `ResolverContext.ResolveAndCache` method by setting the `AR_EXPOSE_ABSOLUTE_PATH_IDENTIFIERS` environment variable to `1` or by calling `pxr.Ar.GetUnderlyingResolver().SetExposeAbsolutePathIdentifierState(True)`. As this then runs all paths through the Python exposed section, make sure that paths are batch added/pre-cached as much as possible to keep the resolve efficient.
 
 ```python
 from pxr import Ar, Usd
@@ -36,7 +36,7 @@ cached_resolver = Ar.GetUnderlyingResolver()
 # Enable relative identifier modification
 cached_resolver.SetExposeRelativePathIdentifierState(True)
 print("Resolver is currently exposing relative path identifiers to Python | {}".format(cached_resolver.GetExposeRelativePathIdentifierState()))
-# Or set the "AR_CACHEDRESOLVER_ENV_EXPOSE_RELATIVE_PATH_IDENTIFIERS" environment variable to 1.
+# Or set the "AR_EXPOSE_RELATIVE_PATH_IDENTIFIERS" environment variable to 1.
 # This can't be done via Python, as it has to happen before the resolver is loaded.
 cached_resolver.GetExposeRelativePathIdentifierState() # Get the state of exposing relative path identifiers
 cached_resolver.SetExposeRelativePathIdentifierState() # Set the state of exposing relative path identifiers
@@ -44,7 +44,7 @@ cached_resolver.SetExposeRelativePathIdentifierState() # Set the state of exposi
 # Enable absolute identifier resolving
 cached_resolver.SetExposeAbsolutePathIdentifierState(True)
 print("Resolver is currently exposing absolute path identifiers to Python | {}".format(cached_resolver.GetExposeAbsolutePathIdentifierState()))
-# Or set the "AR_CACHEDRESOLVER_ENV_EXPOSE_ABSOLUTE_PATH_IDENTIFIERS" environment variable to 1.
+# Or set the "AR_EXPOSE_ABSOLUTE_PATH_IDENTIFIERS" environment variable to 1.
 # This can't be done via Python, as it has to happen before the resolver is loaded.
 cached_resolver.GetExposeAbsolutePathIdentifierState() # Get the state of exposing absolute path identifiers
 cached_resolver.SetExposeAbsolutePathIdentifierState() # Set the state of exposing absolute path identifiers

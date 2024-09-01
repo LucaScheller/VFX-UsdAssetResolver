@@ -2,7 +2,7 @@
 
 In this example we examine how a possible production setup would look like.
 
-We enable the advanced feature of exposing relative identifiers to Python by setting the `AR_CACHEDRESOLVER_ENV_EXPOSE_RELATIVE_PATH_IDENTIFIERS` environment variable to `1`.
+We enable the advanced feature of exposing relative identifiers to Python by setting the `AR_EXPOSE_RELATIVE_PATH_IDENTIFIERS` environment variable to `1`.
 
 ## Prerequisites
 
@@ -16,12 +16,12 @@ If you are using the pre-compiled builds, make sure that you adjust the paths ac
 export PYTHONPATH=${REPO_ROOT}/files/implementations/CachedResolver/code:${REPO_ROOT}/dist/${RESOLVER_NAME}/lib/python:${PYTHONPATH}
 export PXR_PLUGINPATH_NAME=${REPO_ROOT}/dist/${RESOLVER_NAME}/resources:${PXR_PLUGINPATH_NAME}
 export LD_LIBRARY_PATH=${REPO_ROOT}/dist/${RESOLVER_NAME}/lib
-export AR_CACHEDRESOLVER_ENV_EXPOSE_RELATIVE_PATH_IDENTIFIERS=1
+export AR_EXPOSE_RELATIVE_PATH_IDENTIFIERS=1
 # Windows
 set PYTHONPATH=%REPO_ROOT%\files\implementations\CachedResolver\code;%REPO_ROOT%\dist\%RESOLVER_NAME%\lib\python;%PYTHONPATH%
 set PXR_PLUGINPATH_NAME=%REPO_ROOT%\dist\%RESOLVER_NAME%\resources;%PXR_PLUGINPATH_NAME%
 set PATH=%REPO_ROOT%\dist\%RESOLVER_NAME%\lib;%PATH%
-set AR_CACHEDRESOLVER_ENV_EXPOSE_RELATIVE_PATH_IDENTIFIERS=1
+set AR_EXPOSE_RELATIVE_PATH_IDENTIFIERS=1
 ```
 ~~~
 
