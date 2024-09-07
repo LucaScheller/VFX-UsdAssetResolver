@@ -26,7 +26,7 @@ PYTHON_SOURCE_DOWNLOAD_URL = {
 }
 PYTHON_WINDOWS_DOWNLOAD_URL = {
     "3.10.11": "https://www.python.org/ftp/python/3.10.11/python-3.10.11-amd64.exe",
-    "3.11.4": "https://www.python.org/ftp/python/3.11.4/Python-3.11.4.tgz",
+    "3.11.4": "https://www.python.org/ftp/python/3.11.4/python-3.11.4-amd64.exe",
 }
 SEVENZIP_WINDOWS_DOWNLOAD_URL = {
     "2301": "https://www.7-zip.org/a/7z2401-x64.exe"
