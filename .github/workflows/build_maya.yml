@@ -19,7 +19,7 @@ jobs:
     strategy:
       matrix:
         maya_product_name: ["maya"]
-        maya_product_version: ["2024.2"]
+        maya_product_version: ["2024.2", "2025.2"]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -63,7 +63,7 @@ jobs:
           name: UsdAssetResolver-linux-${{ matrix.maya_product_name }}-${{ matrix.maya_product_version }}
           path: artifacts/*.zip
 
-  build_windows:
+  build_windows_2019:
     runs-on: windows-2019
     environment: maya
     strategy:
@@ -88,16 +88,60 @@ jobs:
           python3 .github\scripts\maya.py --install --install_maya_product_name ${{ matrix.maya_product_name }} --install_maya_product_version ${{ matrix.maya_product_version }} --install_directory $pwd\dependency
       - name: Build USD File Resolver
         run: |
-          .\.github\scripts\maya_build.bat fileResolver
+          .\.github\scripts\maya_build.bat fileResolver "Visual Studio 16 2019" "v142"
       - name: Build USD Python Resolver
         run: |
-          .\.github\scripts\maya_build.bat pythonResolver
+          .\.github\scripts\maya_build.bat pythonResolver "Visual Studio 16 2019" "v142"
       - name: Build USD Cached Resolver
         run: |
-          .\.github\scripts\maya_build.bat cachedResolver
+          .\.github\scripts\maya_build.bat cachedResolver "Visual Studio 16 2019" "v142"
       - name: Build USD Http Resolver
         run: |
-          .\.github\scripts\maya_build.bat httpResolver
+          .\.github\scripts\maya_build.bat httpResolver "Visual Studio 16 2019" "v142"
+      - name: Create single .zip archive
+        run: |
+          & python $pwd\.github\scripts\maya.py --artifact --artifact_src=$pwd\dist --artifact_dst=$pwd\artifacts --artifact_prefix=UsdAssetResolver --artifact_product_name ${{ matrix.maya_product_name }} --install_directory $pwd\dependency
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: UsdAssetResolver-windows-${{ matrix.maya_product_name }}-${{ matrix.maya_product_version }}
+          path: artifacts/*.zip
+
+  build_windows_2022:
+    runs-on: windows-2022
+    environment: maya
+    strategy:
+      matrix:
+        maya_product_name: ["maya"]
+        maya_product_version: ["2025.2"]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Switch to latest release tag
+        run: |
+          git fetch --all --tags --force
+          $latest_release_tag=git tag -l --sort=-version:refname v* | select -first 1
+          git checkout tags/$latest_release_tag
+      - name: Install system packages
+        run: |
+          pip3 install requests
+      - name: Install Maya
+        run: |
+          python3 .github\scripts\maya.py --install --install_maya_product_name ${{ matrix.maya_product_name }} --install_maya_product_version ${{ matrix.maya_product_version }} --install_directory $pwd\dependency
+      - name: Build USD File Resolver
+        run: |
+          .\.github\scripts\maya_build.bat fileResolver "Visual Studio 17 2022" "v143"
+      - name: Build USD Python Resolver
+        run: |
+          .\.github\scripts\maya_build.bat pythonResolver "Visual Studio 17 2022" "v143"
+      - name: Build USD Cached Resolver
+        run: |
+          .\.github\scripts\maya_build.bat cachedResolver "Visual Studio 17 2022" "v143"
+      - name: Build USD Http Resolver
+        run: |
+          .\.github\scripts\maya_build.bat httpResolver "Visual Studio 17 2022" "v143"
       - name: Create single .zip archive
         run: |
           & python $pwd\.github\scripts\maya.py --artifact --artifact_src=$pwd\dist --artifact_dst=$pwd\artifacts --artifact_prefix=UsdAssetResolver --artifact_product_name ${{ matrix.maya_product_name }} --install_directory $pwd\dependency
@@ -111,12 +155,12 @@ jobs:
     runs-on: ubuntu-latest
     permissions: 
       contents: write
-    needs: [build_linux, build_windows]
+    needs: [build_linux, build_windows_2019, build_windows_2022]
     strategy:
       matrix:
         os: ["linux", "windows"]
         maya_product_name: ["maya"]
-        maya_product_version: ["2024.2"]
+        maya_product_version: ["2024.2", "2025.2"]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4

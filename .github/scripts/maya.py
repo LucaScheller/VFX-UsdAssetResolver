@@ -1,15 +1,12 @@
 import argparse
-import hashlib
 import glob
 import contextlib
 import logging
 import os
-import pathlib
 import platform
 import re
 import requests
 import shutil
-import sidefx
 import subprocess
 import tarfile
 import zipfile
@@ -17,18 +14,19 @@ from urllib import request
 import ssl
 import json
 
+
 MAYA_USD_SDK_URL = "https://api.github.com/repos/Autodesk/maya-usd"
 MAYA_USD_SDK_RELEASE_ASSET_ELEMENTS_REGEX = re.compile(
     "MayaUSD_([0-9.]+)_Maya([0-9.]+)_(Linux|Windows).(run|exe)"
 )
-MAYA_PYTHON_VERSION_MAPPING = {
-    "2024.2": "3.10.11"
-}
+MAYA_PYTHON_VERSION_MAPPING = {"2024.2": "3.10.11", "2025.2": "3.11.4"}
 PYTHON_SOURCE_DOWNLOAD_URL = {
-    "3.10.11": "https://www.python.org/ftp/python/3.10.11/Python-3.10.11.tgz"
+    "3.10.11": "https://www.python.org/ftp/python/3.10.11/Python-3.10.11.tgz",
+    "3.11.4": "https://www.python.org/ftp/python/3.11.4/Python-3.11.4.tgz",
 }
 PYTHON_WINDOWS_DOWNLOAD_URL = {
-    "3.10.11": "https://www.python.org/ftp/python/3.10.11/python-3.10.11-amd64.exe"
+    "3.10.11": "https://www.python.org/ftp/python/3.10.11/python-3.10.11-amd64.exe",
+    "3.11.4": "https://www.python.org/ftp/python/3.11.4/Python-3.11.4.tgz",
 }
 SEVENZIP_WINDOWS_DOWNLOAD_URL = {
     "2301": "https://www.7-zip.org/a/7z2401-x64.exe"
@@ -77,12 +75,12 @@ def get_autodesk_platform():
 
 
 def get_autodesk_maya_usd_sdk_releases(platform_name, maya_version):
-    """Get the GitHub API service
+    """Get the Autodesk Maya USD SDK releases
     Args:
         client_id (str): The client id
         client_secret_key (str): The client secret key
     Returns:
-        sidefx.Service: The service
+        list[(str, str)]: A list of (version, url) pairs.
     """
     # Query release data
     try:
