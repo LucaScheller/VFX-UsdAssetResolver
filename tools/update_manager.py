@@ -337,7 +337,7 @@ class UpdateManager(object):
             product_name = "houdini"
             product_version = hou.applicationVersionString()
             product_python_version = "-py{}{}".format(
-                sys.version_info.major, str(sys.version_info.minor)[:1]
+                sys.version_info.major, sys.version_info.minor
             )
         elif dcc_name == "maya":
             import maya.cmds as cmds
