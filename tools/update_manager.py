@@ -598,7 +598,7 @@ class UpdateManager(object):
             "PXR_PLUGINPATH_NAME": os.path.join(resolver_dir_path, "resources"),
             "PYTHONPATH": os.path.join(resolver_dir_path, "lib", "python"),
         }
-        if resolver_name in ["PythonResolver", "CachedResolver"]:
+        if resolver_name in ["PythonResolver", "FileResolver"]:
             env.update(
                 {
                     "AR_ENV_SEARCH_PATHS": "{}{}{}".format(
