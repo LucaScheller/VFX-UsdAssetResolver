@@ -14,7 +14,7 @@ concurrency:
 jobs:
 
   build_linux:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     environment: houdini
     strategy:
       matrix:

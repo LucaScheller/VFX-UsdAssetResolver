@@ -104,7 +104,7 @@ def install_sidefx_product(product, version):
     if sidefx_platform == "linux":
         for release in releases_list:
             # Switch to new gcc version starting with H20
-            if release["version"] == "20.0":
+            if float(release["version"]) >= 20.0:
                 if not release["platform"].endswith("gcc11.2"):
                     continue
             target_release = release
