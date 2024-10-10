@@ -123,7 +123,7 @@ def install_sidefx_product(product, version):
         product=target_release["product"],
         version=target_release["version"],
         build=target_release["build"],
-        platform=sidefx_platform,
+        platform=target_release["platform"],
     )
 
     # Download latest production release
