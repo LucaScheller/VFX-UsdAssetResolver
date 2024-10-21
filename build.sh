@@ -7,12 +7,12 @@ export RESOLVER_NAME=cachedResolver
 rm -rf build
 rm -rf dist
 set -e # Exit on error
-cmake . -B build -DCMAKE_VERBOSE_MAKEFILE=ON
+cmake . -B build
 
 # make clean all
-cmake --build build --clean-first -DCMAKE_VERBOSE_MAKEFILE=ON
+cmake --build build --clean-first
      
 # make install        
-cmake --install build -DCMAKE_VERBOSE_MAKEFILE=ON
+cmake --install build
                  
 #ctest -VV --test-dir build
