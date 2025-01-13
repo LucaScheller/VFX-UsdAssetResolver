@@ -112,14 +112,16 @@ class ResolverContext:
         LOG.debug(
             "::: ResolverContext.ResolveAndCache | {} | {}".format(assetPath, context.GetCachingPairs())
         )
+        """Implement custom resolve logic and add the resolved path to the cache.
         resolved_asset_path = "/some/path/to/a/file.usd"
         context.AddCachingPair(assetPath, resolved_asset_path)
-        """
-        To clear the context cache call:
+        # To clear the context cache call:
         context.ClearCachingPairs()
         """
         """The code below is only needed to verify that UnitTests work."""
         UnitTestHelper.resolve_and_cache_call_counter += 1
+        resolved_asset_path = "/some/path/to/a/file.usd"
+        context.AddCachingPair(assetPath, resolved_asset_path)
         if assetPath == "unittest.usd":
             current_dir_path = UnitTestHelper.current_directory_path
             asset_a_file_path = os.path.join(current_dir_path, "assetA.usd")

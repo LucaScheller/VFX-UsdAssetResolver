@@ -10,11 +10,10 @@ endif()
 ### Targets ###
 ## Target library > pythonResolver ##
 add_library(${AR_PYTHONRESOLVER_TARGET_LIB}
-    SHARED
-        debugCodes.cpp
-        resolver.cpp
-        resolverContext.cpp
-        resolverTokens.cpp
+    debugCodes.cpp
+    resolver.cpp
+    resolverContext.cpp
+    resolverTokens.cpp
 )
 set_boost_namespace(${AR_PYTHONRESOLVER_TARGET_LIB})
 # Libs
@@ -53,15 +52,13 @@ install(TARGETS ${AR_PYTHONRESOLVER_TARGET_LIB} DESTINATION ${AR_PYTHONRESOLVER_
 
 ## Target library > pythonResolver Python ##
 add_library(${AR_PYTHONRESOLVER_TARGET_PYTHON}
-    SHARED
-        module.cpp
-        moduleDeps.cpp
-        resolverTokens.cpp
-        resolverContext.cpp
-        wrapResolver.cpp
-        wrapResolverContext.cpp
-        wrapResolverTokens.cpp
-
+    module.cpp
+    moduleDeps.cpp
+    resolverTokens.cpp
+    resolverContext.cpp
+    wrapResolver.cpp
+    wrapResolverContext.cpp
+    wrapResolverTokens.cpp
 )
 add_dependencies(${AR_PYTHONRESOLVER_TARGET_PYTHON} ${AR_PYTHONRESOLVER_TARGET_LIB})
 set_boost_namespace(${AR_PYTHONRESOLVER_TARGET_PYTHON})

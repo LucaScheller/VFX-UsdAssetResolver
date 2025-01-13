@@ -10,21 +10,20 @@ endif()
 ### Targets ###
 ## Target library > cachedResolver ##
 add_library(${AR_CACHEDRESOLVER_TARGET_LIB}
-    SHARED
-        debugCodes.cpp
-        resolver.cpp
-        resolverContext.cpp
-        resolverTokens.cpp
-        # Since when our resolver calls into Python it passes the ResolverContext,
-        # we need to ensure that Python has loaded the ResolverContext C++ representation.
-        # While we do have duplicate compiled code by adding the below, this allows us to not do hacky workarounds like
-        # LD_PRELOAD-ing the lib. See https://github.com/LucaScheller/VFX-UsdAssetResolver/issues/3 for more information.
-        # If you know a better way around this please file a PR :)
-        module.cpp
-        moduleDeps.cpp
-        wrapResolver.cpp
-        wrapResolverContext.cpp
-        wrapResolverTokens.cpp
+    debugCodes.cpp
+    resolver.cpp
+    resolverContext.cpp
+    resolverTokens.cpp
+    # Since when our resolver calls into Python it passes the ResolverContext,
+    # we need to ensure that Python has loaded the ResolverContext C++ representation.
+    # While we do have duplicate compiled code by adding the below, this allows us to not do hacky workarounds like
+    # LD_PRELOAD-ing the lib. See https://github.com/LucaScheller/VFX-UsdAssetResolver/issues/3 for more information.
+    # If you know a better way around this please file a PR :)
+    module.cpp
+    moduleDeps.cpp
+    wrapResolver.cpp
+    wrapResolverContext.cpp
+    wrapResolverTokens.cpp
 )
 set_boost_namespace(${AR_CACHEDRESOLVER_TARGET_LIB})
 # Libs
@@ -66,15 +65,14 @@ install(TARGETS ${AR_CACHEDRESOLVER_TARGET_LIB} DESTINATION ${AR_CACHEDRESOLVER_
 
 ## Target library > cachedResolver Python ##
 add_library(${AR_CACHEDRESOLVER_TARGET_PYTHON}
-    SHARED
-        module.cpp
-        moduleDeps.cpp
-        # resolver.cpp
-        resolverTokens.cpp
-        resolverContext.cpp
-        wrapResolver.cpp
-        wrapResolverContext.cpp
-        wrapResolverTokens.cpp
+    module.cpp
+    moduleDeps.cpp
+    # resolver.cpp
+    resolverTokens.cpp
+    resolverContext.cpp
+    wrapResolver.cpp
+    wrapResolverContext.cpp
+    wrapResolverTokens.cpp
 )
 add_dependencies(${AR_CACHEDRESOLVER_TARGET_PYTHON} ${AR_CACHEDRESOLVER_TARGET_LIB})
 set_boost_namespace(${AR_CACHEDRESOLVER_TARGET_PYTHON})

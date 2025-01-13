@@ -380,7 +380,7 @@ class TestArResolver(unittest.TestCase):
                 self.assertEqual(resolved_path.GetPathString(), layer_file_path)
                 self.assertTrue(os.path.isabs(resolved_path.GetPathString()))
                 resolved_path = resolver.Resolve("example.usd")
-                self.assertEqual(resolved_path.GetPathString(), "")
+                self.assertEqual(resolved_path.GetPathString(), "/some/path/to/a/file.usd")
                 resolved_path = resolver.Resolve("/some/invalid/path.usd")
                 self.assertEqual(resolved_path.GetPathString(), "")
                 resolved_path = resolver.Resolve(layer_file_path)
@@ -454,14 +454,15 @@ class TestArResolver(unittest.TestCase):
                         resolver.Resolve(layer_identifier),
                     )
                     # Remove file
+                    ctx.RemoveCachingByKey(layer_identifier)
                     os.remove(layer_file_path)
                     # Query cached result
                     self.assertEqual(
                         os.path.abspath(layer_file_path),
                         resolver.Resolve(layer_identifier),
                     )
-                # Uncached result should now return empty result
-                self.assertEqual("", resolver.Resolve(layer_identifier))
+                # Uncached result should now return the default PythonExpose.py result
+                self.assertEqual(resolver.Resolve(layer_identifier), "/some/path/to/a/file.usd")
 
     def test_ResolverCachingMechanism(self):
         with tempfile.TemporaryDirectory() as temp_dir_path:

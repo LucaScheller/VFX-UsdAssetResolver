@@ -99,7 +99,7 @@ void CachedResolverContext::Initialize(){
                            "ResolverContext.Initialize",
                            this);
     if (!state) {
-        std::cerr << "Failed to call Resolver.ResolveAndCache in " << DEFINE_STRING(AR_CACHEDRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME) << ".py. ";
+        std::cerr << "Failed to call Resolver.Initialize in " << DEFINE_STRING(AR_CACHEDRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME) << ".py. ";
         std::cerr << "Please verify that the python code is valid!" << std::endl;
     }
 }
