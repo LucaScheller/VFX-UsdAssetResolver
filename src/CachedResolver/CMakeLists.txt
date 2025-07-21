@@ -35,7 +35,6 @@ target_link_libraries(${AR_CACHEDRESOLVER_TARGET_LIB}
     ${AR_PXR_LIB_PREFIX}vt
     ${AR_PXR_LIB_PREFIX}ar
     ${AR_PXR_LIB_PREFIX}sdf
-    ${AR_BOOST_PYTHON_LIB}
 )
 # Headers
 target_include_directories(${AR_CACHEDRESOLVER_TARGET_LIB}
@@ -79,7 +78,6 @@ set_boost_namespace(${AR_CACHEDRESOLVER_TARGET_PYTHON})
 # Libs
 target_link_libraries(${AR_CACHEDRESOLVER_TARGET_PYTHON}
     ${AR_CACHEDRESOLVER_TARGET_LIB}
-    ${AR_BOOST_PYTHON_LIB}
 )
 # Headers
 target_include_directories(${AR_CACHEDRESOLVER_TARGET_PYTHON}

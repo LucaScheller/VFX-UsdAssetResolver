@@ -1,40 +1,22 @@
 #include "resolverTokens.h"
 
-#include "boost_include_wrapper.h"
-#include BOOST_INCLUDE(python/class.hpp)
-
-#include <string>
-
-using namespace AR_BOOST_NAMESPACE::python;
+#include "pxr/external/boost/python.hpp"
 
 PXR_NAMESPACE_USING_DIRECTIVE
 
-namespace {
-    class _WrapStaticToken {
-        public:
-            _WrapStaticToken(const TfToken* token) : _token(token) { }
-            std::string operator()() const
-            {
-                return _token->GetString();
-            }
-        private:
-            const TfToken* _token;
-    };
+using namespace pxr_boost::python;
 
-    template <typename T>
-    void
-    _AddToken(T& cls, const char* name, const TfToken& token)
-    {
-        cls.add_static_property(name,
-                                make_function(_WrapStaticToken(&token),
-                                return_value_policy<return_by_value>(),
-                                AR_BOOST_NAMESPACE::mpl::vector1<std::string>()));
-    }
+// NOTE: When migrating to pxr_boost::python (usd-24.11+), I had to replace the operator
+// based token getter with static function(s) because we don't have access to boost::mpl::vector for
+// signature anymore. Anyways we have only one token and setting up new getters is nothing if we need to.
+static std::string GetMappingPairs() {
+    return CachedResolverTokens->mappingPairs.GetString();
 }
 
 void wrapResolverTokens()
 {
-    class_<CachedResolverTokensType, AR_BOOST_NAMESPACE::noncopyable>
-        cls("Tokens", no_init);
-    _AddToken(cls, "mappingPairs", CachedResolverTokens->mappingPairs);
+    class_<CachedResolverTokensType, noncopyable>("Tokens", no_init)
+        .add_static_property("mappingPairs",
+            make_function(&GetMappingPairs,
+                return_value_policy<return_by_value>()));
 }
