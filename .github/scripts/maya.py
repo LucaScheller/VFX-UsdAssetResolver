@@ -19,19 +19,20 @@ MAYA_USD_SDK_URL = "https://api.github.com/repos/Autodesk/maya-usd"
 MAYA_USD_SDK_RELEASE_ASSET_ELEMENTS_REGEX = re.compile(
     "MayaUSD_([0-9.]+)_Maya([0-9.]+)_(Linux|Windows).(run|exe)"
 )
-MAYA_PYTHON_VERSION_MAPPING = {"2024.2": "3.10.11", "2025.2": "3.11.4"}
+MAYA_PYTHON_VERSION_MAPPING = {"2024.2": "3.10.11", "2025.2": "3.11.4", "2026.2": "3.11.9"}
 PYTHON_SOURCE_DOWNLOAD_URL = {
     "3.10.11": "https://www.python.org/ftp/python/3.10.11/Python-3.10.11.tgz",
     "3.11.4": "https://www.python.org/ftp/python/3.11.4/Python-3.11.4.tgz",
+    "3.11.9": "https://www.python.org/ftp/python/3.11.9/Python-3.11.9.tgz",
 }
 PYTHON_WINDOWS_DOWNLOAD_URL = {
     "3.10.11": "https://www.python.org/ftp/python/3.10.11/python-3.10.11-amd64.exe",
     "3.11.4": "https://www.python.org/ftp/python/3.11.4/python-3.11.4-amd64.exe",
+    "3.11.9": "https://www.python.org/ftp/python/3.11.9/python-3.11.9-amd64.exe",
 }
 SEVENZIP_WINDOWS_DOWNLOAD_URL = {
     "2301": "https://www.7-zip.org/a/7z2401-x64.exe"
 }
-
 
 logging.basicConfig(format="%(asctime)s %(message)s", datefmt="%m/%d/%Y %I:%M:%S %p", level=logging.INFO)
 
@@ -122,7 +123,7 @@ def get_autodesk_maya_usd_sdk_releases(platform_name, maya_version):
     return releases
 
 
-def install_autodesk_product(product, version, install_dir_path):
+def install_autodesk_product(product, version, dependency_dir_path):
     """Install a USD SDK release of Maya
     Args:
         product (str): The target product name (e.g. maya, etc.)
@@ -133,9 +134,9 @@ def install_autodesk_product(product, version, install_dir_path):
     python_version = MAYA_PYTHON_VERSION_MAPPING[version]
 
     # Directories
-    download_dir_path = os.path.join(install_dir_path, "download")
-    install_dir_path = os.path.join(install_dir_path, "install")
-    tmp_dir_path = os.path.join(install_dir_path, "tmp")
+    download_dir_path = os.path.join(dependency_dir_path, "download")
+    install_dir_path = os.path.join(dependency_dir_path, "install")
+    tmp_dir_path = os.path.join(dependency_dir_path, "tmp")
     if os.path.exists(download_dir_path):
         shutil.rmtree(download_dir_path)
     if os.path.exists(install_dir_path):
@@ -203,7 +204,8 @@ def install_autodesk_product(product, version, install_dir_path):
         # process = subprocess.check_call(command, cwd=maya_usd_sdk_extract_dir_path)
         command = ["rpm", "-i", "--nodeps","--prefix", maya_usd_sdk_extract_dir_path, maya_usd_sdk_extract_rpm_file_path]
         process = subprocess.check_call(command, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, cwd=maya_usd_sdk_extract_dir_path)
-        maya_usd_sdk_extract_usd_dir_path = glob.glob("{root_dir}{sep}**{sep}mayausd{sep}USD".format(root_dir=maya_usd_sdk_extract_dir_path, sep=os.path.sep), recursive=True)[0]
+        # Maya now ships with multiple USD builds, we choose the first one implicitly (as this is how Autodesk resolve the current 'default').
+        maya_usd_sdk_extract_usd_dir_path = glob.glob("{root_dir}{sep}**{sep}mayausd{sep}USD*".format(root_dir=maya_usd_sdk_extract_dir_path, sep=os.path.sep), recursive=True)[0]
         maya_usd_sdk_extract_usd_dir_path = os.path.join(maya_usd_sdk_extract_dir_path, maya_usd_sdk_extract_usd_dir_path)
         os.rename(maya_usd_sdk_extract_usd_dir_path, maya_usd_sdk_install_dir_path)
         os.chmod(maya_usd_sdk_install_dir_path, 0o777)

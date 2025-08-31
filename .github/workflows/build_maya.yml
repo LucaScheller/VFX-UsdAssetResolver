@@ -19,7 +19,7 @@ jobs:
     strategy:
       matrix:
         maya_product_name: ["maya"]
-        maya_product_version: ["2024.2", "2025.2"]
+        maya_product_version: ["2024.2", "2025.2", "2026.2"]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -115,7 +115,7 @@ jobs:
     strategy:
       matrix:
         maya_product_name: ["maya"]
-        maya_product_version: ["2025.2"]
+        maya_product_version: ["2025.2", "2026.2"]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -162,7 +162,7 @@ jobs:
       matrix:
         os: ["linux", "windows"]
         maya_product_name: ["maya"]
-        maya_product_version: ["2024.2", "2025.2"]
+        maya_product_version: ["2024.2", "2025.2", "2026.2"]
         exclude:
           - os: "windows"
             maya_product_name: "maya"
