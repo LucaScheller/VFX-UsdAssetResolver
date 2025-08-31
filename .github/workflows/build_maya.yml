@@ -64,6 +64,8 @@ jobs:
           path: artifacts/*.zip
 
   build_windows_2019:
+    # GitHub has removed the 2019 windows server image
+    if: false
     runs-on: windows-2019
     environment: maya
     strategy:
@@ -152,6 +154,7 @@ jobs:
           path: artifacts/*.zip
 
   deploy:
+    if: false
     runs-on: ubuntu-latest
     permissions: 
       contents: write

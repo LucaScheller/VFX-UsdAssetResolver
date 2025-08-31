@@ -10,7 +10,6 @@ add_library(${AR_HTTPRESOLVER_TARGET_LIB}
     SHARED
         ../arHttp/src/arHttp/resolver.cpp
 )
-#set_boost_namespace(${AR_HTTPRESOLVER_TARGET_LIB})
 # Libs
 target_link_libraries(${AR_HTTPRESOLVER_TARGET_LIB}
     ${AR_PXR_LIB_PREFIX}arch

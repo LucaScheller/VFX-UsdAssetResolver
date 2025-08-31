@@ -16,6 +16,8 @@ add_library(${AR_PYTHONRESOLVER_TARGET_LIB}
     resolverTokens.cpp
 )
 set_boost_namespace(${AR_PYTHONRESOLVER_TARGET_LIB})
+set_boost_folder_namespace(${AR_PYTHONRESOLVER_TARGET_LIB})
+set_boost_pxr_external_exists(${AR_PYTHONRESOLVER_TARGET_LIB})
 # Libs
 target_link_libraries(${AR_PYTHONRESOLVER_TARGET_LIB}
     ${AR_PXR_LIB_PREFIX}arch
@@ -62,6 +64,8 @@ add_library(${AR_PYTHONRESOLVER_TARGET_PYTHON}
 )
 add_dependencies(${AR_PYTHONRESOLVER_TARGET_PYTHON} ${AR_PYTHONRESOLVER_TARGET_LIB})
 set_boost_namespace(${AR_PYTHONRESOLVER_TARGET_PYTHON})
+set_boost_folder_namespace(${AR_PYTHONRESOLVER_TARGET_PYTHON})
+set_boost_pxr_external_exists(${AR_PYTHONRESOLVER_TARGET_PYTHON})
 # Libs
 target_link_libraries(${AR_PYTHONRESOLVER_TARGET_PYTHON}
     ${AR_PYTHONRESOLVER_TARGET_LIB}

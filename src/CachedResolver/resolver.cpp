@@ -32,8 +32,6 @@ See the _CreateIdentifier method for more information.
 */
 static std::mutex g_resolver_create_identifier_mutex;
 
-namespace python = AR_BOOST_NAMESPACE::python;
-
 PXR_NAMESPACE_OPEN_SCOPE
 
 AR_DEFINE_RESOLVER(CachedResolver, ArResolver);
@@ -149,9 +147,16 @@ CachedResolver::_CreateIdentifier(
                     and the Python Resolver.CreateRelativePathIdentified method on how to use this. 
                     */
                     const std::lock_guard<std::mutex> lock(g_resolver_create_identifier_mutex);
-                    int state = TfPyInvokeAndExtract(DEFINE_STRING(AR_CACHEDRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME),
-                                                     "Resolver.CreateRelativePathIdentifier",
-                                                     &pythonResult, AR_BOOST_NAMESPACE::ref(*this), anchoredAssetPath, assetPath, anchorAssetPath);
+
+                    int state = TfPyInvokeAndExtract(
+                        DEFINE_STRING(AR_CACHEDRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME),
+                        "Resolver.CreateRelativePathIdentifier",
+                        #if AR_BOOST_PXR_EXTERNAL_EXISTS == 1
+                            &pythonResult, AR_BOOST_NAMESPACE::python::ref(*this), anchoredAssetPath, assetPath, anchorAssetPath
+                        #else
+                            &pythonResult, AR_BOOST_NAMESPACE::ref(*this), anchoredAssetPath, assetPath, anchorAssetPath
+                        #endif
+                    );
                     if (!state) {
                         std::cerr << "Failed to call Resolver.CreateRelativePathIdentifier in " << DEFINE_STRING(AR_CACHEDRESOLVER_USD_PYTHON_EXPOSE_MODULE_NAME) << ".py. ";
                         std::cerr << "Please verify that the python code is valid!" << std::endl;

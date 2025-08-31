@@ -43,7 +43,7 @@ You can check them out in our [tutorials section](https://lucascheller.github.io
 
 ## Contributing and Acknowledgements
 Special thanks to [Jonas Sorgenfrei](https://github.com/jonassorgenfrei) for helping bring this project to life as well as all the contributors on the Usd-Interest forum, particularly
-Mark Tucker, ColinE, Jake Richards, Pawel Olas, Joshua Miller US, Simon Boorer. 
+Mark Tucker, ColinE, Jake Richards, Pawel Olas, Joshua Miller US, Simon Boorer, @dovanbel and @marcantoinep. 
 
 Post of relevance in the Usd-Interest Forum to this repo:
 - [usdResolverExample AR 2.0 for Houdini 19.5](https://groups.google.com/g/usd-interest/c/82GxMaAG1eo/m/ePk2tYptAAAJ)

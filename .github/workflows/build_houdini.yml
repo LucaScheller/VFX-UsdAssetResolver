@@ -19,12 +19,12 @@ jobs:
     strategy:
       matrix:
         houdini_product_name: ["houdini", "houdini-py310", "houdini-py39", "houdini-py37"]
-        houdini_product_version: ["19.5", "20.0", "20.5"]
+        houdini_product_version: ["20.0", "20.5", "21.0"]
         exclude:
-          - houdini_product_name: "houdini-py39"
-            houdini_product_version: "19.5"
-          - houdini_product_name: "houdini-py310"
-            houdini_product_version: "19.5"
+          # - houdini_product_name: "houdini-py39"
+          #   houdini_product_version: "19.5"
+          # - houdini_product_name: "houdini-py310"
+          #   houdini_product_version: "19.5"
           - houdini_product_name: "houdini-py37"
             houdini_product_version: "20.0"
           - houdini_product_name: "houdini-py310"
@@ -33,6 +33,12 @@ jobs:
             houdini_product_version: "20.5"
           - houdini_product_name: "houdini-py39"
             houdini_product_version: "20.5"
+          - houdini_product_name: "houdini-py37"
+            houdini_product_version: "21.0"
+          - houdini_product_name: "houdini-py39"
+            houdini_product_version: "21.0"
+          - houdini_product_name: "houdini-py310"
+            houdini_product_version: "21.0"
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -86,6 +92,8 @@ jobs:
           path: artifacts/*.zip
 
   build_windows_2019:
+    # GitHub has removed the 2019 windows server image
+    if: false
     runs-on: windows-2019
     environment: houdini
     strategy:
@@ -150,7 +158,10 @@ jobs:
     strategy:
       matrix:
         houdini_product_name: ["houdini", "houdini-py310"]
-        houdini_product_version: ["20.5"]
+        houdini_product_version: ["20.5", "21.0"]
+        exclude:
+          - houdini_product_name: "houdini-py310"
+            houdini_product_version: "21.0"
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -202,17 +213,17 @@ jobs:
     runs-on: ubuntu-latest
     permissions: 
       contents: write
-    needs: [build_linux, build_windows_2019, build_windows_2022]
+    needs: [build_linux, build_windows_2022]
     strategy:
       matrix:
         os: ["linux", "windows"]
         houdini_product_name: ["houdini", "houdini-py310", "houdini-py39", "houdini-py37"]
-        houdini_product_version: ["19.5", "20.0", "20.5"]
+        houdini_product_version: ["19.5", "20.0", "20.5", "21.0"]
         exclude:
-          - houdini_product_name: "houdini-py39"
-            houdini_product_version: "19.5"
-          - houdini_product_name: "houdini-py310"
-            houdini_product_version: "19.5"
+          # - houdini_product_name: "houdini-py39"
+          #   houdini_product_version: "19.5"
+          # - houdini_product_name: "houdini-py310"
+          #   houdini_product_version: "19.5"
           - houdini_product_name: "houdini-py37"
             houdini_product_version: "20.0"
           - houdini_product_name: "houdini-py310"
@@ -221,6 +232,12 @@ jobs:
             houdini_product_version: "20.5"
           - houdini_product_name: "houdini-py39"
             houdini_product_version: "20.5"
+          - houdini_product_name: "houdini-py37"
+            houdini_product_version: "21.0"
+          - houdini_product_name: "houdini-py39"
+            houdini_product_version: "21.0"
+          - houdini_product_name: "houdini-py310"
+            houdini_product_version: "21.0"
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
