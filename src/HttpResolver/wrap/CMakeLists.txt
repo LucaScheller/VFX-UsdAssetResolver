@@ -12,6 +12,7 @@ add_library(${AR_HTTPRESOLVER_TARGET_LIB}
 )
 # Libs
 target_link_libraries(${AR_HTTPRESOLVER_TARGET_LIB}
+    ${AR_PYTHON_LIB}
     ${AR_PXR_LIB_PREFIX}arch
     ${AR_PXR_LIB_PREFIX}tf
     ${AR_PXR_LIB_PREFIX}gf
@@ -23,9 +24,9 @@ target_link_libraries(${AR_HTTPRESOLVER_TARGET_LIB}
 # Headers
 target_include_directories(${AR_HTTPRESOLVER_TARGET_LIB}
     PUBLIC
-    ${AR_BOOST_INCLUDE_DIR}
     ${AR_PYTHON_INCLUDE_DIR}
     ${AR_PXR_INCLUDE_DIR}
+    ${AR_BOOST_INCLUDE_DIR}
 )
 # Props
 # Remove default "lib" prefix
