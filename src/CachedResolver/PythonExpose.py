@@ -133,7 +133,7 @@ class ResolverContext:
             relative_path, anchor_path = assetPath[len(relative_path_prefix) :].split(
                 "?"
             )
-            anchor_path = anchor_path[:-1] if anchor_path[-1] == "/" else anchor_path[:anchor_path.rfind("/")]
+            anchor_path = anchor_path[:-1] if anchor_path[-1] == os.path.sep else anchor_path[:anchor_path.rfind(os.path.sep)]
             resolved_asset_path = os.path.normpath(os.path.join(anchor_path, relative_path))
             context.AddCachingPair(assetPath, resolved_asset_path)
         return resolved_asset_path

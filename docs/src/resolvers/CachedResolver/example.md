@@ -43,7 +43,7 @@ You'll also need to adjust the `shotA_mapping.usd` to point to absolute file pat
 Let's have a look how we can demo this setup in Houdini.
 
 ### Loading our Shot
-If everything was initialized correctly, we can sublayer in the shot A USD file by referring to it via `shots/shotsA`.
+If everything was initialized correctly, we can sublayer in the shot A USD file by referring to it via `shots/shotA`
 
 ![Houdini Shot](./media/ProductionExampleHoudiniShot.png)
 
@@ -137,7 +137,7 @@ class Resolver:
         # For this example, we assume all identifier are anchored to the shot and asset directories.
         # We remove the version from the identifier, so that our mapping files can target a version-less identifier.
         anchor_path = anchorAssetPath.GetPathString()
-        anchor_path = anchor_path[:-1] if anchor_path[-1] == "/" else anchor_path[:anchor_path.rfind("/")]
+        anchor_path = anchor_path[:-1] if anchor_path[-1] == os.path.sep else anchor_path[:anchor_path.rfind(os.path.sep)]
         entity_type = os.path.basename(os.path.dirname(anchor_path))
         entity_identifier = os.path.basename(anchor_path)
         entity_element = os.path.basename(assetPath).split("_")[0]
@@ -188,7 +188,7 @@ class ResolverContext:
             base_identifier = assetPath[len(RELATIVE_PATH_IDENTIFIER_PREFIX):]
             anchor_path, entity_element = base_identifier.split("?")
             entity_type, entity_identifier = anchor_path.split("/")
-            entity_element, entity_version = entity_element.split("-")
+            entity_element, entity_version = entity_element.split("_")
             # Here you would add your custom relative path resolve logic.
             # We can test our mapping pairs to see if the version is pinned, otherwise we fallback to the original intent.
             versionless_identifier = f"{RELATIVE_PATH_IDENTIFIER_PREFIX}{entity_type}/{entity_identifier}?{entity_element}"
