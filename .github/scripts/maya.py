@@ -249,7 +249,7 @@ def install_autodesk_product(product, version, dependency_dir_path):
         logging.info("Installing Maya USD SDK")
         command = ["msiexec", "/i", os.path.join(maya_usd_sdk_extract_dir_path, "MayaUSD.msi"), "/quiet", "/passive", "INSTALLDIR={}".format(maya_usd_sdk_extract_dir_path)]
         process = subprocess.check_call(command,  stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        maya_usd_sdk_extract_usd_dir_path = glob.glob("{root_dir}{sep}**{sep}mayausd{sep}USD".format(root_dir=maya_usd_sdk_extract_dir_path, sep=os.path.sep), recursive=True)[0]
+        maya_usd_sdk_extract_usd_dir_path = glob.glob("{root_dir}{sep}**{sep}mayausd{sep}USD*".format(root_dir=maya_usd_sdk_extract_dir_path, sep=os.path.sep), recursive=True)[0]
         maya_usd_sdk_extract_usd_dir_path = os.path.join(maya_usd_sdk_extract_dir_path, maya_usd_sdk_extract_usd_dir_path)
         os.rename(maya_usd_sdk_extract_usd_dir_path, maya_usd_sdk_install_dir_path)
         # Maya USD DevKit
