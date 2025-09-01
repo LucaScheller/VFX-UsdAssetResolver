@@ -218,12 +218,15 @@ jobs:
       matrix:
         os: ["linux", "windows"]
         houdini_product_name: ["houdini", "houdini-py310", "houdini-py39", "houdini-py37"]
-        houdini_product_version: ["19.5", "20.0", "20.5", "21.0"]
+        houdini_product_version: ["20.0", "20.5", "21.0"]
         exclude:
           # - houdini_product_name: "houdini-py39"
           #   houdini_product_version: "19.5"
           # - houdini_product_name: "houdini-py310"
           #   houdini_product_version: "19.5"
+          - os: "windows"
+            houdini_product_name: "houdini-py39"
+            houdini_product_version: "20.0"
           - houdini_product_name: "houdini-py37"
             houdini_product_version: "20.0"
           - houdini_product_name: "houdini-py310"
