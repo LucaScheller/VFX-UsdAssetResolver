@@ -167,7 +167,6 @@ jobs:
           - os: "windows"
             maya_product_name: "maya"
             maya_product_version: "2024.2"
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
