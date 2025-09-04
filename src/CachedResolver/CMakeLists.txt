@@ -10,7 +10,6 @@ endif()
 ### Targets ###
 ## Target library > cachedResolver ##
 add_library(${AR_CACHEDRESOLVER_TARGET_LIB}
-    /mnt/data/PROJECT/VFX-USD/VFX-UsdAssetResolver/dependency/install/maya_usd_sdk_devkit/include/pxr/external/boost/python/bases.hpp
     debugCodes.cpp
     resolver.cpp
     resolverContext.cpp
@@ -43,8 +42,6 @@ target_link_libraries(${AR_CACHEDRESOLVER_TARGET_LIB}
 # Headers
 target_include_directories(${AR_CACHEDRESOLVER_TARGET_LIB}
     PUBLIC
-    /mnt/data/PROJECT/VFX-USD/VFX-UsdAssetResolver/dependency/install/maya_usd_sdk_devkit/include/pxr/external/boost
-    /mnt/data/PROJECT/VFX-USD/VFX-UsdAssetResolver/dependency/install/maya_usd_sdk_devkit/include/pxr/external/boost/python
     ${AR_PYTHON_INCLUDE_DIR}
     ${AR_PXR_INCLUDE_DIR}
     ${AR_BOOST_INCLUDE_DIR}
@@ -71,7 +68,6 @@ install(TARGETS ${AR_CACHEDRESOLVER_TARGET_LIB} DESTINATION ${AR_CACHEDRESOLVER_
 
 ## Target library > cachedResolver Python ##
 add_library(${AR_CACHEDRESOLVER_TARGET_PYTHON}
-    /mnt/data/PROJECT/VFX-USD/VFX-UsdAssetResolver/dependency/install/maya_usd_sdk_devkit/include/pxr/external/boost/python/bases.hpp
     module.cpp
     moduleDeps.cpp
     # resolver.cpp
