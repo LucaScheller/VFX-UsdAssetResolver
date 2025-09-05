@@ -3,7 +3,7 @@ cls
 REM Source environment (Uncomment lines starting with "set" if you current env does not have these defined.)
 REM set HFS=C:\Program Files\Side Effects Software\<InsertHoudiniVersion>
 REM Define Resolver > Has to be one of 'fileResolver'/'pythonResolver'/'cachedResolver'/'httpResolver'
-REM AR_RESOLVER_NAME=cachedResolver
+REM set AR_RESOLVER_NAME=cachedResolver
 REM Define App
 REM set AR_DCC_NAME=HOUDINI
 REM Clear existing build data and invoke cmake

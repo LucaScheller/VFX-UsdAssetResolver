@@ -9,6 +9,9 @@ then
     export AR_RESOLVER_NAME_UPPERCASE=$(echo ${AR_RESOLVER_NAME} | tr '[:lower:]' '[:upper:]')
     # DCC
     export AR_DCC_NAME=HOUDINI
+    if [ "$AR_DCC_NAME" == "STANDALONE" ]; then
+        export USD_STANDALONE_ROOT="/home/lucsch/Downloads/usd_standalone" # "/path/to/USD/standalone/root"
+    fi
     if [ "$AR_DCC_NAME" == "HOUDINI" ]; then
         # Source Houdini (This defines what Houdini version to compile against)
         pushd /opt/hfs21.0 > /dev/null

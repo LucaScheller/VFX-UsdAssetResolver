@@ -60,7 +60,7 @@ def download_file(download_file_path, download_url):
 
 
 def get_autodesk_platform():
-    """Get the active platform usable for SideFX platform API calls
+    """Get the active platform usable for Autodesk platform API calls
     Returns:
         str: The active platform
     """
@@ -71,8 +71,7 @@ def get_autodesk_platform():
         return "MacOS"
     elif current_platform == "Linux":
         return "Linux"
-    else:
-        return ""
+    raise Exception(f"Platform not supported: {current_platform}")
 
 
 def get_autodesk_maya_usd_sdk_releases(platform_name, maya_version):
@@ -128,7 +127,7 @@ def install_autodesk_product(product, version, dependency_dir_path):
     Args:
         product (str): The target product name (e.g. maya, etc.)
         version (str|None): The target product version (e.g. 2024.4, etc.)
-        install_dir_path (str): The install dir path.
+        dependency_dir_path (str): The install dir path.
     """
     autodesk_maya_version = version
     python_version = MAYA_PYTHON_VERSION_MAPPING[version]
@@ -271,12 +270,12 @@ def install_autodesk_product(product, version, dependency_dir_path):
 
 def create_autodesk_maya_artifact(artifact_src, artifact_dst, artifact_prefix, artifact_product_name, dependency_dir_path):
     """Create a .zip artifact based on the source directory content.
-    The output name will have will end in the houdini build name.
+    The output name will have will end in the Maya build name.
 
     Args:
         artifact_src (str): The source directory
         artifact_dst (str): The target directory
-        artifact_prefix (str): The file name prefix, the suffix will be the Houdini build name
+        artifact_prefix (str): The file name prefix, the suffix will be the Maya build name
         artifact_product_name (str): The file name product name. 
                                      This defines the Maya product name, e.g. like 'maya'
         dependency_dir_path (str): The dependency install directory path.

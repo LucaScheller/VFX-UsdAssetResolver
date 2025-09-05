@@ -47,8 +47,8 @@ def get_sidefx_platform():
         return "macos"
     elif current_platform == "Linux":
         return "linux"
-    else:
-        return ""
+    raise Exception(f"Platform not supported: {current_platform}")
+
 
 
 def download_sidefx_product_release(dir_path, release):

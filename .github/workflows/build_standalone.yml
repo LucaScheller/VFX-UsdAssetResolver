@@ -1,0 +1,135 @@
+name: Build USD Asset Resolvers against USD standalone
+
+on:
+  release:
+    types: [released]
+  schedule:
+      - cron: '0 12 * * 6'
+  workflow_dispatch:
+
+concurrency:
+  group: "build"
+  cancel-in-progress: false
+
+jobs:
+
+  build_linux:
+    runs-on: ubuntu-latest
+    environment: standalone
+    strategy:
+      matrix:
+        usd_product_name: ["usd"]
+        usd_product_version: ["24.11", "25.05"]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Switch to latest release tag
+        run: |
+          git fetch --all --tags --force
+          latest_release_tag=$(git tag -l --sort=-version:refname  v* | head -1)
+          git checkout tags/$latest_release_tag
+      - name: Install system packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y p7zip
+          sudo apt-get install -y build-essential cmake
+          sudo apt-get install -y python3 python3-pip
+          sudo pip3 install requests
+      - name: Install Maya
+        run: |
+          repo_root=$(cd .; pwd)
+          sudo --preserve-env python3 .github/scripts/standalone.py --install --install_standalone_product_name ${{ matrix.usd_product_name }} --install_standalone_product_version ${{ matrix.usd_product_version }} --install_directory $repo_root/dependency
+      - name: Build USD File Resolver
+        run: |
+          .github/scripts/standalone_build.sh fileResolver
+      - name: Build USD Python Resolver
+        run: |
+          .github/scripts/standalone_build.sh pythonResolver
+      - name: Build USD Cached Resolver
+        run: |
+          .github/scripts/standalone_build.sh cachedResolver
+      - name: Build USD Http Resolver
+        run: |
+          .github/scripts/standalone_build.sh httpResolver
+      - name: Create single .zip archive
+        run: |
+          repo_root=$(cd .; pwd)
+          python3 .github/scripts/standalone.py --artifact --artifact_src=$repo_root/dist --artifact_dst=$repo_root/artifacts --artifact_prefix=UsdAssetResolver --artifact_product_name ${{ matrix.usd_product_name }} --install_directory $repo_root/dependency
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: UsdAssetResolver-linux-${{ matrix.usd_product_name }}-${{ matrix.usd_product_version }}
+          path: artifacts/*.zip
+
+  build_windows_2022:
+    runs-on: windows-2022
+    environment: standalone
+    strategy:
+      matrix:
+        usd_product_name: ["usd"]
+        usd_product_version: ["24.11", "25.05"]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Switch to latest release tag
+        run: |
+          git fetch --all --tags --force
+          $latest_release_tag=git tag -l --sort=-version:refname v* | select -first 1
+          git checkout tags/$latest_release_tag
+      - name: Install system packages
+        run: |
+          pip3 install requests
+      - name: Install USD
+        run: |
+          python3 .github\scripts\standalone.py --install --install_standalone_product_name ${{ matrix.usd_product_name }} --install_standalone_product_version ${{ matrix.usd_product_version }} --install_directory $pwd\dependency
+      - name: Build USD File Resolver
+        run: |
+          .\.github\scripts\standalone_build.bat fileResolver "Visual Studio 17 2022" "v143"
+      - name: Build USD Python Resolver
+        run: |
+          .\.github\scripts\standalone_build.bat pythonResolver "Visual Studio 17 2022" "v143"
+      - name: Build USD Cached Resolver
+        run: |
+          .\.github\scripts\standalone_build.bat cachedResolver "Visual Studio 17 2022" "v143"
+      - name: Build USD Http Resolver
+        run: |
+          .\.github\scripts\standalone_build.bat httpResolver "Visual Studio 17 2022" "v143"
+      - name: Create single .zip archive
+        run: |
+          & python $pwd\.github\scripts\standalone.py --artifact --artifact_src=$pwd\dist --artifact_dst=$pwd\artifacts --artifact_prefix=UsdAssetResolver --artifact_product_name ${{ matrix.usd_product_name }} --install_directory $pwd\dependency
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: UsdAssetResolver-windows-${{ matrix.usd_product_name }}-${{ matrix.usd_product_version }}
+          path: artifacts/*.zip
+
+  deploy:
+    runs-on: ubuntu-latest
+    permissions: 
+      contents: write
+    needs: [build_linux, build_windows_2022]
+    strategy:
+      matrix:
+        usd_product_name: ["usd"]
+        usd_product_version: ["24.11", "25.05"]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: UsdAssetResolver-${{ matrix.os }}-${{ matrix.usd_product_name }}-${{ matrix.usd_product_version }}
+          path: artifacts
+      - name: Upload artifacts as release assets
+        run: |
+          git fetch --all --tags --force
+          latest_release_tag=$(git tag -l --sort=-version:refname  v* | head -1)
+          gh release upload $latest_release_tag artifacts/*.zip --clobber
+        env:
+          GITHUB_TOKEN: ${{ github.TOKEN }}
