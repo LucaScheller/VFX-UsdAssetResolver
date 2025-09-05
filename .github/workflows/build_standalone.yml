@@ -114,6 +114,7 @@ jobs:
     needs: [build_linux, build_windows_2022]
     strategy:
       matrix:
+        os: ["linux", "windows"]
         usd_product_name: ["usd"]
         usd_product_version: ["24.11", "25.05"]
     steps:
