@@ -7,7 +7,7 @@ import re
 import shutil
 import stat
 import subprocess
-from typing import Literal
+from typing import Literal, Union
 
 import requests
 import sidefx
@@ -35,7 +35,7 @@ def create_sidefx_service(client_id: str, client_secret_key: str):
     )
 
 
-def get_sidefx_platform() -> Literal["win64"] | Literal["macos"] | Literal["linux"]:
+def get_sidefx_platform() -> Union[Literal["win64"], Literal["macos"], Literal["linux"]]:
     """Get the active platform usable for SideFX platform API calls
     Returns:
         str: The active platform
