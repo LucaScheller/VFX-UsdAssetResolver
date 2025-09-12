@@ -1,16 +1,16 @@
 import argparse
-import hashlib
 import logging
 import os
 import pathlib
 import platform
 import re
-import requests
 import shutil
-import sidefx
+import stat
 import subprocess
-import tarfile
+from typing import Literal
 
+import requests
+import sidefx
 
 SIDEFX_CLIENT_ID = os.environ.get("SIDEFX_CLIENT_ID", "")
 SIDEFX_CLIENT_SECRET_KEY = os.environ.get("SIDEFX_CLIENT_SECRET_KEY", "")
@@ -19,7 +19,7 @@ SIDEFX_CLIENT_SECRET_KEY = os.environ.get("SIDEFX_CLIENT_SECRET_KEY", "")
 logging.basicConfig(format="%(asctime)s %(message)s", datefmt="%m/%d/%Y %I:%M:%S %p")
 
 
-def create_sidefx_service(client_id, client_secret_key):
+def create_sidefx_service(client_id: str, client_secret_key: str):
     """Get the SideFX API service
     Args:
         client_id (str): The client id
@@ -35,7 +35,7 @@ def create_sidefx_service(client_id, client_secret_key):
     )
 
 
-def get_sidefx_platform():
+def get_sidefx_platform() -> Literal["win64"] | Literal["macos"] | Literal["linux"]:
     """Get the active platform usable for SideFX platform API calls
     Returns:
         str: The active platform
@@ -50,8 +50,7 @@ def get_sidefx_platform():
     raise Exception(f"Platform not supported: {current_platform}")
 
 
-
-def download_sidefx_product_release(dir_path, release):
+def download_sidefx_product_release(dir_path: str, release: dict) -> str:
     """Download the release to the directory
     Args:
         dir_path (str): The target directory
@@ -77,15 +76,31 @@ def download_sidefx_product_release(dir_path, release):
     #         download_file_hash.update(chunk)
     # if download_file_hash.hexdigest() != release["hash"]:
     #     raise Exception("Checksum does not match!")
+    os.chmod(
+        download_file_path,
+        stat.ST_MODE
+        | stat.S_IEXEC
+        | stat.S_IXUSR
+        | stat.S_IXGRP
+        | stat.S_IRUSR
+        | stat.S_IRGRP,
+    )
+
     return download_file_path
 
 
-def install_sidefx_product(product, version):
+def install_sidefx_product(product: str, version: str) -> None:
     """Install a production release of Houdini
     Args:
         product (str): The target product name (e.g. houdini, houdini-py39, etc.)
         version (str|None): The target product version (e.g. 20.0, 19.5, etc.)
     """
+
+    # Create downloads directory
+    downloads_dir_path = os.path.join(os.path.expanduser("~"), "Downloads")
+    if not os.path.isdir(downloads_dir_path):
+        os.makedirs(downloads_dir_path)
+
     # Connect to SideFX API
     logging.info("Connecting to SideFX API")
     sidefx_service = create_sidefx_service(SIDEFX_CLIENT_ID, SIDEFX_CLIENT_SECRET_KEY)
@@ -119,61 +134,83 @@ def install_sidefx_product(product, version):
             "No Houdini version found for requested version | {}".format(version)
         )
 
-    target_release_download = sidefx_service.download.get_daily_build_download(
-        product=target_release["product"],
-        version=target_release["version"],
-        build=target_release["build"],
-        platform=target_release["platform"],
+    # Install Houdini through launcher
+    logging.info("Downloading Houdini Launcher")
+
+    houdini_launcher_releases_list = sidefx_service.download.get_daily_builds_list(
+        product="houdini-launcher",
+        version=None,
+        platform=sidefx_platform,
+        only_production=True,
+    )
+    if not houdini_launcher_releases_list:
+        raise Exception("No 'houdini-launcher' releases found!")
+
+    houdini_launcher_target_release = houdini_launcher_releases_list[0]
+    houdini_launcher_target_release_download = (
+        sidefx_service.download.get_daily_build_download(
+            product=houdini_launcher_target_release["product"],
+            version=houdini_launcher_target_release["version"],
+            build=houdini_launcher_target_release["build"],
+            platform=houdini_launcher_target_release["platform"],
+        )
     )
 
-    # Download latest production release
-    logging.info(
-        "Downloading Houdini build {version}.{build}".format(
-            version=target_release["version"], build=target_release["build"]
-        )
+    houdini_launcher_installer_file_path = download_sidefx_product_release(
+        downloads_dir_path, houdini_launcher_target_release_download
     )
-    downloads_dir_path = os.path.join(os.path.expanduser("~"), "Downloads")
-    if not os.path.isdir(downloads_dir_path):
-        os.makedirs(downloads_dir_path)
-    houdini_installer_file_path = download_sidefx_product_release(
-        downloads_dir_path, target_release_download
-    )
-    # Install latest production release
-    logging.info(
-        "Installing Houdini build {version}.{build}".format(
-            version=target_release["version"], build=target_release["build"]
+
+    license_file_path = os.path.join(downloads_dir_path, "sidefx_settings.ini")
+    with open(license_file_path, "w") as license_file:
+        license_file.write(
+            f"client_id={SIDEFX_CLIENT_ID}\nclient_secret={SIDEFX_CLIENT_SECRET_KEY}\n"
         )
+
+    # Currently the API and the installer consume different syntaxes for product and build option
+    cmd_flags = ["install"]
+    if "-" in target_release["product"]:
+        target_release_product, target_release_build_type = target_release[
+            "product"
+        ].split("-")
+        cmd_flags.extend(
+            [
+                "--product",
+                target_release_product,
+                "--build-option",
+                target_release_build_type,
+            ]
+        )
+    else:
+        cmd_flags.extend(["--product", target_release["product"]])
+    cmd_flags.extend(
+        [
+            "--version",
+            f"{target_release['version']}.{target_release['build']}",
+            "--platform",
+            target_release["platform"],
+            "--settings-file",
+            license_file_path,
+            "--accept-EULA",
+            "SideFX-2021-10-13",
+        ]
     )
     hfs_dir_path = ""
     if sidefx_platform == "linux":
-        # Unpack tar file
-        with tarfile.open(houdini_installer_file_path) as tar_file:
-            tar_file.extractall(downloads_dir_path)
-        os.remove(houdini_installer_file_path)
-        # Get folder name
-        houdini_installer_dir_name = target_release_download["filename"]
-        houdini_installer_dir_name = houdini_installer_dir_name.replace(".tar", "")
-        houdini_installer_dir_name = houdini_installer_dir_name.replace(".gz", "")
-        houdini_installer_dir_path = os.path.join(
-            downloads_dir_path, houdini_installer_dir_name
+        cmd = [houdini_launcher_installer_file_path]
+        status = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        if status.returncode != 0:
+            raise Exception(
+                "Failed to install Houdini Launcher, ran into the following error:\n {error}".format(
+                    error=status.stderr
+                )
+            )
+        logging.info(
+            "Installing Houdini build {version}.{build}".format(
+                version=target_release["version"], build=target_release["build"]
+            )
         )
-        cmd = [
-            os.path.join(houdini_installer_dir_path, "houdini.install"),
-            "--auto-install",
-            "--accept-EULA",
-            "2021-10-13",
-            "--install-houdini",
-            "--no-install-license",
-            "--no-install-avahi",
-            "--no-install-hqueue-server",
-            "--no-install-hqueue-client",
-            "--no-install-menus",
-            "--no-install-bin-symlink",
-            "--no-install-engine-maya",
-            "--no-install-engine-unity",
-            "--no-install-engine-unreal",
-            "--no-install-sidefxlabs",
-        ]
+        cmd = ["/opt/sidefx/launcher/bin/houdini_installer"]
+        cmd.extend(cmd_flags)
         status = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         if status.returncode != 0:
             raise Exception(
@@ -187,21 +224,24 @@ def install_sidefx_product(product, version):
         )
         hfs_symlink_dir_path = os.path.join(os.path.dirname(hfs_dir_path), "hfs")
     elif sidefx_platform == "win64":
-        cmd = [
-            houdini_installer_file_path,
-            "/S",
-            "/AcceptEULA=2021-10-13",
-            "/MainApp",
-            "/LicenseServer=No",
-            "/StartMenu=No",
-            "/HQueueServer=No",
-            "/HQueueClient=No",
-            "/EngineMaya=No",
-            "/Engine3dsMax",
-            "/EngineUnity",
-            "/EngineUnreal=No",
-            "/SideFXLabs=No",
-        ]
+        status = subprocess.run(
+            [houdini_launcher_installer_file_path, "/S"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        if status.returncode != 0:
+            raise Exception(
+                "Failed to install Houdini Launcher, ran into the following error:\n {error}".format(
+                    error=status.stderr
+                )
+            )
+        logging.info(
+            "Installing Houdini build {version}.{build}".format(
+                version=target_release["version"], build=target_release["build"]
+            )
+        )
+        cmd = [r"C:\Program Files\SideFX\launcher\bin\houdini_installer.exe"]
+        cmd.extend(cmd_flags)
         status = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         if status.returncode != 0:
             raise Exception(
@@ -210,16 +250,13 @@ def install_sidefx_product(product, version):
                 )
             )
         hfs_dir_path = os.path.join(
-            "C:\Program Files\Side Effects Software",
+            r"C:\Program Files\Side Effects Software",
             "Houdini {}.{}".format(target_release["version"], target_release["build"]),
         )
-        hfs_symlink_dir_path = os.path.join(
-            os.path.dirname(hfs_dir_path), "Houdini"
-        )
+        hfs_symlink_dir_path = os.path.join(os.path.dirname(hfs_dir_path), "Houdini")
     else:
         raise Exception(
-            "Platform {platform} is currently not"
-            "supported!".format(platform=platform)
+            "Platform {platform} is currently not supported!".format(platform=platform)
         )
     # Create version-less symlink
     logging.info(
@@ -230,7 +267,12 @@ def install_sidefx_product(product, version):
     os.symlink(hfs_dir_path, hfs_symlink_dir_path)
 
 
-def create_sidefx_houdini_artifact(artifact_src, artifact_dst, artifact_prefix, artifact_product_name):
+def create_sidefx_houdini_artifact(
+    artifact_src: str,
+    artifact_dst: str,
+    artifact_prefix: str,
+    artifact_product_name: str,
+) -> None:
     """Create a .zip artifact based on the source directory content.
     The output name will have will end in the houdini build name.
 
@@ -238,7 +280,7 @@ def create_sidefx_houdini_artifact(artifact_src, artifact_dst, artifact_prefix, 
         artifact_src (str): The source directory
         artifact_dst (str): The target directory
         artifact_prefix (str): The file name prefix, the suffix will be the Houdini build name
-        artifact_product_name (str): The file name product name. 
+        artifact_product_name (str): The file name product name.
                                      This defines the Houdini product name, e.g. like 'houdini-py39'
     Returns:
         str: The artifact file path
@@ -249,16 +291,16 @@ def create_sidefx_houdini_artifact(artifact_src, artifact_dst, artifact_prefix, 
         hfs_build_name = os.path.basename(pathlib.Path("/opt/hfs").resolve())
     elif sidefx_platform == "win64":
         hfs_build_name = os.path.basename(
-            pathlib.Path("C:\Program Files\Side Effects Software\Houdini").resolve()
+            pathlib.Path(r"C:\Program Files\Side Effects Software\Houdini").resolve()
         )
     else:
         raise Exception(
-            "Platform {platform} is currently not"
-            "supported!".format(platform=platform)
+            "Platform {platform} is currently notsupported!".format(platform=platform)
         )
     hfs_build_name = re_digitdot.sub("", hfs_build_name)
     artifact_file_path = os.path.join(
-        artifact_dst, f"{artifact_prefix}_{artifact_product_name}-{hfs_build_name}-{sidefx_platform}"
+        artifact_dst,
+        f"{artifact_prefix}_{artifact_product_name}-{hfs_build_name}-{sidefx_platform}",
     )
     artifact_dir_path = os.path.dirname(artifact_file_path)
     if not os.path.exists(artifact_dir_path):
@@ -287,10 +329,14 @@ if __name__ == "__main__":
     # Execute
     # Install Houdini
     if args.install:
-        install_sidefx_product(args.install_houdini_product_name,
-                               args.install_houdini_product_version)
+        install_sidefx_product(
+            args.install_houdini_product_name, args.install_houdini_product_version
+        )
     # Create artifact tagged with Houdini build name (expects Houdini to be installed via the above install command)
     if args.artifact:
         create_sidefx_houdini_artifact(
-            args.artifact_src, args.artifact_dst, args.artifact_prefix, args.artifact_product_name
+            args.artifact_src,
+            args.artifact_dst,
+            args.artifact_prefix,
+            args.artifact_product_name,
         )
