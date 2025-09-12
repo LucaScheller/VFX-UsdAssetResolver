@@ -240,7 +240,7 @@ def install_sidefx_product(product: str, version: str) -> None:
                 version=target_release["version"], build=target_release["build"]
             )
         )
-        cmd = [r"C:\Program Files\SideFX\launcher\bin\houdini_installer.exe"]
+        cmd = [r"C:\Program Files\Side Effects Software\Launcher\bin\houdini_installer.exe"]
         cmd.extend(cmd_flags)
         status = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         if status.returncode != 0:
