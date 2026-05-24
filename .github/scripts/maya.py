@@ -31,7 +31,7 @@ PYTHON_WINDOWS_DOWNLOAD_URL = {
     "3.11.9": "https://www.python.org/ftp/python/3.11.9/python-3.11.9-amd64.exe",
 }
 SEVENZIP_WINDOWS_DOWNLOAD_URL = {
-    "2301": "https://www.7-zip.org/a/7z2401-x64.exe"
+    "2301": "https://github.com/ip7z/7zip/releases/download/26.01/7z2601-x64.exe"
 }
 
 logging.basicConfig(format="%(asctime)s %(message)s", datefmt="%m/%d/%Y %I:%M:%S %p", level=logging.INFO)
